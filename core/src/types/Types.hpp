@@ -1,0 +1,16 @@
+#pragma once
+
+#include "Boolean.hpp"
+#include "Byte.hpp"
+#include "SByte.hpp"
+#include "Char.hpp"
+#include "CodePoint.hpp"
+#include "Int16.hpp"
+#include "Int32.hpp"
+#include "Int64.hpp"
+#include "UInt16.hpp"
+#include "UInt32.hpp"
+#include "UInt64.hpp"
+#include "Single.hpp"
+#include "Double.hpp"
+#include "String.hpp"

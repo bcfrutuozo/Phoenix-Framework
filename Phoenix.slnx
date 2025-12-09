@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="console/DSCPP-Console.vcxproj" Id="4229181f-23f6-4c58-9444-d9aa15bd9180" />
+  <Project Path="core/DSCPP.vcxproj" Id="7e78e29d-0696-414a-b36d-6d833c2b0c3d" />
+  <Project Path="tests/DSCPP-Tests.vcxproj" Id="a2fcf0a0-f383-4bf8-8f67-05d143795ec2" />
+  <Project Path="ucd-downloader/ucd-downloader.pyproj" Type="888888a0-9f3d-457c-b088-3a5042f75d52" Id="b21166e9-eaa0-403f-b9d5-c79f8c771882">
+    <Platform Project="AnyCPU" />
+    <Build Project="false" />
+  </Project>
+</Solution>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+	<!-- ===========================================================
+       CHAR  (1 byte UTF-8)
+       =========================================================== -->
+	<Type Name="Char">
+		<!-- Mostra o byte em hexadecimal -->
+		<DisplayString>{Value, x2}</DisplayString>
+		<Expand>
+			<Item Name="Byte">{Value, d}</Item>
+			<Item Name="Hex">{Value, x2}</Item>
+		</Expand>
+	</Type>
+
+
+	<!-- ===========================================================
+       CODEPOINT (Unicode scalar value)
+       =========================================================== -->
+	<Type Name="CodePoint">
+		<!-- Mostrar como U+XXXX -->
+		<DisplayString>U+{Value,x4}</DisplayString>
+		<Expand>
+			<Item Name="Decimal">{Value}</Item>
+			<Item Name="Hex">0x{Value,x}</Item>
+		</Expand>
+	</Type>
+
+
+	<!-- ===========================================================
+       LIST<T>  (sua implementação de vetor dinâmico)
+       Detecta _data e _count automaticamente
+       =========================================================== -->
+	<Type Name="List&lt;*&gt;">
+		<DisplayString>Count = {_count}</DisplayString>
+
+		<Expand>
+			<!-- Exibe itens internos como array -->
+			<ArrayItems>
+				<Size>_count</Size>
+				<ValuePointer>_data</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+
+	<!-- ===========================================================
+       STRING (sua classe UTF-8 com slicing)
+       =========================================================== -->
+	<Type Name="String">
+
+		<!-- Mostra a string renderizada corretamente no debugger
+         Usando o formatador {sb} para UTF-8 → UTF-16 → Visual Studio -->
+		<DisplayString>
+			{data(), sb}
+		</DisplayString>
+
+		<Expand>
+
+			<!-- ===============================
+           Mostrar BYTE ARRAY (UTF-8)
+           =============================== -->
+			<Item Name="UTF8 Bytes (Char[])">
+				<ArrayItems>
+					<Size>_byteLength</Size>
+					<ValuePointer>data()</ValuePointer>
+				</ArrayItems>
+			</Item>
+
+
+			<!-- ===============================
+           Mostrar CODEPOINTS
+           (usa seu DecodeToCodePoints)
+           =============================== -->
+			<Item Name="CodePoints">
+				<CustomListItems MaxItemsPerView="512">
+					<ListItems>
+						<!-- chama sua função DecodeToCodePoints(s) -->
+						<Size>DecodeToCodePoints(*this)._count</Size>
+						<ValuePointer>DecodeToCodePoints(*this)._data</ValuePointer>
+					</ListItems>
+				</CustomListItems>
+			</Item>
+
+
+			<!-- ===============================
+           Mostrar GRAPHEME CLUSTERS
+           (via Substring(i,1))
+           =============================== -->
+			<Item Name="Graphemes">
+				<IndexListItems>
+					<Size>GetLength()</Size>
+					<!-- Cada grapheme é obtido pela sua função Substring(i,1) -->
+					<ValuePointer>(this->Substring($i,1)).data()</ValuePointer>
+				</IndexListItems>
+			</Item>
+
+
+			<!-- Campos internos -->
+			<Item Name="ByteOffset">_byteOffset</Item>
+			<Item Name="ByteLength">_byteLength</Item>
+			<Item Name="RawPtr">_ptr</Item>
+
+		</Expand>
+	</Type>
+
+</AutoVisualizer>
