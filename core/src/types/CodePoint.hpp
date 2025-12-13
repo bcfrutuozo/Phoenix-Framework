@@ -10,6 +10,18 @@ class String;
 
 class CodePoint final : public Object<CodePoint>
 {
+    friend class Boolean;
+    friend class Byte;
+    friend class Char;
+    friend class Double;
+    friend class Int16;
+    friend class Int32;
+    friend class Int64;
+    friend class SByte;
+    friend class Single;
+    friend class UInt16;
+    friend class UInt32;
+    friend class UInt64;
     friend class String;
 
 private:
@@ -23,7 +35,7 @@ public:
     constexpr explicit CodePoint(value_type cp) : Value(cp) {}
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    constexpr CodePoint(T value) noexcept requires(is_promotion_primitive<T>::value) : Value((value)) {}
+    constexpr CodePoint(T value) noexcept requires(is_promotion_primitive<T>::value) : Value(static_cast<value_type>(value)) {}
 
     /*
      * Constructor which receives another Wrapper
@@ -31,7 +43,7 @@ public:
      * by its operator T() function
      */
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr explicit CodePoint(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(wrapper) {}
+    constexpr explicit CodePoint(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(static_cast<value_type>(wrapper.Value)) {}
 
     constexpr CodePoint(CodePoint const&) = default;
     constexpr CodePoint(CodePoint&&) = default;

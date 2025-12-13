@@ -9,6 +9,19 @@ class String;
 
 class Single final : public Object<Single> {
 
+    friend class Boolean;
+    friend class Byte;
+    friend class Char;
+    friend class CodePoint;
+    friend class Double;
+    friend class Int16;
+    friend class Int32;
+    friend class Int64;
+    friend class SByte;
+    friend class UInt16;
+    friend class UInt32;
+    friend class UInt64;
+
 private:
 
     using value_type = float;
@@ -37,7 +50,7 @@ public:
     constexpr Single() : Value() {};
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    constexpr Single(T value) noexcept requires(is_promotion_primitive<T>::value) : Value((value)) {}
+    constexpr Single(T value) noexcept requires(is_promotion_primitive<T>::value) : Value(static_cast<value_type>(value)) {}
 
     /*
      * Constructor which receives another Wrapper
@@ -45,7 +58,7 @@ public:
      * by its operator T() function
      */
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr explicit Single(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(wrapper) {}
+    constexpr explicit Single(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(static_cast<value_type>(wrapper.Value)) {}
 
     constexpr Single(Single const&) = default;
 

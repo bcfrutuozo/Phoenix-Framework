@@ -10,6 +10,19 @@ class String;
 
 class UInt64 final : public Object<UInt64>
 {
+    friend class Boolean;
+    friend class Byte;
+    friend class Char;
+    friend class CodePoint;
+    friend class Double;
+    friend class Int16;
+    friend class Int32;
+    friend class Int64;
+    friend class SByte;
+    friend class Single;
+    friend class UInt16;
+    friend class UInt32;
+
 private:
 
     using value_type = uint64_t;
@@ -20,7 +33,7 @@ public:
     constexpr UInt64() : Value() {};
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    constexpr UInt64(T value) noexcept requires(is_promotion_primitive<T>::value) : Value((value)) {}
+    constexpr UInt64(T value) noexcept requires(is_promotion_primitive<T>::value) : Value(static_cast<value_type>(value)) {}
 
     /*
      * Constructor which receives another Wrapper
@@ -28,7 +41,7 @@ public:
      * by its operator T() function
      */
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr explicit UInt64(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(wrapper) {}
+    constexpr explicit UInt64(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(static_cast<value_type>(wrapper.Value)) {}
 
     constexpr UInt64(UInt64 const&) = default;
 

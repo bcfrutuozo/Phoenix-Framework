@@ -34,7 +34,11 @@ public:
 	using size_type = unsigned int;
 	using refcount_type = unsigned int;
 
-	constexpr String() : _ptr(0), _byteOffset(0), _byteLength(0) {}
+	constexpr String() : _ptr(0), _byteOffset(0), _byteLength(0)
+	{
+		_sso[0] = Char(0);
+	}
+
 	String(Char c) noexcept;
 	String(const char* cstr) noexcept;
 	String(const unsigned char* bytes, size_type len) noexcept;
@@ -66,28 +70,34 @@ public:
 	template<typename... Args>
 	static String Concat(const Args&... args)
 	{
-		if constexpr (sizeof...(args) == 0)
-			return String();
-
-		// 1) compute total byte count using a fold expression
 		uint32_t totalBytes = (0 + ... + GetByteLen(args));
-
 		if (totalBytes == 0)
-			return String();
+			return String::Empty();
 
-		// 2) allocate
+		// SSO FIRST
+		if (totalBytes <= SSO_CAPACITY)
+		{
+			String out;
+			out._flags = FLAG_SSO;
+			out._byteOffset = 0;
+			out._byteLength = totalBytes;
+
+			uint32_t offset = 0;
+			(CopyBytes(out._sso, offset, args), ...);
+			out._sso[totalBytes] = Char(0);
+			return out;
+		}
+
+		// heap fallback (seu código atual)
 		unsigned char* block = allocate_block(totalBytes);
 		Char* dst = reinterpret_cast<Char*>(block + sizeof(refcount_type) + sizeof(size_type));
 
-		// 3) copy data
 		uint32_t offset = 0;
 		(CopyBytes(dst, offset, args), ...);
 
-		// 4) build final string
 		String result(block);
 		result._byteOffset = 0;
 		result._byteLength = totalBytes;
-
 		return result;
 	}
 
@@ -225,7 +235,12 @@ public:
 	}
 
 	UInt64 GetLength() const noexcept;
-	inline UInt32 GetReferenceCount() const noexcept { if (!_ptr) return 0; return refcount_ref(); };
+	inline UInt32 GetReferenceCount() const noexcept
+	{
+		if (IsSSO()) return 1;
+		if (!_ptr) return 0; 
+		return refcount_ref(); 
+	};
 
 	Int64 IndexOf(const String& value, size_t startIndex) const;
 	Int64 IndexOf(const String& value) const noexcept;
@@ -251,6 +266,8 @@ public:
 	{
 		return Equals(Normalize(form));
 	}
+
+	inline constexpr Boolean IsSSO() const noexcept { return (_flags & FLAG_SSO) != 0; }
 
 	static inline Boolean IsWhiteSpace(const String& s) { return s == String::WhiteSpace(); }
 	static inline Boolean IsWhiteSpace(const char* c) { return IsWhiteSpace(String(c)); }
@@ -536,9 +553,20 @@ public:
 	String ToString() const noexcept;
 
 private:
-	unsigned char* _ptr = nullptr;   // início do bloco
+
+	static constexpr uint32_t SSO_CAPACITY = 22;
+	static constexpr uint32_t FLAG_SSO = 1 << 0;
+
+	union
+	{
+		unsigned char* _ptr = nullptr;   // Block start (heap)
+		Char _sso[SSO_CAPACITY + 1];
+	};
+
+	
 	uint32_t _byteOffset = 0;        // offset em bytes dentro do bloco
 	uint32_t _byteLength = 0;        // comprimento em bytes desta string
+	uint32_t _flags = 0;
 	mutable uint32_t _gcLength = UInt32::MaxValue(); // Grapheme cluster lazy cache
 
 	mutable bool _asciiKnown = false;

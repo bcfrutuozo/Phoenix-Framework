@@ -162,6 +162,7 @@
     <ClInclude Include="src\system\Globals.hpp" />
     <ClInclude Include="src\system\Marvin32.hpp" />
     <ClInclude Include="src\text\ASCII.hpp" />
+    <ClInclude Include="src\text\StringBuilder.hpp" />
     <ClInclude Include="src\text\unicode\UnicodeCase_folding.hpp" />
     <ClInclude Include="src\text\unicode\UnicodeCase_generated.hpp" />
     <ClInclude Include="src\text\unicode\UnicodeCase_props.hpp" />
@@ -191,6 +192,7 @@
     <Natvis Include="DSCPP-Core.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\text\StringBuilder.cpp" />
     <ClCompile Include="src\text\unicode\UnicodeCase_utils.cpp" />
     <ClCompile Include="src\text\unicode\UnicodeNormalization_utils.cpp" />
     <ClCompile Include="src\types\Boolean.cpp" />

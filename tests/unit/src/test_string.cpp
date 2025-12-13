@@ -54,24 +54,50 @@ TEST_CASE("String: Construction and Basic Properties")
         REQUIRE(s.GetByteCount() == 7);
     }
 
-    SECTION("Copy constructor shares block")
+    SECTION("Copy constructor does NOT share SSO")
     {
         String a("Test");
         String b(a);
+
         REQUIRE(a.Equals(b));
+        REQUIRE(a.IsSSO());
+        REQUIRE(b.IsSSO());
+        REQUIRE(a.GetReferenceCount() == 1);
+        REQUIRE(b.GetReferenceCount() == 1);
+    }
+
+    SECTION("Copy constructor shares heap block")
+    {
+        String a("This string is large enough to bypass SSO");
+        String b(a);
+
+        REQUIRE(a.Equals(b));
+        REQUIRE(!a.IsSSO());
+        REQUIRE(!b.IsSSO());
         REQUIRE(a.GetReferenceCount() == 2);
         REQUIRE(b.GetReferenceCount() == 2);
     }
 
     SECTION("Move constructor transfers ownership")
     {
-        String a("MOVE");
+        String a("This is a large string to bypass SSO 1234567890");
         unsigned int rc = a.GetReferenceCount();
         String b(std::move(a));
 
         REQUIRE(a.IsEmpty());
         REQUIRE(!b.IsEmpty());
+        REQUIRE(b.Equals("This is a large string to bypass SSO 1234567890"));
+    }
+    SECTION("Move constructor preserves value")
+    {
+        String a("MOVE");
+        String b(std::move(a));
+
         REQUIRE(b.Equals("MOVE"));
+        REQUIRE(b.GetReferenceCount() == 1);
+
+        // Estado de 'a' não deve ser usado semanticamente
+        REQUIRE((a.IsEmpty() || (a.GetLength() == 0)));
     }
 }
 
@@ -410,21 +436,42 @@ TEST_CASE("String: Empty and IsEmpty")
 // 14. Reference counting
 // =====================================================
 
-TEST_CASE("String: Reference Counting")
+TEST_CASE("String: Reference Counting (SSO)")
 {
-    String a("Test");
+    String a("Test"); // cabe em SSO
+    REQUIRE(a.IsSSO());
     REQUIRE(a.GetReferenceCount() == 1);
+
     {
         String b(a);
-        REQUIRE(a.GetReferenceCount() == 2);
-        REQUIRE(b.GetReferenceCount() == 2);
+        REQUIRE(b.IsSSO());
+        REQUIRE(a.GetReferenceCount() == 1);
+        REQUIRE(b.GetReferenceCount() == 1);
+        REQUIRE(a.Equals(b));
     }
 
     REQUIRE(a.GetReferenceCount() == 1);
+
     {
         String c = std::move(a);
         REQUIRE(c.GetReferenceCount() == 1);
     }
+}
+
+TEST_CASE("String: Reference Counting (Heap)")
+{
+    String big("This is a very large string that certainly exceeds SSO capacity");
+    REQUIRE(!big.IsSSO());
+    REQUIRE(big.GetReferenceCount() == 1);
+
+    {
+        String copy(big);
+        REQUIRE(!copy.IsSSO());
+        REQUIRE(big.GetReferenceCount() == 2);
+        REQUIRE(copy.GetReferenceCount() == 2);
+    }
+
+    REQUIRE(big.GetReferenceCount() == 1);
 }
 
 // =====================================================

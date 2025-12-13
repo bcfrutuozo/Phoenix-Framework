@@ -4,8 +4,24 @@
 #include "Object.hpp"
 #include "Boolean.hpp"
 
+class UInt32;
+class String;
+
 class Byte final : public Object<Byte>
 {
+    friend class Boolean;
+    friend class Char;
+    friend class CodePoint;
+    friend class Double;
+    friend class Int16;
+    friend class Int32;
+    friend class Int64;
+    friend class SByte;
+    friend class Single;
+    friend class UInt16;
+    friend class UInt32;
+    friend class UInt64;
+
 private:
 
     using value_type = uint8_t;
@@ -16,7 +32,7 @@ public:
     constexpr Byte() : Value() {};
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    constexpr Byte(T value) noexcept requires(is_promotion_primitive<T>::value) : Value((value)) {}
+    constexpr Byte(T value) noexcept requires(is_promotion_primitive<T>::value) : Value(static_cast<value_type>(value)) {}
 
     /*
      * Constructor which receives another Wrapper
@@ -24,7 +40,7 @@ public:
      * by its operator T() function
      */
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr explicit Byte(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(wrapper) {}
+    constexpr explicit Byte(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(static_cast<value_type>(wrapper.Value)) {}
 
     constexpr Byte(Byte const&) = default;
 
@@ -38,10 +54,10 @@ public:
      * Operator= (Assignment)
      */
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    constexpr Byte& operator=(T const& value) noexcept requires(is_promotion_primitive<T>::value) { Value = value; return *this; };
+    constexpr Byte& operator=(T const& value) noexcept requires(is_promotion_primitive<T>::value) { Value = static_cast<value_type>(value); return *this; };
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr Byte& operator=(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) { Value = wrapper; return *this; };
+    constexpr Byte& operator=(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) { Value = static_cast<value_type>(wrapper.Value); return *this; };
 
     /*
      * Implicit use of between Primitive and Wrapper

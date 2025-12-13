@@ -13,21 +13,20 @@ String::String(const char* cstr) noexcept
 
 String::String(Char c) noexcept
 {
-	unsigned char* block = allocate_block(1);
-	if (!block)
-	{
-		_ptr = nullptr;
-		_byteOffset = 0;
-		_byteLength = 0;
-		return;
-	}
-
-	_ptr = block;
+	_flags = FLAG_SSO;
 	_byteOffset = 0;
 	_byteLength = 1;
+	_sso[0] = c;
+	_sso[1] = Char(0);
 
-	Char* dst = reinterpret_cast<Char*>(block + sizeof(refcount_type) + sizeof(size_type));
-	dst[0] = c;
+	_asciiKnown = true;
+	_isAscii = ((unsigned char)c.Value < 0x80);
+	_gcLength = 1;
+
+	_nfc = nullptr;
+	_nfkc = nullptr;
+	_hasNFC = false;
+	_hasNFKC = false;
 }
 
 String::String(const unsigned char* bytes, size_type len) noexcept
@@ -74,9 +73,29 @@ String::String(const List<CodePoint>& cps) noexcept
 	_byteLength = totalBytes;
 }
 
-String::String(const String& other) noexcept : _ptr(other._ptr), _byteOffset(other._byteOffset), _byteLength(other._byteLength) {
-	add_ref();
+String::String(const String& other) noexcept 
+{
+	if (other.IsSSO())
+	{
+		_flags = FLAG_SSO;
+		_byteOffset = 0;
+		_byteLength = other._byteLength;
 
+		for (uint32_t i = 0; i < _byteLength; ++i)
+			_sso[i] = other._sso[i];
+
+		_sso[_byteLength] = Char(0);
+	}
+	else
+	{
+		_flags = 0;
+		_ptr = other._ptr;
+		_byteOffset = other._byteOffset;
+		_byteLength = other._byteLength;
+		add_ref();
+	}
+
+	// reset caches
 	_asciiKnown = false;
 	_isAscii = false;
 	_gcLength = UInt32::MaxValue();
@@ -86,10 +105,37 @@ String::String(const String& other) noexcept : _ptr(other._ptr), _byteOffset(oth
 	_hasNFKC = false;
 }
 
-String::String(String&& other) noexcept : _ptr(other._ptr), _byteOffset(other._byteOffset), _byteLength(other._byteLength) {
-	other._ptr = nullptr;
-	other._byteOffset = 0;
-	other._byteLength = 0;
+String::String(String&& other) noexcept 
+{
+	if (other.IsSSO())
+	{
+		_flags = FLAG_SSO;
+		_byteOffset = 0;
+		_byteLength = other._byteLength;
+
+		for (uint32_t i = 0; i < _byteLength; ++i)
+			_sso[i] = other._sso[i];
+
+		_sso[_byteLength] = Char(0);
+
+		// Esvaziar origem (estado válido)
+		other._byteLength = 0;
+		other._byteOffset = 0;
+		other._sso[0] = Char(0);
+		other._flags = FLAG_SSO;
+	}
+	else
+	{
+		_flags = 0;
+		_ptr = other._ptr;
+		_byteOffset = other._byteOffset;
+		_byteLength = other._byteLength;
+
+		other._ptr = nullptr;
+		other._byteLength = 0;
+		other._byteOffset = 0;
+		other._flags = FLAG_SSO;
+	}
 
 	_asciiKnown = false;
 	_isAscii = false;
@@ -107,30 +153,64 @@ String::String(String&& other) noexcept : _ptr(other._ptr), _byteOffset(other._b
 
 String& String::operator=(const String& other) noexcept
 {
-	if (this != &other) {
-		release();
+	if (this == &other)
+		return *this;
+
+	release();
+
+	if (other.IsSSO())
+	{
+		_flags = FLAG_SSO;
+		_byteOffset = 0;
+		_byteLength = other._byteLength;
+
+		for (uint32_t i = 0; i < _byteLength; ++i)
+			_sso[i] = other._sso[i];
+
+		_sso[_byteLength] = Char(0);
+	}
+	else
+	{
+		_flags = 0;
 		_ptr = other._ptr;
 		_byteOffset = other._byteOffset;
 		_byteLength = other._byteLength;
-		_gcLength = other._gcLength; // Cache copy
 		add_ref();
-
-		// reset caches
-		_asciiKnown = false;
-		_isAscii = false;
-		_gcLength = UInt32::MaxValue();
-		_nfc = nullptr;
-		_nfkc = nullptr;
-		_hasNFC = false;
-		_hasNFKC = false;
 	}
+
+	// reset caches
+	_asciiKnown = false;
+	_isAscii = false;
+	_gcLength = UInt32::MaxValue();
+	_nfc = nullptr;
+	_nfkc = nullptr;
+	_hasNFC = false;
+	_hasNFKC = false;
+
 	return *this;
 }
 
 String& String::operator=(String&& other) noexcept
 {
-	if (this != &other) {
-		release();
+	if (this == &other)
+		return *this;
+
+	release();
+
+	if (other.IsSSO())
+	{
+		_flags = FLAG_SSO;
+		_byteOffset = 0;
+		_byteLength = other._byteLength;
+
+		for (uint32_t i = 0; i < _byteLength; ++i)
+			_sso[i] = other._sso[i];
+
+		_sso[_byteLength] = Char(0);
+	}
+	else
+	{
+		_flags = 0;
 		_ptr = other._ptr;
 		_byteOffset = other._byteOffset;
 		_byteLength = other._byteLength;
@@ -138,22 +218,24 @@ String& String::operator=(String&& other) noexcept
 		other._ptr = nullptr;
 		other._byteOffset = 0;
 		other._byteLength = 0;
-
-		// reset + steal
-		_asciiKnown = false;
-		_isAscii = false;
-		_gcLength = UInt32::MaxValue();
-
-		_nfc = other._nfc;
-		_nfkc = other._nfkc;
-		_hasNFC = other._hasNFC;
-		_hasNFKC = other._hasNFKC;
-
-		other._nfc = nullptr;
-		other._nfkc = nullptr;
-		other._hasNFC = false;
-		other._hasNFKC = false;
+		other._flags = FLAG_SSO;
 	}
+
+	// reset caches
+	_asciiKnown = false;
+	_isAscii = false;
+	_gcLength = UInt32::MaxValue();
+
+	_nfc = other._nfc;
+	_nfkc = other._nfkc;
+	_hasNFC = other._hasNFC;
+	_hasNFKC = other._hasNFKC;
+
+	other._nfc = nullptr;
+	other._nfkc = nullptr;
+	other._hasNFC = false;
+	other._hasNFKC = false;
+
 	return *this;
 }
 
@@ -164,12 +246,17 @@ String::~String() noexcept
 
 Boolean operator==(const String& a, const String& b) noexcept
 {
-	// 1) Mesmo objeto → iguais
-	if (a._ptr == b._ptr &&
-		a._byteOffset == b._byteOffset &&
-		a._byteLength == b._byteLength)
+	if (a._byteLength == b._byteLength)
 	{
-		return true;
+		if (a.IsSSO() && b.IsSSO())
+		{
+			return memcmp(a._sso, b._sso, a._byteLength * sizeof(Char)) == 0;
+		}
+
+		if (!a.IsSSO() && !b.IsSSO() &&
+			a._ptr == b._ptr &&
+			a._byteOffset == b._byteOffset)
+			return true;
 	}
 
 	// 2) Comprimentos diferentes → diferente
@@ -213,7 +300,7 @@ UInt64 String::GetLength() const noexcept
 	if (_gcLength != UInt32::MaxValue())
 		return _gcLength;
 
-	if (!_ptr || _byteLength == 0)
+	if (_byteLength == 0)
 	{
 		_gcLength = 0;
 		return 0;
@@ -235,18 +322,7 @@ UInt64 String::GetLength() const noexcept
 	uint32_t len = _byteLength;
 	uint32_t pos = 0;
 
-	while (pos < len)
-	{
-		auto r = UTF8::decode_utf8(reinterpret_cast<const unsigned char*>(p + pos), len - pos);
-		if (!r.IsValid || r.Length == 0)
-		{
-			cps.Add(0xFFFD);
-			pos++;
-			continue;
-		}
-		cps.Add((uint32_t)r.cp);
-		pos += r.Length;
-	}
+	UTF8::Decode(*this, GetByteCount(), cps);
 
 	uint32_t cpCount = cps.Count();
 	if (cpCount == 0)
@@ -333,39 +409,11 @@ Boolean String::Contains(const String& sub, bool ignoreCase, const String& local
 	// ======================================
 	//  SLOW PATH: Unicode-aware casefold + normalization
 	// ======================================
+	List<CodePoint> hayFold, subFold;
+	UTF8::FoldAndNormalize(*this, GetByteCount(), locBytes, hayFold);
+	UTF8::FoldAndNormalize(sub, sub.GetByteCount(), locBytes, subFold);
 
-	// Decode para codepoints
-	List<CodePoint> cpsHay = DecodeToCodePoints(*this);
-	List<CodePoint> cpsSub = DecodeToCodePoints(sub);
-
-	// Case-fold
-	List<CodePoint> cfHay, cfSub;
-	CaseFoldUnicode(cpsHay, locBytes, locLen, cfHay);
-	CaseFoldUnicode(cpsSub, locBytes, locLen, cfSub);
-
-	// Normalize NFKC → NFC
-	String normHay = FromCodePoints(cfHay).Normalize(UnicodeNormalization::NormalizationForm::NFKC);
-	normHay = normHay.Normalize(UnicodeNormalization::NormalizationForm::NFC);
-
-	String normSub = FromCodePoints(cfSub).Normalize(UnicodeNormalization::NormalizationForm::NFKC);
-	normSub = normSub.Normalize(UnicodeNormalization::NormalizationForm::NFC);
-
-	// Decode de novo
-	cfHay = DecodeToCodePoints(normHay);
-	cfSub = DecodeToCodePoints(normSub);
-
-	// Turkish: remover U+0307
-	if (isTurkic)
-	{
-		for (int i = (int)cfHay.Count() - 1; i >= 0; --i)
-			if (cfHay[i] == 0x0307u) cfHay.RemoveAt(i);
-
-		for (int i = (int)cfSub.Count() - 1; i >= 0; --i)
-			if (cfSub[i] == 0x0307u) cfSub.RemoveAt(i);
-	}
-
-	if (cfSub.Count() == 0) return true;
-	return ContainsFolded(cfHay, cfSub);
+	return UTF8::Contains(hayFold, subFold);
 }
 
 Boolean String::Contains(const char* cstr, bool ignoreCase) const noexcept
@@ -440,69 +488,21 @@ Int32 String::Compare(const String& A, const String& B, bool ignoreCase, const S
 	// ====================================
 	// SLOW-PATH Unicode: casefold + normalize
 	// ====================================
-	List<CodePoint> cpA = DecodeToCodePoints(A);
-	List<CodePoint> cpB = DecodeToCodePoints(B);
-	List<CodePoint> fa, fb;
-
-	if (ignoreCase)
-	{
-		CaseFoldUnicode(cpA, loc, locLen, fa);
-		CaseFoldUnicode(cpB, loc, locLen, fb);
-
-		String nA = FromCodePoints(fa).Normalize(UnicodeNormalization::NormalizationForm::NFC);
-		String nB = FromCodePoints(fb).Normalize(UnicodeNormalization::NormalizationForm::NFC);
-
-		fa = DecodeToCodePoints(nA);
-		fb = DecodeToCodePoints(nB);
-
-		if (isTurkic)
-		{
-			for (int i = (int)fa.Count() - 1; i >= 0; --i)
-				if (fa[i] == 0x0307u) fa.RemoveAt(i);
-
-			for (int i = (int)fb.Count() - 1; i >= 0; --i)
-				if (fb[i] == 0x0307u) fb.RemoveAt(i);
-		}
-
-		return CompareFolded(fa, fb);
-	}
-	else
-	{
-		uint32_t ma = cpA.Count();
-		uint32_t mb = cpB.Count();
-		uint32_t m = (ma < mb ? ma : mb);
-
-		for (uint32_t i = 0; i < m; ++i)
-		{
-			if (cpA[i] < cpB[i]) return -1;
-			if (cpA[i] > cpB[i]) return 1;
-		}
-
-		if (ma < mb) return -1;
-		if (ma > mb) return 1;
-		return 0;
-	}
+	List<CodePoint> Ac, Bc;
+	UTF8::FoldAndNormalize(A, A.GetByteCount(), locale, Ac);
+	UTF8::FoldAndNormalize(B, B.GetByteCount(), locale, Bc);
+	return UTF8::Compare(Ac, Bc);
 }
 
 Boolean String::Compare(const String& a, const String& b, const char* locale) noexcept
 {
-	List<CodePoint> cpsA = DecodeToCodePoints(a);
-	List<CodePoint> cpsB = DecodeToCodePoints(b);
+	List<CodePoint> A, B;
+	UTF8::FoldAndNormalize(a, a.GetByteCount(), locale, A);
+	UTF8::FoldAndNormalize(b, b.GetByteCount(), locale, B);
 
-	List<CodePoint> cfA;
-	List<CodePoint> cfB;
-
-	CaseFoldUnicode(cpsA, locale, strlen(locale), cfA);
-	CaseFoldUnicode(cpsB, locale, strlen(locale), cfB);
-
-	uint32_t countCFA = cfA.Count();
-	uint32_t countCFB = cfB.Count();
-
-	if (countCFA != countCFB) return false;
-
-	for (uint32_t i = 0; i < countCFA; ++i)
-		if (cfA[i] != cfB[i]) return false;
-
+	if (A.Count() != B.Count()) return false;
+	for (uint32_t i = 0; i < A.Count(); ++i)
+		if (A[i] != B[i]) return false;
 	return true;
 }
 
@@ -583,35 +583,11 @@ Int64 String::IndexOf(const String& value, size_t startIndex) const
 	}
 
 	// Decode both strings to codepoints
-	List<CodePoint> hay = DecodeToCodePoints(*this);
-	List<CodePoint> ned = DecodeToCodePoints(value);
+	List<CodePoint> H, N;
+	UTF8::Decode(data(), _byteLength, H);
+	UTF8::Decode(value.data(), value._byteLength, N);
 
-	UInt64 H = hay.Count();
-	UInt64 N = ned.Count();
-
-	if (N == 0) return startIndex;
-	if (startIndex >= H) return -1;
-	if (N > H) return -1;
-
-	// naive substring match over codepoints
-	UInt64 limit = H - N;
-
-	for (UInt64 i = startIndex; i <= limit; ++i)
-	{
-		bool match = true;
-		for (UInt64 j = 0; j < N; ++j)
-		{
-			if (hay[i + j] != ned[j])
-			{
-				match = false;
-				break;
-			}
-		}
-		if (match)
-			return i; // return grapheme/codepoint index
-	}
-
-	return -1;
+	return UTF8::IndexOf(H, N, startIndex);
 }
 
 Int64 String::IndexOf(const String& value) const noexcept
@@ -863,6 +839,28 @@ String String::Join(const String& separator, const List<String>& values)
 		uint32_t sepLen = separator.GetByteCount();
 		uint32_t total = ComputeJoinASCIIByteCount(values, sepLen);
 
+		if (total <= SSO_CAPACITY)
+		{
+			String out;
+			out._flags = FLAG_SSO;
+			out._byteLength = total;
+
+			uint32_t w = 0;
+			for (uint32_t i = 0; i < count; ++i)
+			{
+				const String& s = values[i];
+				for (uint32_t k = 0; k < s.GetByteCount(); ++k)
+					out._sso[w++] = s.data()[k];
+
+				if (i + 1 < count)
+					for (uint32_t k = 0; k < sepLen; ++k)
+						out._sso[w++] = separator.data()[k];
+			}
+
+			out._sso[total] = Char(0);
+			return out;
+		}
+
 		unsigned char* block = allocate_block(total);
 		if (!block) return String();
 
@@ -955,46 +953,11 @@ Int64 String::LastIndexOf(const String& value, size_t startIndex) const noexcept
 	}
 
 	// Decode both strings to codepoints
-	List<CodePoint> hay = DecodeToCodePoints(*this);
-	List<CodePoint> ned = DecodeToCodePoints(value);
+	List<CodePoint> H, N;
+	UTF8::Decode(data(), _byteLength, H);
+	UTF8::Decode(value.data(), value._byteLength, N);
 
-	UInt64 H = hay.Count();
-	UInt64 N = ned.Count();
-
-	if (N == 0)
-	{
-		// .NET: empty needle returns min(startIndex, length-1)
-		return (startIndex < H ? startIndex : (H == 0 ? 0 : (size_t)H - 1));
-	}
-
-	if (H == 0 || N > H)
-		return -1;
-
-	if (startIndex >= H)
-		startIndex = H - 1; // .NET behavior
-
-	// runs backwards
-	for (Int64 i = (Int64)startIndex; i >= 0; --i)
-	{
-		// If remaining haystack fits needle?
-		if ((UInt64)i + N > H)
-			continue;
-
-		bool match = true;
-		for (UInt64 j = 0; j < N; ++j)
-		{
-			if (hay[i + j] != ned[j])
-			{
-				match = false;
-				break;
-			}
-		}
-
-		if (match)
-			return (UInt64)i;
-	}
-
-	return -1;
+	return UTF8::LastIndexOf(H, N, startIndex);
 }
 
 Int64 String::LastIndexOf(const String& value) const noexcept
@@ -1388,7 +1351,6 @@ String String::Replace(Char oldChar, Char newChar) const noexcept
 	const Char* src = data();
 	uint32_t len = _byteLength;
 
-	// Compute count of replacements
 	bool hasAny = false;
 	for (uint32_t i = 0; i < len; ++i)
 		if (src[i].Value == oldChar.Value)
@@ -1396,9 +1358,21 @@ String String::Replace(Char oldChar, Char newChar) const noexcept
 
 	if (!hasAny) return *this;
 
-	unsigned char* block = allocate_block(len);
-	if (!block) return String();
+	if (len <= SSO_CAPACITY)
+	{
+		String out;
+		out._flags = FLAG_SSO;
+		out._byteLength = len;
 
+		for (uint32_t i = 0; i < len; ++i)
+			out._sso[i] = (src[i].Value == oldChar.Value ? newChar : src[i]);
+
+		out._sso[len] = Char(0);
+		return out;
+	}
+
+	// heap fallback
+	unsigned char* block = allocate_block(len);
 	Char* dst = reinterpret_cast<Char*>(block + sizeof(refcount_type) + sizeof(size_type));
 
 	for (uint32_t i = 0; i < len; ++i)
@@ -1617,117 +1591,18 @@ String String::Replace(const String& oldValue, const String& newValue,
 	// ------------------------------
 	// 1. Normalize + casefold haystack and needle
 	// ------------------------------
-	auto norm_fold = [&](const String& s)
-		{
-			List<CodePoint> cps = DecodeToCodePoints(s);
+	List<CodePoint> hayFold, oldFold;
+	UTF8::FoldAndNormalize(*this, GetByteCount(), locale, hayFold);
+	UTF8::FoldAndNormalize(oldValue, oldValue.GetByteCount(), locale, oldFold);
 
-			const char* locBytes = reinterpret_cast<const char*>(locale.data());
-			uint32_t locLen = locale.GetByteCount();
+	// decode newValue to pure CPs (NO folding)
+	List<CodePoint> newCP = DecodeToCodePoints(newValue);
 
-			List<CodePoint> folded;
-			CaseFoldUnicode(cps, locBytes, locLen, folded);
+	// build result in CP domain
+	List<CodePoint> out;
+	UTF8::Replace(hayFold, oldFold, newCP, out);
 
-			String nfkc = FromCodePoints(folded).Normalize(UnicodeNormalization::NormalizationForm::NFKC);
-			return nfkc.Normalize(UnicodeNormalization::NormalizationForm::NFC);
-		};
-
-	String normHay = ignoreCase ? norm_fold(*this) : *this;
-	String normOld = ignoreCase ? norm_fold(oldValue) : oldValue;
-
-	// Decode both normalized strings
-	List<CodePoint> hayCP = DecodeToCodePoints(normHay);
-	List<CodePoint> oldCP = DecodeToCodePoints(normOld);
-
-	if (oldCP.Count() == 0)
-		return *this;
-
-	// ------------------------------
-	// 2. Find all match positions in normalized CP domain
-	// ------------------------------
-	List<uint32_t> matches;
-	uint32_t H = hayCP.Count();
-	uint32_t N = oldCP.Count();
-
-	for (uint32_t i = 0; i + N <= H; ++i)
-	{
-		bool match = true;
-		for (uint32_t j = 0; j < N; ++j)
-		{
-			if (hayCP[i + j] != oldCP[j])
-			{
-				match = false;
-				break;
-			}
-		}
-		if (match)
-		{
-			matches.Add(i);
-			i += (N - 1);
-		}
-	}
-
-	if (matches.IsEmpty())
-		return *this;
-
-	// ------------------------------
-	// 3. Build mapping from normalized CP indices → original CP indices
-	// ------------------------------
-	List<CodePoint> origCP = DecodeToCodePoints(*this);
-
-	List<uint32_t> map;
-	map.Reserve(hayCP.Count());
-
-	uint32_t oi = 0, ni = 0;
-
-	// naive but effective alignment:
-	while (ni < hayCP.Count() && oi < origCP.Count())
-	{
-		if (hayCP[ni] == origCP[oi])
-		{
-			map.Add(oi);
-			ni++;
-			oi++;
-		}
-		else
-		{
-			oi++;
-		}
-	}
-
-	while (map.Count() < hayCP.Count())
-		map.Add(origCP.Count());
-
-	// ------------------------------
-	// 4. Build the output CP vector
-	// ------------------------------
-	List<CodePoint> newValueCP = DecodeToCodePoints(newValue);
-	List<CodePoint> result;
-	result.Reserve(origCP.Count() + matches.Count() * newValueCP.Count());
-
-	uint32_t nextMatch = 0;
-	uint32_t mCount = matches.Count();
-
-	uint32_t i = 0;
-	while (i < hayCP.Count())
-	{
-		if (nextMatch < mCount && i == matches[nextMatch])
-		{
-			for (CodePoint cp : newValueCP)
-				result.Add(cp);
-
-			i += oldCP.Count();
-			nextMatch++;
-		}
-		else
-		{
-			uint32_t origIndex = map[i];
-			if (origIndex < origCP.Count())
-				result.Add(origCP[origIndex]);
-			i++;
-		}
-	}
-
-	return String::FromCodePoints(result);
+	return String::FromCodePoints(out);
 }
 
 String String::ReplaceLineEndings() const noexcept
@@ -1980,49 +1855,57 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 	if (IsEmpty() || gcCount == 0)
 		return String::Empty();
 
-	const Char* p = data();
-	uint32_t byteLen = _byteLength;
-
-	// --------- FAST PATH: ASCII (1 byte = 1 grapheme) ----------
+	// FAST ASCII PATH
 	if (IsASCII(*this))
 	{
 		uint32_t start = gcStart;
 		uint32_t end = gcStart + gcCount;
 
 		if (start >= _byteLength)
-			return String();     // empty
+			return String::Empty();
 
 		if (end > _byteLength)
 			end = _byteLength;
 
-		String sub(*this);
-		sub._byteOffset += start;
-		sub._byteLength = end - start;
+		uint32_t len = end - start;
 
-		sub._asciiKnown = false;
-		sub._isAscii = false;
-		sub._gcLength = UInt32::MaxValue();
-		sub._hasNFC = false;
-		sub._hasNFKC = false;
-		sub._nfc = nullptr;
-		sub._nfkc = nullptr;
+		if (IsSSO())
+		{
+			// COPY
+			return String(reinterpret_cast<const unsigned char*>(data() + start), len);
+		}
+		else
+		{
+			// SLICE
+			String sub(*this);
+			sub._byteOffset += start;
+			sub._byteLength = len;
 
-		return sub;
+			sub._asciiKnown = false;
+			sub._isAscii = false;
+			sub._gcLength = UInt32::MaxValue();
+			sub._hasNFC = false;
+			sub._hasNFKC = false;
+			sub._nfc = nullptr;
+			sub._nfkc = nullptr;
+
+			return sub;
+		}
 	}
 
-	// -------- SLOW PATH: UTF-8 → Codepoints → Grapheme Clusters --------
+	// -------- Unicode slow-path (como você já tinha) --------
+
 	List<CodePoint> cps = DecodeToCodePoints(*this);
 	uint32_t cpCount = cps.Count();
 	if (cpCount == 0)
-		return String();
+		return String::Empty();
 
-	// Grapheme boundaries based on cps from THIS string
 	List<CodePoint> boundaries;
 	uint32_t gcTotal = 0;
 	UnicodeCase::ComputeGraphemeBoundaries(cps, cpCount, boundaries, gcTotal);
 
 	if (gcStart >= gcTotal)
-		return String();
+		return String::Empty();
 
 	uint32_t gcEnd = gcStart + gcCount;
 	if (gcEnd > gcTotal)
@@ -2031,19 +1914,20 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 	uint32_t startCp = boundaries[gcStart];
 	uint32_t endCp = (gcEnd < gcTotal ? (uint32_t)boundaries[gcEnd] : cpCount);
 
-	// Convert CP index → byte offsets on THIS string
 	uint32_t byteStart = FindByteOffsetOfCodePoint(startCp);
 	uint32_t byteEnd = FindByteOffsetOfCodePoint(endCp);
+	if (byteEnd > _byteLength) byteEnd = _byteLength;
 
-	if (byteStart > _byteLength)
-		return String();
-	if (byteEnd > _byteLength)
-		byteEnd = _byteLength;
+	uint32_t len = byteEnd - byteStart;
 
-	// slice
+	if (IsSSO())
+	{
+		return String(reinterpret_cast<const unsigned char*>(data() + byteStart), len);
+	}
+
 	String sub(*this);
 	sub._byteOffset += byteStart;
-	sub._byteLength = byteEnd - byteStart;
+	sub._byteLength = len;
 
 	sub._asciiKnown = false;
 	sub._isAscii = false;
@@ -2092,19 +1976,7 @@ String String::ToLower(const String& locale) const noexcept
 	const Char* ptr = data();
 	uint32_t pos = 0;
 
-	while (pos < _byteLength)
-	{
-		auto r = UTF8::decode_utf8(reinterpret_cast<const unsigned char*>(ptr + pos), _byteLength - pos);
-		if (!r.IsValid || r.Length == 0)
-		{
-			cps.Add(CodePoint(0xFFFD));
-			pos++;
-			continue;
-		}
-
-		cps.Add(CodePoint(r.cp));
-		pos += r.Length;
-	}
+	UTF8::Decode(*this, GetByteCount(), cps);
 
 	if (cps.IsEmpty())
 		return String();
@@ -2194,19 +2066,7 @@ String String::ToUpper(const String& locale) const noexcept
 	const Char* ptr = data();
 	uint32_t pos = 0;
 
-	while (pos < _byteLength)
-	{
-		auto r = UTF8::decode_utf8(reinterpret_cast<const unsigned char*>(ptr + pos), _byteLength - pos);
-		if (!r.IsValid || r.Length == 0)
-		{
-			cps.Add(CodePoint(0xFFFD));
-			pos++;
-			continue;
-		}
-
-		cps.Add(CodePoint(r.cp));
-		pos += r.Length;
-	}
+	UTF8::Decode(*this, GetByteCount(), cps);
 
 	if (cps.IsEmpty())
 		return String();
@@ -2498,12 +2358,28 @@ String String::ToString() const noexcept
 }
 
 
-String::String(unsigned char* block) noexcept : _ptr(block), _byteOffset(0) {
-	if (_ptr) _byteLength = length_ref();
+String::String(unsigned char* block) noexcept
+{
+	if (!block)
+	{
+		_flags = FLAG_SSO;
+		_byteOffset = 0;
+		_byteLength = 0;
+		_sso[0] = Char(0);
+		return;
+	}
+
+	_flags = 0;
+	_ptr = block;
+	_byteOffset = 0;
+	_byteLength = length_ref();
 }
 
 const Char* String::data() const noexcept
 {
+	if (IsSSO())
+		return _sso;
+
 	if (!_ptr) {
 		static const Char emptyChar = Char(0);
 		return &emptyChar;
@@ -2513,31 +2389,28 @@ const Char* String::data() const noexcept
 
 void String::add_ref() noexcept
 {
-	if (_ptr) refcount_ref()++;
+	if (!IsSSO() && _ptr) refcount_ref()++;
 }
 
 void String::release() noexcept
 {
-	if (_ptr)
+	if (!IsSSO() && _ptr)
 	{
 		refcount_type& rc = refcount_ref();
-		rc--;
-
-		if (rc == 0)
+		if (--rc == 0)
 			delete[] _ptr;
 	}
 
 	_ptr = nullptr;
 	_byteOffset = 0;
 	_byteLength = 0;
+	_flags = FLAG_SSO;
 
 	// invalidate caches
 	_asciiKnown = false;
 	_isAscii = false;
 	_gcLength = UInt32::MaxValue();
 
-	if (_nfc) delete _nfc;
-	if (_nfkc) delete _nfkc;
 	_nfc = nullptr;
 	_nfkc = nullptr;
 	_hasNFC = false;
@@ -2563,7 +2436,14 @@ unsigned char* String::allocate_block(String::size_type lenChars) noexcept
 
 void String::init_from_cstr(const char* cstr) noexcept
 {
-	if (!cstr || cstr[0] == '\0') { _ptr = nullptr; return; }
+	if (!cstr || cstr[0] == '\0')
+	{
+		_flags = FLAG_SSO;
+		_byteOffset = 0;
+		_byteLength = 0;
+		_sso[0] = Char(0);
+		return;
+	}
 	size_type len = 0; while (cstr[len] != '\0') ++len;
 	init_from_bytes(reinterpret_cast<const unsigned char*>(cstr), len);
 }
@@ -2571,8 +2451,31 @@ void String::init_from_cstr(const char* cstr) noexcept
 void String::init_from_bytes(const unsigned char* bytes, size_type len) noexcept
 {
 	static_assert(sizeof(Char) == sizeof(Byte));
-	if (!bytes || len == 0) { _ptr = nullptr; return; }
 
+	if (!bytes || len == 0)
+	{
+		_flags = FLAG_SSO;
+		_byteLength = 0;
+		_byteOffset = 0;
+		_sso[0] = Char(0);
+		return;
+	}
+
+	if (len <= SSO_CAPACITY)
+	{
+		_flags = FLAG_SSO;
+		_byteOffset = 0;
+		_byteLength = len;
+
+		for (uint32_t i = 0; i < len; ++i)
+			_sso[i] = Char(bytes[i]);
+
+		_sso[len] = Char(0);
+		return;
+	}
+
+	// fallback heap
+	_flags = 0;
 	_ptr = allocate_block(len);
 	_byteOffset = 0;
 	_byteLength = len;
@@ -2597,7 +2500,7 @@ uint32_t String::FindByteOffsetOfCodePoint(uint32_t cpIndex) const
 		if (current == cpIndex)
 			return pos;
 
-		auto r = UTF8::decode_utf8(reinterpret_cast<const unsigned char*>(p + pos), len - pos);
+		auto r = UTF8::decode_utf8((p + pos), len - pos);
 		if (!r.IsValid || r.Length == 0)
 			return len;
 
@@ -2626,7 +2529,7 @@ CodePoint String::GetCodePointAt(uint32_t cpIndex) const noexcept
 {
 	uint32_t offset = FindByteOffsetOfCodePoint(cpIndex);
 	if (offset >= _byteLength) return CodePoint(0);
-	auto r = UTF8::decode_utf8(reinterpret_cast<const unsigned char*>(data() + offset), _byteLength - offset);
+	auto r = UTF8::decode_utf8(data() + offset, _byteLength - offset);
 	if (!r.IsValid) return CodePoint(0);
 	return r.cp;
 }
@@ -2707,22 +2610,7 @@ List<CodePoint> String::DecodeToCodePoints(const String& s)
 	// Reserva capacidade aproximada: pior caso 1 byte = 1 CP
 	result.EnsureCapacity(len);
 
-	uint32_t pos = 0;
-
-	while (pos < len)
-	{
-		auto r = UTF8::decode_utf8(reinterpret_cast<const unsigned char*>(p + pos), len - pos);
-		if (!r.IsValid || r.Length == 0)
-		{
-			// substitui byte inválido por Replacement Character
-			result.Add((CodePoint)0xFFFD);
-			pos++;
-			continue;
-		}
-
-		result.Add((CodePoint)r.cp);
-		pos += (uint32_t)r.Length;
-	}
+	UTF8::Decode(s, s.GetByteCount(), result);
 
 	return result;
 }
@@ -2924,50 +2812,16 @@ Boolean String::EndsWithInternal(const String& needle, bool ignoreCase, const ch
 		return ASCII::EndsWithIgnoreCase(hayBytes + start, N, neeBytes, N);
 
 	// ====================================
-// SLOW-PATH: Unicode Casefold + Normalize (Full Unicode Standard)
-// ====================================
-	List<CodePoint> cpHay = DecodeToCodePoints(*this);
-	List<CodePoint> cpNee = DecodeToCodePoints(needle);
+	// SLOW-PATH: Unicode Casefold + Normalize (Full Unicode Standard)
+	// ====================================
+	List<CodePoint> hayFold, neeFold;
+	UTF8::FoldAndNormalize(*this, GetByteCount(), loc, hayFold);
+	UTF8::FoldAndNormalize(needle, needle.GetByteCount(), loc, neeFold);
 
-	List<CodePoint> foldHay, foldNee;
-
-	// 1) Unicode casefold (full folding)
-	CaseFoldUnicode(cpHay, loc, locLen, foldHay);
-	CaseFoldUnicode(cpNee, loc, locLen, foldNee);
-
-	// 2) Turkish: Unicode-standard rule → remove 0307 after folding
-	if (isTurkic)
-	{
-		for (int i = (int)foldHay.Count() - 1; i >= 0; --i)
-			if (foldHay[i] == 0x0307u) foldHay.RemoveAt(i);
-
-		for (int i = (int)foldNee.Count() - 1; i >= 0; --i)
-			if (foldNee[i] == 0x0307u) foldNee.RemoveAt(i);
-	}
-
-	// 3) Normalize to NFC (canonical equivalence)
-	String normHay = FromCodePoints(foldHay).Normalize(UnicodeNormalization::NormalizationForm::NFC);
-	String normNee = FromCodePoints(foldNee).Normalize(UnicodeNormalization::NormalizationForm::NFC);
-
-	foldHay = DecodeToCodePoints(normHay);
-	foldNee = DecodeToCodePoints(normNee);
-
-	// 4) Compare suffix
-	uint32_t Hc = foldHay.Count();
-	uint32_t Nc = foldNee.Count();
-
-	if (Hc < Nc)
-		return false;
-
-	uint32_t start2 = Hc - Nc;
-
-	for (uint32_t i = 0; i < Nc; ++i)
-	{
-		if (foldHay[start2 + i] != foldNee[i])
-			return false;
-	}
-
-	return true;
+	if (ignoreCase)
+		return UTF8::EndsWithIgnoreCase(hayFold, neeFold, loc);
+	else
+		return UTF8::EndsWith(hayFold, neeFold);
 }
 
 Boolean String::StartsWithInternal(const String& needle, bool ignoreCase, const char* locale) const noexcept
@@ -3004,45 +2858,16 @@ Boolean String::StartsWithInternal(const String& needle, bool ignoreCase, const 
 		return ASCII::StartsWithIgnoreCase(hayBytes, N, neeBytes, N);
 
 	// ====================================
-// SLOW-PATH: Unicode Casefold + Normalize (Full Unicode Standard)
-// ====================================
-	List<CodePoint> cpHay = DecodeToCodePoints(*this);
-	List<CodePoint> cpNee = DecodeToCodePoints(needle);
+	// SLOW-PATH: Unicode Casefold + Normalize (Full Unicode Standard)
+	// ====================================
+	List<CodePoint> hayFold, neeFold;
+	UTF8::FoldAndNormalize(*this, GetByteCount(), loc, hayFold);
+	UTF8::FoldAndNormalize(needle, needle.GetByteCount(), loc, neeFold);
 
-	List<CodePoint> foldHay, foldNee;
-
-	// 1) Unicode full casefold
-	CaseFoldUnicode(cpHay, loc, locLen, foldHay);
-	CaseFoldUnicode(cpNee, loc, locLen, foldNee);
-
-	// 2) Turkish: Unicode-standard step → remove U+0307 after folding
-	if (isTurkic)
-	{
-		for (int i = (int)foldHay.Count() - 1; i >= 0; --i)
-			if (foldHay[i] == 0x0307u) foldHay.RemoveAt(i);
-
-		for (int i = (int)foldNee.Count() - 1; i >= 0; --i)
-			if (foldNee[i] == 0x0307u) foldNee.RemoveAt(i);
-	}
-
-	// 3) Normalize to NFC
-	String normHay = FromCodePoints(foldHay).Normalize(UnicodeNormalization::NormalizationForm::NFC);
-	String normNee = FromCodePoints(foldNee).Normalize(UnicodeNormalization::NormalizationForm::NFC);
-
-	foldHay = DecodeToCodePoints(normHay);
-	foldNee = DecodeToCodePoints(normNee);
-
-	// 4) Compare prefix
-	if (foldNee.Count() > foldHay.Count())
-		return false;
-
-	for (uint32_t i = 0; i < foldNee.Count(); ++i)
-	{
-		if (foldHay[i] != foldNee[i])
-			return false;
-	}
-
-	return true;
+	if (ignoreCase)
+		return UTF8::StartsWithIgnoreCase(hayFold, neeFold, loc);
+	else		   
+		return UTF8::StartsWith(hayFold, neeFold);
 }
 
 List<String> String::SplitImpl(
@@ -3162,17 +2987,20 @@ void String::RemoveCombiningDotAbove(String& s)
 
 String String::SubstringByBytes(uint32_t byteStart, uint32_t byteLen) const noexcept
 {
-	if (byteStart >= _byteLength)
+	if (byteStart >= _byteLength || byteLen == 0)
 		return String::Empty();
 
 	if (byteStart + byteLen > _byteLength)
 		byteLen = _byteLength - byteStart;
 
-	if (byteLen == 0)
-		return String::Empty();
+	if (IsSSO())
+	{
+		// COPY — nunca slice em SSO
+		return String(reinterpret_cast<const unsigned char*>(data() + byteStart), byteLen);
+	}
 
 	String sub(*this);
-	sub._byteOffset = _byteOffset + byteStart;
+	sub._byteOffset += byteStart;
 	sub._byteLength = byteLen;
 
 	sub._asciiKnown = false;

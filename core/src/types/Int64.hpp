@@ -9,6 +9,18 @@ class String;
 
 class Int64 final : public Object<Int64> 
 {
+    friend class Boolean;
+    friend class Byte;
+    friend class Char;
+    friend class CodePoint;
+    friend class Double;
+    friend class Int16;
+    friend class Int32;
+    friend class SByte;
+    friend class Single;
+    friend class UInt16;
+    friend class UInt32;
+    friend class UInt64;
 private:
 
     using value_type = int64_t;
@@ -19,7 +31,7 @@ public:
     constexpr Int64() : Value() {};
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    constexpr Int64(T value) noexcept requires(is_promotion_primitive<T>::value) : Value((value)) {}
+    constexpr Int64(T value) noexcept requires(is_promotion_primitive<T>::value) : Value(static_cast<value_type>(value)) {}
 
     /*
      * Constructor which receives another Wrapper
@@ -27,7 +39,7 @@ public:
      * by its operator T() function
      */
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr explicit Int64(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(wrapper) {}
+    constexpr explicit Int64(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(static_cast<value_type>(wrapper.Value)) {}
 
     constexpr Int64(Int64 const&) = default;
 
