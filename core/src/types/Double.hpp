@@ -530,3 +530,5 @@ public:
     UInt32 GetHashCode() const noexcept;
     String ToString() const noexcept;
 };
+
+typedef Double f64;

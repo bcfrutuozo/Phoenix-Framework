@@ -19,14 +19,9 @@ String::String(Char c) noexcept
 	_sso[0] = c;
 	_sso[1] = Char(0);
 
-	_asciiKnown = true;
-	_isAscii = ((unsigned char)c.Value < 0x80);
-	_gcLength = 1;
+	SetAscii((unsigned char)c.Value < 0x80);
 
-	_nfc = nullptr;
-	_nfkc = nullptr;
-	_hasNFC = false;
-	_hasNFKC = false;
+	_gcLength = 1;
 }
 
 String::String(const unsigned char* bytes, size_type len) noexcept
@@ -96,13 +91,9 @@ String::String(const String& other) noexcept
 	}
 
 	// reset caches
-	_asciiKnown = false;
-	_isAscii = false;
+	InvalidateCache();
 	_gcLength = UInt32::MaxValue();
-	_nfc = nullptr;
-	_nfkc = nullptr;
-	_hasNFC = false;
-	_hasNFKC = false;
+	ReleaseNormalizationCache();
 }
 
 String::String(String&& other) noexcept 
@@ -137,18 +128,22 @@ String::String(String&& other) noexcept
 		other._flags = FLAG_SSO;
 	}
 
-	_asciiKnown = false;
-	_isAscii = false;
-	_gcLength = UInt32::MaxValue();
-	_nfc = nullptr;
-	_nfkc = nullptr;
-	_hasNFC = false;
-	_hasNFKC = false;
+	// transfere caches
+	_flags |= (other._flags & (FLAG_ASCII_KNOWN | FLAG_IS_ASCII |
+		FLAG_HAS_NFC | FLAG_HAS_NFKC));
 
+	// transfere ponteiros
+	_nfc = other._nfc;
+	_nfkc = other._nfkc;
+
+	// limpa origem
 	other._nfc = nullptr;
 	other._nfkc = nullptr;
-	other._hasNFC = false;
-	other._hasNFKC = false;
+	other._flags = FLAG_SSO;
+
+	_gcLength = UInt32::MaxValue();
+	InvalidateCache();
+	other.InvalidateCache();
 }
 
 String& String::operator=(const String& other) noexcept
@@ -179,13 +174,8 @@ String& String::operator=(const String& other) noexcept
 	}
 
 	// reset caches
-	_asciiKnown = false;
-	_isAscii = false;
+	InvalidateCache();
 	_gcLength = UInt32::MaxValue();
-	_nfc = nullptr;
-	_nfkc = nullptr;
-	_hasNFC = false;
-	_hasNFKC = false;
 
 	return *this;
 }
@@ -221,20 +211,11 @@ String& String::operator=(String&& other) noexcept
 		other._flags = FLAG_SSO;
 	}
 
-	// reset caches
-	_asciiKnown = false;
-	_isAscii = false;
 	_gcLength = UInt32::MaxValue();
+	_flags |= (other._flags & (FLAG_ASCII_KNOWN | FLAG_IS_ASCII | FLAG_HAS_NFC | FLAG_HAS_NFKC));
 
-	_nfc = other._nfc;
-	_nfkc = other._nfkc;
-	_hasNFC = other._hasNFC;
-	_hasNFKC = other._hasNFKC;
-
-	other._nfc = nullptr;
-	other._nfkc = nullptr;
-	other._hasNFC = false;
-	other._hasNFKC = false;
+	other.ReleaseNormalizationCache();
+	other.InvalidateCache();
 
 	return *this;
 }
@@ -1109,23 +1090,23 @@ String String::Normalize(UnicodeNormalization::NormalizationForm form) const noe
 {
 	if (form == UnicodeNormalization::NormalizationForm::NFC)
 	{
-		if (_hasNFC)
+		if (HasNFC())
 			return *_nfc;
 
 		String tmp = GetNormalized(form);
 		_nfc = new String(tmp);
-		_hasNFC = true;
+		SetHasNFC();
 		return *_nfc;
 	}
 
 	if (form == UnicodeNormalization::NormalizationForm::NFKC)
 	{
-		if (_hasNFKC)
+		if (HasNFKC())
 			return *_nfkc;
 
 		String tmp = GetNormalized(form);
 		_nfkc = new String(tmp);
-		_hasNFKC = true;
+		SetHasNFKC();
 		return *_nfkc;
 	}
 
@@ -1805,13 +1786,9 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 			sub._byteOffset += start;
 			sub._byteLength = len;
 
-			sub._asciiKnown = false;
-			sub._isAscii = false;
+			sub.InvalidateAscii();
 			sub._gcLength = UInt32::MaxValue();
-			sub._hasNFC = false;
-			sub._hasNFKC = false;
-			sub._nfc = nullptr;
-			sub._nfkc = nullptr;
+			sub.ReleaseNormalizationCache();
 
 			return sub;
 		}
@@ -1853,13 +1830,9 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 	sub._byteOffset += byteStart;
 	sub._byteLength = len;
 
-	sub._asciiKnown = false;
-	sub._isAscii = false;
+	sub.InvalidateAscii();
 	sub._gcLength = UInt32::MaxValue();
-	sub._hasNFC = false;
-	sub._hasNFKC = false;
-	sub._nfc = nullptr;
-	sub._nfkc = nullptr;
+	sub.ReleaseNormalizationCache();
 
 	return sub;
 }
@@ -2331,14 +2304,9 @@ void String::release() noexcept
 	_flags = FLAG_SSO;
 
 	// invalidate caches
-	_asciiKnown = false;
-	_isAscii = false;
+	InvalidateAscii();
 	_gcLength = UInt32::MaxValue();
-
-	_nfc = nullptr;
-	_nfkc = nullptr;
-	_hasNFC = false;
-	_hasNFKC = false;
+	ReleaseNormalizationCache();
 }
 
 unsigned char* String::allocate_block(String::size_type lenChars) noexcept
@@ -2382,6 +2350,7 @@ void String::init_from_bytes(const unsigned char* bytes, size_type len) noexcept
 		_byteLength = 0;
 		_byteOffset = 0;
 		_sso[0] = Char(0);
+		SetAscii(true);
 		return;
 	}
 
@@ -2391,10 +2360,15 @@ void String::init_from_bytes(const unsigned char* bytes, size_type len) noexcept
 		_byteOffset = 0;
 		_byteLength = len;
 
+		bool ascii = true;
 		for (uint32_t i = 0; i < len; ++i)
+		{
 			_sso[i] = Char(bytes[i]);
+			if (bytes[i] & 0x80) ascii = false;
+		}
 
 		_sso[len] = Char(0);
+		SetAscii(ascii);
 		return;
 	}
 
@@ -2404,9 +2378,15 @@ void String::init_from_bytes(const unsigned char* bytes, size_type len) noexcept
 	_byteOffset = 0;
 	_byteLength = len;
 
+	bool ascii = true;
 	Char* dst = bytes_ptr();
 	for (size_type i = 0; i < len; ++i)
+	{
 		dst[i] = Char(bytes[i]);
+		if (bytes[i] & 0x80) ascii = false;
+	}
+
+	SetAscii(ascii);
 }
 
 uint32_t String::FindByteOffsetOfCodePoint(uint32_t cpIndex) const
@@ -2481,7 +2461,7 @@ void String::CopyBytes(Char* dst, uint32_t& offset, const char* cstr) noexcept {
 bool String::IsASCII(const String& s) noexcept
 {
 	// if known, return quickly
-	if (s._asciiKnown) return s._isAscii;
+	if (s.IsAsciiKnown()) return s.IsAsciiCached();
 
 	const Char* p = s.data();
 	uint32_t len = s._byteLength;
@@ -2491,15 +2471,13 @@ bool String::IsASCII(const String& s) noexcept
 		if ((unsigned char)p[i].Value >= 0x80)
 		{
 			// cache negative
-			const_cast<String&>(s)._asciiKnown = true;
-			const_cast<String&>(s)._isAscii = false;
+			s.SetAscii(false);
 			return false;
 		}
 	}
 
 	// all ascii
-	const_cast<String&>(s)._asciiKnown = true;
-	const_cast<String&>(s)._isAscii = true;
+	s.SetAscii(true);
 	return true;
 }
 
@@ -2927,13 +2905,9 @@ String String::SubstringByBytes(uint32_t byteStart, uint32_t byteLen) const noex
 	sub._byteOffset += byteStart;
 	sub._byteLength = byteLen;
 
-	sub._asciiKnown = false;
-	sub._isAscii = false;
+	sub.InvalidateCache();
 	sub._gcLength = UInt32::MaxValue();
-	sub._hasNFC = false;
-	sub._hasNFKC = false;
-	sub._nfc = nullptr;
-	sub._nfkc = nullptr;
+	sub.ReleaseNormalizationCache();
 
 	return sub;
 }

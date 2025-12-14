@@ -583,3 +583,5 @@ public:
     UInt32 GetHashCode() const noexcept;
     String ToString() const noexcept;
 };
+
+typedef CodePoint c32;

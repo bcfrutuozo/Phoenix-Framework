@@ -12,7 +12,7 @@ class Char final : public Object<Char>
 {
 public:
 
-	using value_type = char;
+	using value_type = char8_t;
 	value_type Value;
 
 	constexpr Char() : Value() {};
@@ -512,3 +512,4 @@ public:
 };
 
 static_assert(sizeof(Char) == 1);
+typedef Char c8;

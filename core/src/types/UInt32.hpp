@@ -505,3 +505,5 @@ public:
     UInt32 GetHashCode() const noexcept;
     String ToString() const noexcept;
 };
+
+typedef UInt32 u32;

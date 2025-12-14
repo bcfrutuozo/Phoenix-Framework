@@ -556,6 +556,10 @@ private:
 
 	static constexpr uint32_t SSO_CAPACITY = 22;
 	static constexpr uint32_t FLAG_SSO = 1 << 0;
+	static constexpr uint32_t FLAG_ASCII_KNOWN = 1 << 1;
+	static constexpr uint32_t FLAG_IS_ASCII = 1 << 2;
+	static constexpr uint32_t FLAG_HAS_NFC = 1 << 3;
+	static constexpr uint32_t FLAG_HAS_NFKC = 1 << 4;
 
 	union
 	{
@@ -566,15 +570,8 @@ private:
 	
 	uint32_t _byteOffset = 0;        // offset em bytes dentro do bloco
 	uint32_t _byteLength = 0;        // comprimento em bytes desta string
-	uint32_t _flags = 0;
+	mutable uint32_t _flags = 0;
 	mutable uint32_t _gcLength = UInt32::MaxValue(); // Grapheme cluster lazy cache
-
-	mutable bool _asciiKnown = false;
-	mutable bool _isAscii = false;
-
-	// Normalization cache (minimal)
-	mutable bool _hasNFC = false;
-	mutable bool _hasNFKC = false;
 	mutable String* _nfc = nullptr;
 	mutable String* _nfkc = nullptr;
 
@@ -642,6 +639,85 @@ private:
 
 		return total;
 	}
+
+	inline void ReleaseNormalizationCache() const noexcept
+	{
+		if (_nfc)
+		{
+			delete _nfc;
+			_nfc = nullptr;
+		}
+
+		if (_nfkc)
+		{
+			delete _nfkc;
+			_nfkc = nullptr;
+		}
+
+		InvalidateNormalization();
+	}
+
+	inline constexpr void SetSSO() const noexcept {
+		_flags |= FLAG_SSO;
+	}
+
+	inline constexpr void ClearSSO() const noexcept {
+		_flags &= ~FLAG_SSO;
+	}
+
+	inline constexpr void ResetFlagsKeepSSO() const noexcept {
+		_flags &= FLAG_SSO;
+	}
+
+	inline constexpr void ResetAllFlags() const noexcept {
+		_flags = 0;
+	}
+
+	inline constexpr bool IsAsciiKnown() const noexcept {
+		return (_flags & FLAG_ASCII_KNOWN) != 0;
+	}
+
+	inline constexpr bool IsAsciiCached() const noexcept {
+		return (_flags & FLAG_IS_ASCII) != 0;
+	}
+
+	inline constexpr void SetAscii(bool isAscii) const noexcept {
+		_flags |= FLAG_ASCII_KNOWN;
+		if (isAscii)
+			_flags |= FLAG_IS_ASCII;
+		else
+			_flags &= ~FLAG_IS_ASCII;
+	}
+
+	inline constexpr void InvalidateAscii() const noexcept {
+		_flags &= ~(FLAG_ASCII_KNOWN | FLAG_IS_ASCII);
+	}
+
+	inline constexpr bool HasNFC() const noexcept {
+		return (_flags & FLAG_HAS_NFC) != 0;
+	}
+
+	inline constexpr bool HasNFKC() const noexcept {
+		return (_flags & FLAG_HAS_NFKC) != 0;
+	}
+
+	inline constexpr void SetHasNFC() const noexcept {
+		_flags |= FLAG_HAS_NFC;
+	}
+
+	inline constexpr void SetHasNFKC() const noexcept {
+		_flags |= FLAG_HAS_NFKC;
+	}
+
+	inline constexpr void InvalidateNormalization() const noexcept {
+		_flags &= ~(FLAG_HAS_NFC | FLAG_HAS_NFKC);
+	}
+
+	inline constexpr void InvalidateCache() const noexcept
+	{
+		_flags &= ~(FLAG_ASCII_KNOWN | FLAG_IS_ASCII |
+			FLAG_HAS_NFC | FLAG_HAS_NFKC);
+	}
 };
 
 inline StringSplitOptions operator|(StringSplitOptions a, StringSplitOptions b)
@@ -653,3 +729,5 @@ inline Boolean HasFlag(StringSplitOptions opt, StringSplitOptions flag)
 {
 	return (static_cast<uint8_t>(opt) & static_cast<uint8_t>(flag)) != 0;
 }
+
+typedef String string;
