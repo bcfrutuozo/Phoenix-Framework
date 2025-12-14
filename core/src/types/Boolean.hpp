@@ -7,27 +7,11 @@ class UInt32;
 class String;
 
 class Boolean final : public Object<Boolean>
-{
-	friend class Byte;
-	friend class Char;
-	friend class CodePoint;
-	friend class Double;
-	friend class Int16;
-	friend class Int32;
-	friend class Int64;
-	friend class SByte;
-	friend class Single;
-	friend class UInt16;
-	friend class UInt32;
-	friend class UInt64;
-	friend class String;
-
-private:
+{	
+public:
 
 	using value_type = bool;
 	value_type Value;
-
-public:
 
 	constexpr Boolean() noexcept : Value(false) {}
 	constexpr explicit Boolean(bool v) noexcept : Value(v) {}
@@ -39,9 +23,11 @@ public:
 	}
 
 	// Construct from promoted wrapper types
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	constexpr explicit Boolean(T const& w) noexcept requires(is_promotion_wrapper<T>::value)
-		: Value(static_cast<value_type>(w)) {
+	template<typename T,
+		enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
+	constexpr Boolean(T const& wrapper) noexcept
+		: Value(static_cast<value_type>(
+			static_cast<typename T::value_type>(wrapper))) {
 	}
 
 	constexpr Boolean(Boolean const&) noexcept = default;
@@ -51,22 +37,17 @@ public:
 
 	// Assignment from promoted primitive
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	constexpr Boolean& operator=(T v) noexcept requires(is_promotion_primitive<T>::value) {
-		Value = static_cast<value_type>(v);
+	constexpr Boolean& operator=(T value) noexcept requires(is_promotion_primitive<T>::value) {
+		Value = static_cast<value_type>(value);
 		return *this;
 	}
 
 	// Assignment from promoted wrapper
 	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	constexpr Boolean& operator=(T const& w) noexcept requires(is_promotion_wrapper<T>::value) {
-		Value = static_cast<value_type>(w);
+	constexpr Boolean& operator=(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) {
+		Value = static_cast<value_type>(wrapper.Value);
 		return *this;
 	}
-
-	// --- explicit access / conversions -----------------------------------
-
-	// explicit accessor
-	constexpr bool ToBool() const noexcept { return Value; }
 
 	// conversion to native bool (implicit, to use in if(), assert(), etc.)
 	constexpr operator bool() const noexcept { return Value; }
@@ -112,10 +93,10 @@ public:
 	// --- comparisons -----------------------------------------------------
 
 	// Compare with Boolean -> return native bool for idiomatic comparisons
-	friend constexpr bool operator==(Boolean const& a, Boolean const& b) noexcept {
+	friend constexpr Boolean operator==(Boolean const& a, Boolean const& b) noexcept {
 		return a.Value == b.Value;
 	}
-	friend constexpr bool operator!=(Boolean const& a, Boolean const& b) noexcept {
+	friend constexpr Boolean operator!=(Boolean const& a, Boolean const& b) noexcept {
 		return a.Value != b.Value;
 	}
 
@@ -143,12 +124,12 @@ public:
 	// Compare with promoted wrapper types (assumes those wrappers can convert to bool)
 	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
 	friend inline constexpr Boolean operator==(Boolean const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) {
-		return Boolean(lhs.Value == static_cast<value_type>(rhs));
+		return Boolean(lhs.Value == static_cast<value_type>(rhs.Value));
 	}
 
 	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
 	friend inline constexpr Boolean operator==(T const& lhs, Boolean const& rhs) noexcept requires(is_promotion_wrapper<T>::value) {
-		return Boolean(static_cast<value_type>(lhs) == rhs.Value);
+		return Boolean(static_cast<value_type>(lhs.Value) == rhs.Value);
 	}
 
 	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
@@ -158,7 +139,7 @@ public:
 
 	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
 	friend inline constexpr Boolean operator!=(T const& lhs, Boolean const& rhs) noexcept requires(is_promotion_wrapper<T>::value) {
-		return Boolean(static_cast<value_type>(lhs) != rhs.Value);
+		return Boolean(static_cast<value_type>(lhs.Value) != rhs.Value);
 	}
 
 	Boolean Equals(const Boolean& other) const noexcept;

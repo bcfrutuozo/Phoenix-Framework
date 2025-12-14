@@ -7,25 +7,9 @@
 class UInt32;
 class String;
 
-class Single final : public Object<Single> {
-
-    friend class Boolean;
-    friend class Byte;
-    friend class Char;
-    friend class CodePoint;
-    friend class Double;
-    friend class Int16;
-    friend class Int32;
-    friend class Int64;
-    friend class SByte;
-    friend class UInt16;
-    friend class UInt32;
-    friend class UInt64;
-
+class Single final : public Object<Single> 
+{
 private:
-
-    using value_type = float;
-    value_type Value;
 
     static constexpr float NaN_F32() noexcept
     {
@@ -47,6 +31,9 @@ private:
 
 public:
 
+    using value_type = float;
+    value_type Value;
+
     constexpr Single() : Value() {};
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
@@ -57,15 +44,16 @@ public:
      * It's implicit because if you pass another wrapper without setting it, it'll cast to primitive
      * by its operator T() function
      */
-    template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr explicit Single(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) : Value(static_cast<value_type>(wrapper.Value)) {}
+    template<typename T,
+        enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
+    constexpr Single(T const& wrapper) noexcept
+        : Value(static_cast<value_type>(
+            static_cast<typename T::value_type>(wrapper))) {
+    }
 
     constexpr Single(Single const&) = default;
-
     constexpr Single(Single&&) = default;
-
     constexpr Single& operator=(Single const&) = default;
-
     constexpr Single& operator=(Single&&) = default;
 
     /*
@@ -75,22 +63,16 @@ public:
     constexpr Single& operator=(T const& value) noexcept requires(is_promotion_primitive<T>::value) { Value = value; return *this; };
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr Single& operator=(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) { Value = wrapper; return *this; };
+    constexpr Single& operator=(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) { Value = static_cast<value_type>(wrapper.Value); return *this; };
 
     /*
-     * Implicit use of between Primitive and Wrapper
+     * Implicit operator to T() primitives
      */
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
     constexpr operator T() noexcept requires(is_promotion_primitive<T>::value) { return static_cast<T>(Value); };
 
-    template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr operator T() noexcept requires(is_promotion_wrapper<T>::value) { return static_cast<T>(Value); };
-
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
     constexpr operator T() const noexcept requires(is_promotion_primitive<T>::value) { return static_cast<T>(Value); };
-
-    template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    constexpr operator T() const noexcept requires(is_promotion_wrapper<T>::value) { return static_cast<T>(Value); };
 
     /*
      * Operator+ (Unary Plus -> Does not change value)
@@ -156,9 +138,8 @@ public:
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
     constexpr Single& operator+=(T const& other) noexcept requires(is_promotion_wrapper<T>::value) {
         Value += other;
-        return *this;
+        return *this.Value;
     }
-
 
     /*
      * Operator-= (Subtraction assignment)
@@ -171,7 +152,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
     constexpr Single& operator-=(T const& other) noexcept requires(is_promotion_wrapper<T>::value) {
-        Value -= other;
+        Value -= other.Value;
         return *this;
     }
 
@@ -186,7 +167,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
     constexpr Single& operator*=(T const& other) noexcept requires(is_promotion_wrapper<T>::value) {
-        Value *= other;
+        Value *= other.Value;
         return *this;
     }
 
@@ -201,7 +182,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
     constexpr Single& operator/=(T const& other) noexcept requires(is_promotion_wrapper<T>::value) {
-        Value /= other;
+        Value /= other.Value;
         return *this;
     }
 
@@ -216,7 +197,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
     constexpr Single& operator %=(T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        Value %= other;
+        Value %= other.Value;
         return *this;
     }
 
@@ -231,7 +212,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
     constexpr Single& operator <<=(T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        Value <<= other;
+        Value <<= other.Value;
         return *this;
     }
 
@@ -246,7 +227,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
     constexpr Single& operator >>=(T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        Value >>= other;
+        Value >>= other.Value;
         return *this;
     }
 
@@ -261,7 +242,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
     constexpr Single& operator &=(T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        Value &= other;
+        Value &= other.Value;
         return *this;
     }
 
@@ -276,7 +257,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
     constexpr Single& operator |=(T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        Value |= other;
+        Value |= other.Value;
         return *this;
     }
 
@@ -291,7 +272,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
     constexpr Single& operator ^=(T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        Value ^= other;
+        Value ^= other.Value;
         return *this;
     }
 
@@ -299,68 +280,61 @@ public:
      * Operator+ (Addition)
      */
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    friend inline constexpr Single operator+(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value + rhs; }
+    friend inline constexpr auto operator+(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value + rhs; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Single operator+(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value + rhs; }
+    friend inline constexpr auto operator+(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { auto res = lhs.Value + rhs.Value; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    friend inline constexpr Single operator+(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs + rhs.Value; }
+    friend inline constexpr auto operator+(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs + rhs.Value; return Wrapper(res); }
 
     /*
      * Operator- (Subtraction)
      */
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    friend inline constexpr Single operator-(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value - rhs; }
+    friend inline constexpr auto operator-(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value - rhs; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Single operator-(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value - rhs; }
+    friend inline constexpr auto operator-(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { auto res = lhs.Value - rhs.Value; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    friend inline constexpr Single operator-(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs - rhs.Value; }
+    friend inline constexpr auto operator-(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs - rhs.Value; return Wrapper(res); }
 
     /*
     * Operator* (Multiplication)
     */
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    friend inline constexpr Single operator*(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value * rhs; }
+    friend inline constexpr auto operator*(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value * rhs; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Single operator*(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value * rhs; }
+    friend inline constexpr auto operator*(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { auto res = lhs.Value * rhs.Value; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    friend inline constexpr Single operator*(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs * rhs.Value; }
+    friend inline constexpr auto operator*(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs * rhs.Value; return Wrapper(res); }
 
     /*
     * Operator/ (Division)
     */
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    friend inline constexpr Single operator/(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value / rhs; }
+    friend inline constexpr auto operator/(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value / rhs; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Single operator/(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value / rhs; }
+    friend inline constexpr auto operator/(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { auto res = lhs.Value / rhs.Value; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-    friend inline constexpr Single operator/(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs / rhs.Value; }
+    friend inline constexpr auto operator/(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs / rhs.Value; return Wrapper(res); }
 
     /*
      * Operator% (Modulo)
      */
     template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-    friend inline constexpr Single operator%(Single const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
-        return lhs.Value % other;
-    }
+    friend inline constexpr auto operator%(Single const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) { auto res = lhs.Value % other; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
-    friend inline constexpr Single operator%(Single const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        return lhs.Value % other;
-    }
+    friend inline constexpr auto operator%(Single const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) { auto res = lhs.Value % other.Value; return Wrapper(res); }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-    friend inline constexpr Single operator%(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value)
-    {
-        return lhs % rhs.Value;
-    }
+    friend inline constexpr auto operator%(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) { auto res = lhs % rhs.Value; return Wrapper(res); }
 
     /*
      * Operator& (Logical AND)
@@ -372,7 +346,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
     friend inline constexpr Single operator&(Single const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        return lhs.Value & other;
+        return lhs.Value & other.Value;
     }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
@@ -391,7 +365,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
     friend inline constexpr Single operator|(Single const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        return lhs.Value | other;
+        return lhs.Value | other.Value;
     }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
@@ -410,7 +384,7 @@ public:
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
     friend inline constexpr Single operator^(Single const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        return lhs.Value ^ other;
+        return lhs.Value ^ other.Value;
     }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
@@ -423,38 +397,44 @@ public:
      * Operator<< (Shift-Left)
      */
     template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-    friend inline constexpr Single operator<<(Single const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
-        return lhs.Value << other;
+    friend inline constexpr auto operator<<(Single const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
+        using R = decltype(lhs.Value << other);
+        return Wrapper(R(lhs.Value << other));
     }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
-    friend inline constexpr Single operator<<(Single const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        return lhs.Value << other;
+    friend inline constexpr auto operator<<(Single const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
+        using R = decltype(lhs.Value << other.Value);
+        return Wrapper(R(lhs.Value << other.Value));
     }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-    friend inline constexpr Single operator<<(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value)
+    friend inline constexpr auto operator<<(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value)
     {
-        return lhs << rhs.Value;
+        using R = decltype(lhs.Value >> rhs);
+        return Wrapper(R(lhs.Value >> rhs));
     }
 
     /*
      * Operator>> (Shift-Right)
      */
     template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-    friend inline constexpr Single operator>>(Single const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
-        return lhs.Value >> other;
+    friend inline constexpr auto operator>>(Single const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
+        auto res = lhs.Value >> other;
+        return Wrapper(res);
     }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
-    friend inline constexpr Single operator>>(Single const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-        return lhs.Value >> other;
+    friend inline constexpr auto operator>>(Single const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
+        using R = decltype(lhs.Value >> other.Value);
+        return Wrapper(R(lhs.Value >> other.Value));
     }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-    friend inline constexpr Single operator>>(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value)
+    friend inline constexpr auto operator>>(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value)
     {
-        return lhs >> rhs.Value;
+        using R = decltype(lhs >> rhs.Value);
+        return Wrapper(R(lhs >> rhs.Value));
     }
 
     /*
@@ -464,7 +444,7 @@ public:
     friend inline constexpr Boolean operator==(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value == rhs; }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Boolean operator==(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value == rhs; }
+    friend inline constexpr Boolean operator==(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value == rhs.Value; }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
     friend inline constexpr Boolean operator==(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs == rhs.Value; }
@@ -476,7 +456,7 @@ public:
     friend inline constexpr Boolean operator!=(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return !(lhs.Value == rhs); }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Boolean operator!=(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return !(lhs.Value == rhs); }
+    friend inline constexpr Boolean operator!=(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return !(lhs.Value == rhs.Value); }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
     friend inline constexpr Boolean operator!=(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return !(lhs == rhs.Value); }
@@ -488,7 +468,7 @@ public:
     friend inline constexpr Boolean operator<(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value < rhs; }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Boolean operator<(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value < rhs; }
+    friend inline constexpr Boolean operator<(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value < rhs.Value; }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
     friend inline constexpr Boolean operator<(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs < rhs.Value; }
@@ -500,7 +480,7 @@ public:
     friend inline constexpr Boolean operator<=(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value <= rhs; }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Boolean operator<=(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value <= rhs; }
+    friend inline constexpr Boolean operator<=(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value <= rhs.Value; }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
     friend inline constexpr Boolean operator<=(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs <= rhs.Value; }
@@ -512,7 +492,7 @@ public:
     friend inline constexpr Boolean operator>(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value > rhs; }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Boolean operator>(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value > rhs; }
+    friend inline constexpr Boolean operator>(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value > rhs.Value; }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
     friend inline constexpr Boolean operator>(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs > rhs.Value; }
@@ -524,7 +504,7 @@ public:
     friend inline constexpr Boolean operator>=(Single const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value >= rhs; }
 
     template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-    friend inline constexpr Boolean operator>=(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value >= rhs; }
+    friend inline constexpr Boolean operator>=(Single const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value >= rhs.Value; }
 
     template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
     friend inline constexpr Boolean operator>=(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs.Value; }

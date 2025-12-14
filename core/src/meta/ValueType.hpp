@@ -175,3 +175,46 @@ template<> struct is_single_char<Byte> : true_type {};
 
 template<typename T>
 inline constexpr bool is_single_char_v = is_single_char<T>::value;
+
+// --------------------------------------------------
+// primitive_to_wrapper
+// --------------------------------------------------
+
+template<typename T>
+struct type_to_wrapper;
+
+// Inteiros
+template<> struct type_to_wrapper<int8_t> { using type = SByte; };
+template<> struct type_to_wrapper<uint8_t> { using type = Byte; };
+template<> struct type_to_wrapper<int16_t> { using type = Int16; };
+template<> struct type_to_wrapper<uint16_t> { using type = UInt16; };
+template<> struct type_to_wrapper<int32_t> { using type = Int32; };
+template<> struct type_to_wrapper<uint32_t> { using type = UInt32; };
+template<> struct type_to_wrapper<int64_t> { using type = Int64; };
+template<> struct type_to_wrapper<uint64_t> { using type = UInt64; };
+                  
+// Floating       
+template<> struct type_to_wrapper<float> { using type = Single; };
+template<> struct type_to_wrapper<double> { using type = Double; };
+                  
+// Boolean        
+template<> struct type_to_wrapper<bool> { using type = Boolean; };
+                  
+// Char           
+template<> struct type_to_wrapper<char> { using type = Char; };
+                  
+// CodePoint      
+template<> struct type_to_wrapper<char32_t> { using type = CodePoint; };
+
+// --------------------------------------------------
+// Alias
+// --------------------------------------------------
+template<typename T>
+using type_to_wrapper_t = typename type_to_wrapper<T>::type;
+
+template<typename T>
+constexpr auto Wrapper(T value) noexcept
+{
+    using TP = type_to_wrapper_t<T>;
+    return TP(value);
+}

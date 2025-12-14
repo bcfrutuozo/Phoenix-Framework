@@ -52,7 +52,6 @@ struct is_same<T, T> : true_type {};
 template<typename T, typename U>
 inline constexpr bool is_same_v = is_same<T, U>::value;
 
-
 typedef char yes_type;
 struct no_type { char dummy[2]; };
 

@@ -697,67 +697,28 @@ Int64 String::IndexOf(Char c, StringComparison comp) const noexcept
 Int64 String::IndexOfAny(const List<Char>& chars, UInt64 startIndex, UInt64 count) const noexcept
 {
 	UInt64 len = GetLength();
-	if (startIndex >= len)
+	if (startIndex >= len || chars.IsEmpty())
 		return -1;
 
-	// Ajuste de faixa
 	if (count > len - startIndex)
 		count = len - startIndex;
 
-	// Decode UTF-8 da string inteira → CodePoints
-	List<CodePoint> cps = DecodeToCodePoints(*this);
-	UInt64 cpTotal = cps.Count();
-	if (cpTotal == 0)
-		return -1;
-
-	// Mapear chars ASCII → CodePoints
-	// Chars >=128 serão tratados como "match se o primeiro byte do CP for igual"
-	List<CodePoint> asciiTargets;
-	asciiTargets.EnsureCapacity(chars.Count());
-
-	List<unsigned char> rawTargets; // bytes literais para comparar CP.UTF8[0]
-	rawTargets.EnsureCapacity(chars.Count());
-
-	for (UInt64 i = 0; i < chars.Count(); ++i)
-	{
-		unsigned char b = (unsigned char)chars[i].Value;
-
-		if (b < 128)
-		{
-			// ASCII → vira CodePoint diretamente
-			asciiTargets.Add(CodePoint((uint32_t)b));
-		}
-		else
-		{
-			// Não-ASCII: comparar literal pelo primeiro byte UTF-8
-			rawTargets.Add(b);
-		}
-	}
-
-	// Laço principal
+	const Char* bytes = data();
 	UInt64 end = startIndex + count;
 
-	for (UInt64 i = startIndex; i < end; ++i)
+	for (UInt64 g = startIndex; g < end; ++g)
 	{
-		CodePoint cp = cps[i];
+		// Grapheme index → byte offset do primeiro byte UTF-8
+		uint32_t byteOffset = FindByteOffsetOfCodePoint((uint32_t)g);
+		if (byteOffset >= _byteLength)
+			continue;
 
-		// 1) Verificação ASCII → CodePoint direto
-		for (UInt64 k = 0; k < asciiTargets.Count(); ++k)
+		unsigned char lead = (unsigned char)bytes[byteOffset].Value;
+
+		for (UInt64 k = 0; k < chars.Count(); ++k)
 		{
-			if ((uint32_t)cp == (uint32_t)asciiTargets[k])
-				return i;
-		}
-
-		// 2) Verificação de bytes literais (chars >=128)
-		if (!rawTargets.IsEmpty())
-		{
-			UTF8::UTF8EncodeResult enc = UTF8::encode_utf8(cp);
-
-			for (UInt64 k = 0; k < rawTargets.Count(); ++k)
-			{
-				if (enc.Length > 0 && enc.Bytes[0] == rawTargets[k])
-					return i;
-			}
+			if ((unsigned char)chars[k].Value == lead)
+				return (Int64)g;
 		}
 	}
 
@@ -1087,15 +1048,13 @@ Int64 String::LastIndexOf(Char c,
 Int64 String::LastIndexOfAny(const List<Char>& chars, UInt64 startIndex, UInt64 count) const noexcept
 {
 	UInt64 len = GetLength();
-	if (len == 0)
+	if (len == 0 || chars.IsEmpty())
 		return -1;
 
-	// Clamp startIndex
 	Int64 sIndex = (Int64)startIndex;
 	if (sIndex >= (Int64)len)
 		sIndex = (Int64)len - 1;
 
-	// Clamp count
 	if (count == 0)
 		return -1;
 
@@ -1103,57 +1062,22 @@ Int64 String::LastIndexOfAny(const List<Char>& chars, UInt64 startIndex, UInt64 
 	if (c > sIndex + 1)
 		c = sIndex + 1;
 
-	// Compute safe window [first .. sIndex]
 	Int64 first = sIndex - c + 1;
 
-	// Decode UTF-8 → CodePoints (like IndexOfAny)
-	List<CodePoint> cps = DecodeToCodePoints(*this);
-	if (cps.Count() == 0)
-		return -1;
+	const Char* bytes = data();
 
-	// Prepare targets
-	List<CodePoint> asciiTargets;
-	asciiTargets.EnsureCapacity(chars.Count());
-
-	List<unsigned char> rawTargets;
-	rawTargets.EnsureCapacity(chars.Count());
-
-	for (UInt64 i = 0; i < chars.Count(); ++i)
+	for (Int64 g = sIndex; g >= first; --g)
 	{
-		unsigned char b = (unsigned char)chars[i].Value;
+		uint32_t byteOffset = FindByteOffsetOfCodePoint((uint32_t)g);
+		if (byteOffset >= _byteLength)
+			continue;
 
-		if (b < 128)
+		unsigned char lead = (unsigned char)bytes[byteOffset].Value;
+
+		for (UInt64 k = 0; k < chars.Count(); ++k)
 		{
-			asciiTargets.Add(CodePoint((uint32_t)b));
-		}
-		else
-		{
-			rawTargets.Add(b);
-		}
-	}
-
-	// Backward scan
-	for (Int64 i = sIndex; i >= first; --i)
-	{
-		CodePoint cp = cps[(UInt64)i];
-
-		// ASCII direct match
-		for (UInt64 k = 0; k < asciiTargets.Count(); ++k)
-		{
-			if ((uint32_t)cp == (uint32_t)asciiTargets[k])
-				return i;
-		}
-
-		// Multi-byte UTF-8 first-byte match
-		if (!rawTargets.IsEmpty())
-		{
-			UTF8::UTF8EncodeResult enc = UTF8::encode_utf8(cp);
-
-			for (UInt64 k = 0; k < rawTargets.Count(); ++k)
-			{
-				if (enc.Length > 0 && enc.Bytes[0] == rawTargets[k])
-					return i;
-			}
+			if ((unsigned char)chars[k].Value == lead)
+				return g;
 		}
 	}
 

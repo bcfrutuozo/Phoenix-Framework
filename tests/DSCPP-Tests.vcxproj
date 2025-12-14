@@ -147,6 +147,7 @@
     <ClCompile Include="unit\src\test_queue.cpp" />
     <ClCompile Include="unit\src\test_stack.cpp" />
     <ClCompile Include="unit\src\test_string.cpp" />
+    <ClCompile Include="unit\src\test_types.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\DSCPP.vcxproj">

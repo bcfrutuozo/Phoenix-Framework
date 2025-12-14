@@ -11,7 +11,7 @@ namespace ASCII
 	{
 		for (uint32_t i = 0; i < len; ++i)
 		{
-			if (p[i] & 0x80)
+			if (p[i].Value & 0x80)
 				return false;
 		}
 		return true;
@@ -20,14 +20,14 @@ namespace ASCII
 	static inline constexpr Char ToLower(Char c) noexcept
 	{
 		if (c >= 'A' && c <= 'Z')
-			return (c - 'A' + 'a');
+			return Char(c.Value - 'A' + 'a');
 		return c;
 	}
 
 	static inline constexpr Char ToUpper(Char c) noexcept
 	{
 		if (c >= 'a' && c <= 'z')
-			return (c - 'a' + 'A');
+			return Char(c.Value - 'a' + 'A');
 		return c;
 	}
 
