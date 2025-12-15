@@ -12,13 +12,14 @@ class Char final : public Object<Char>
 {
 public:
 
-	using value_type = char8_t;
+	using value_type = unsigned char;
 	value_type Value;
 
 	constexpr Char() : Value() {};
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	constexpr Char(T value) noexcept requires(is_promotion_primitive<T>::value) : Value(static_cast<value_type>(value)) {}
+
 
 	/*
 	 * Constructor which receives another Wrapper

@@ -33,7 +33,7 @@ public:
         size_t capacity = INITIAL_CAPACITY;
         size_t count = 0;
 
-        unsigned char* buf = static_cast<unsigned char*>(malloc(capacity));
+        Char* buf = static_cast<Char*>(malloc(capacity));
         if (!buf) return String();
 
         Byte b = 0; // Stream::byte deve ser unsigned char
@@ -45,7 +45,7 @@ public:
 
             if (count + 1 >= capacity) {
                 size_t newcap = capacity * 2;
-                unsigned char* newbuf = static_cast<unsigned char*>(malloc(newcap));
+                Char* newbuf = static_cast<Char*>(malloc(newcap));
                 if (!newbuf) { free(buf); return String(); }
                 memcpy(newbuf, buf, count);
                 free(buf);

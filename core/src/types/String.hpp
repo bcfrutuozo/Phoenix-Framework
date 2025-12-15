@@ -1,12 +1,10 @@
 ﻿#pragma once
 
 #include "Object.hpp"
+#include "Boolean.hpp"
 #include "Char.hpp"
 #include "CodePoint.hpp"
-#include "text/UTF8.hpp"
-#include "text/ASCII.hpp"
-#include "text/unicode/UnicodeCase_utils.hpp"
-#include "text/unicode/UnicodeNormalization_utils.hpp"
+#include "text/Encoding.hpp"
 #include "Int32.hpp"
 #include "Int64.hpp"
 #include "UInt32.hpp"
@@ -26,6 +24,8 @@ enum class StringComparison
 	OrdinalIgnoreCase
 };
 
+class Locale;
+
 class String final : public Object<String>
 {
 public:
@@ -39,33 +39,128 @@ public:
 		_sso[0] = Char(0);
 	}
 
+	String(char c) noexcept : String(Char(c)) {}
 	String(Char c) noexcept;
 	String(const char* cstr) noexcept;
-	String(const unsigned char* bytes, size_type len) noexcept;
+	String(const Byte* bytes, size_type len) noexcept;
+	String(const Char* bytes, size_t len) noexcept : String(reinterpret_cast<const Byte*>(bytes), len) {}
 	String(const List<CodePoint>& cps) noexcept;
+
+	template<size_t N>
+	String(const wchar_t(&p)[N]) noexcept
+	{
+		static_assert(N > 0, "Invalid wide string literal");
+		List<CodePoint> cps;
+#if WCHAR_MAX == 0xFFFF
+		// Windows → UTF-16
+		UTF16Encoding::Decode(reinterpret_cast<const char16_t*>(p), N - 1, cps);
+#elif WCHAR_MAX == 0x10FFFF
+		// Unix → UTF-32
+		UTF32Encoding::Decode(reinterpret_cast<const char32_t*>(p), N - 1, cps);
+#else
+		static_assert(false, "Unsupported wchar_t size");
+#endif
+		* this = FromCodePoints(cps);
+	}
+
+	String(const wchar_t* p, uint32_t length) noexcept
+	{
+		if (!p || length == 0)
+		{
+			*this = String::Empty();
+			return;
+		}
+
+		List<CodePoint> cps;
+#if WCHAR_MAX == 0xFFFF
+		UTF16Encoding::Decode(reinterpret_cast<const char16_t*>(p), length, cps);
+#elif WCHAR_MAX == 0x10FFFF
+		UTF32Encoding::Decode(reinterpret_cast<const char32_t*>(p), length, cps);
+#else
+		static_assert(false, "Unsupported wchar_t size");
+#endif
+
+		* this = FromCodePoints(cps);
+	}
+
+	template<size_t N>
+	String(const char8_t(&p)[N]) noexcept
+	{
+		static_assert(N > 0, "Invalid UTF-8 Literal");
+		*this = String(reinterpret_cast<const Char*>(p), static_cast<uint32_t>(N - 1));
+	}
+
+	String(const char8_t* p, uint32_t length) noexcept
+	{
+		if (!p || length == 0)
+		{
+			*this = String::Empty();
+			return;
+		}
+
+		*this = String(reinterpret_cast<const char8_t*>(p), length);
+	}
+
+	template<size_t N>
+	String(const char16_t(&p)[N]) noexcept
+	{
+		static_assert(N > 0, "Invalid UTF-16 Literal");
+		List<CodePoint> cps;
+		UTF16Encoding::Decode(p, N - 1, cps);
+		*this = FromCodePoints(cps);
+	}
+
+	String(const char16_t* p, uint32_t length) noexcept
+	{
+		if (!p || length == 0)
+		{
+			*this = String::Empty();
+			return;
+		}
+		List<CodePoint> cps;
+		UTF16Encoding::Decode(p, length, cps);
+		*this = String::FromCodePoints(cps);
+	}
+
+	template<size_t N>
+	String(const char32_t(&p)[N]) noexcept
+	{
+		static_assert(N > 0, "Invalid UTF-32 Literal");
+		List<CodePoint> cps;
+		UTF32Encoding::Decode(p, N - 1, cps);
+		*this = FromCodePoints(cps);
+	}
+
+	String(const char32_t* p, uint32_t length) noexcept
+	{
+		if (!p || length == 0)
+		{
+			*this = String::Empty();
+			return;
+		}
+
+		List<CodePoint> cps;
+		UTF32Encoding::Decode(p, length, cps);
+		*this = String::FromCodePoints(cps);
+	}
+
+
 	String(const String& other) noexcept;
 	String(String&& other) noexcept;
 	String& operator=(const String& other) noexcept;
 	String& operator=(String&& other) noexcept;
 	~String() noexcept;
 
-	inline operator const Char* () const noexcept { return data(); }
-	inline operator const char* () const noexcept { return reinterpret_cast<const char*>(data()); }
-
 	inline friend String operator+(const String& a, const String& b) { return String::Concat(a, b); }
-	inline friend String operator+(const String& a, const char* b) { return String::Concat(a, b); }
-	inline friend String operator+(const char* a, const String& b) { return String::Concat(a, b); }
 	inline String& operator+=(const String& other) { *this = String::Concat(*this, other); return *this; }
-	inline String& operator+=(const char* other) { *this = String::Concat(*this, other); return *this; }
-	friend Boolean operator==(const String& a, const String& b) noexcept;
+	inline friend Boolean operator==(const String& a, const String& b) noexcept { return a.Equals(b); }
 	inline friend Boolean operator!=(const String& a, const String& b) noexcept { return !(a == b); }
 
-	inline friend Boolean operator==(const String& a, const char* b) noexcept { return a.Equals(String(b)); }
-	inline friend Boolean operator==(const char* a, const String& b) noexcept { return String(a).Equals(b); }
-	inline friend Boolean operator!=(const String& a, const char* b) noexcept { return !(a == b); }
-	inline friend Boolean operator!=(const char* a, const String& b) noexcept { return !(a == b); }
-
 	inline const Char& operator[](size_type i) const noexcept { return data()[i]; }
+
+	explicit inline operator const Char* () const noexcept { return data(); }
+	explicit inline operator const char* () const noexcept { return reinterpret_cast<const char*>(data()); }
+	explicit inline operator const unsigned char* () const noexcept { return reinterpret_cast<const unsigned char*>(data()); }
 
 	template<typename... Args>
 	static String Concat(const Args&... args)
@@ -102,121 +197,65 @@ public:
 	}
 
 	Boolean Contains(const String& sub) const noexcept;
-	Boolean Contains(const char* cstr) const noexcept;
 	Boolean Contains(CodePoint cp) const noexcept;
-	Boolean Contains(const String& sub, bool ignoreCase) const noexcept;
-	Boolean Contains(const String& sub, bool ignoreCase, const String& locale) const noexcept;
-	Boolean Contains(const char* cstr, bool ignoreCase) const noexcept;
-	Boolean Contains(const char* cstr, bool ignoreCase, const String& locale) const noexcept;
-	Boolean Contains(CodePoint cp, bool ignoreCase) const noexcept;
-	Boolean Contains(CodePoint cp, bool ignoreCase, const String& locale) const noexcept;
-	static Int32 Compare(const String& A, const String& B, bool ignoreCase, const String& locale) noexcept;
-	static Boolean Compare(const String& a, const String& b, const char* locale) noexcept;
+	Boolean Contains(const String& sub, Boolean ignoreCase) const noexcept;
+	Boolean Contains(const String& sub, Boolean ignoreCase, const Locale& locale) const noexcept;
+	Boolean Contains(CodePoint cp, Boolean ignoreCase) const noexcept;
+	Boolean Contains(CodePoint cp, Boolean ignoreCase, const Locale& locale) const noexcept;
+
+	static Boolean Compare(const String& a, const String& b, const Locale& locale) noexcept;
+	static Int32 Compare(const String& A, const String& B, Boolean ignoreCase, const Locale& locale) noexcept;
+	
 	static List<CodePoint> DecodeToCodePoints(const String& s);
 
 	static const String& Empty() { static const String emptyInstance; return emptyInstance; }
 
-	inline Boolean EndsWith(const String& compare, bool ignoreCase, const char* locale) const noexcept
-	{
-		return Boolean(EndsWithInternal(compare, ignoreCase, locale));
-	}
+	Boolean EndsWith(const String& compare) const noexcept;
+	Boolean EndsWith(const String& compare, Boolean ignoreCase) const noexcept;
+	Boolean EndsWith(const String& compare, Boolean ignoreCase, const Locale& locale) const noexcept;
 
-	inline Boolean EndsWith(const char* compare, bool ignoreCase, const char* locale) const noexcept
-	{
-		String tmp(compare);
-		return Boolean(EndsWithInternal(tmp, ignoreCase, locale));
-	}
-
-	inline Boolean EndsWith(const String& compare, bool ignoreCase) const noexcept
-	{
-		return EndsWith(compare, ignoreCase, "en");
-	}
-
-	inline Boolean EndsWith(const char* compare, bool ignoreCase) const noexcept
-	{
-		return EndsWith(String(compare), ignoreCase, "en");
-	}
-
-	inline Boolean EndsWith(const String& compare) const noexcept
-	{
-		return Boolean(EndsWithInternal(compare, false, nullptr));
-	}
-
-	inline Boolean EndsWith(char ch) const noexcept
-	{
-		UInt64 len = GetLength();
-		if (len == 0) return Boolean(false);
-
-		CodePoint last = GetCodePointAt((uint32_t)(len - 1));
-		CodePoint cp((uint32_t)(unsigned char)ch);
-		return Boolean(last == cp);
-	}
-
-	Boolean Equals(const String& other, bool ignoreCase) const noexcept;
-	Boolean Equals(const String& other, bool ignoreCase, const String& locale) const noexcept;
+	Boolean Equals(const String& other, Boolean ignoreCase) const noexcept;
+	Boolean Equals(const String& other, Boolean ignoreCase, const Locale& locale) const noexcept;
 	inline static Boolean Equals(const String& a, const String& b) noexcept { return a.Equals(b); }
-	static Boolean Equals(const String& a, const String& b, bool ignoreCase) noexcept;
-	static Boolean Equals(const String& a, const String& b, bool ignoreCase, const String& locale) noexcept;
+	static Boolean Equals(const String& a, const String& b, Boolean ignoreCase) noexcept;
+	static Boolean Equals(const String& a, const String& b, Boolean ignoreCase, const Locale& locale) noexcept;
 
-
-	inline static Boolean Equals(const char* a, const char* b, bool ignoreCase) noexcept
-	{
-		return Equals(String(a), String(b), ignoreCase);
-	}
-
-	inline static Boolean Equals(const char* a, const String& b, bool ignoreCase) noexcept
-	{
-		return Equals(String(a), b, ignoreCase);
-	}
-
-	inline static Boolean Equals(const String& a, const char* b, bool ignoreCase) noexcept
-	{
-		return Equals(a, String(b), ignoreCase);
-	}
-
-	inline static Boolean Equals(const char* a, const char* b,
-		bool ignoreCase, const String& locale) noexcept
-	{
-		return Equals(String(a), String(b), ignoreCase, locale);
-	}
-
-	inline static Boolean Equals(const char* a, const String& b,
-		bool ignoreCase, const String& locale) noexcept
-	{
-		return Equals(String(a), b, ignoreCase, locale);
-	}
-
-	inline static Boolean Equals(const String& a, const char* b,
-		bool ignoreCase, const String& locale) noexcept
-	{
-		return Equals(a, String(b), ignoreCase, locale);
-	}
-
-	inline static String FromChar(const Char& ch) { unsigned char b = static_cast<char>(ch); return String(&b, 1); }
+	inline static String FromChar(const Char ch) { return String(ch); }
 
 	static String FromCodePoint(CodePoint cp)
 	{
-		UTF8::UTF8EncodeResult enc = UTF8::encode_utf8(cp);
-		return String((const unsigned char*)enc.Bytes, (unsigned int)enc.Length);
+		Byte buf[4];
+		uint32_t len = UTF8Encoding::Encode(cp, reinterpret_cast<Char*>(buf));
+		return String(buf, len);
 	}
 
 	static String FromCodePoints(const List<CodePoint>& cps)
 	{
+		if (cps.IsEmpty())
+			return String::Empty();
+
+		// 1) calcular bytes totais (UTF-8)
 		uint32_t totalBytes = 0;
 		for (CodePoint cp : cps)
 			totalBytes += (uint32_t)cp.ByteCount();
 
 		unsigned char* block = allocate_block(totalBytes);
-		if (!block) return String();
+		if (!block)
+			return String();
 
-		Char* dst = reinterpret_cast<Char*>(block + sizeof(refcount_type) + sizeof(size_type));
+		Char* dst = reinterpret_cast<Char*>(
+			block + sizeof(refcount_type) + sizeof(size_type)
+			);
+
+		// 2) encode via Encoding
 		uint32_t w = 0;
-
-		for (uint32_t cp : cps)
+		for (CodePoint cp : cps)
 		{
-			UTF8::UTF8EncodeResult e = UTF8::encode_utf8(cp);
-			for (uint32_t k = 0; k < e.Length; ++k)
-				dst[w++] = e.Bytes[k];
+			Char buf[4];
+			uint32_t len = UTF8Encoding::Encode(cp, buf);
+
+			for (uint32_t i = 0; i < len; ++i)
+				dst[w++] = Char(buf[i]);
 		}
 
 		String r(block);
@@ -226,7 +265,7 @@ public:
 	}
 
 	inline constexpr UInt64 GetByteCount() const noexcept { return _byteLength; }
-	
+
 	CodePoint GetCodePointAt(uint32_t cpIndex) const noexcept;
 
 	inline UInt64 GetCodePointsCount() const noexcept
@@ -238,8 +277,8 @@ public:
 	inline UInt32 GetReferenceCount() const noexcept
 	{
 		if (IsSSO()) return 1;
-		if (!_ptr) return 0; 
-		return refcount_ref(); 
+		if (!_ptr) return 0;
+		return refcount_ref();
 	};
 
 	Int64 IndexOf(const String& value, size_t startIndex) const;
@@ -252,7 +291,7 @@ public:
 	Int64 IndexOf(Char c, size_t startIndex) const noexcept;
 	Int64 IndexOf(Char c, size_t startIndex, size_t count) const noexcept;
 	Int64 IndexOf(Char c, StringComparison comp) const noexcept;
-	Int64 IndexOfAny(const List<Char>& chars,UInt64 startIndex,UInt64 count) const noexcept;
+	Int64 IndexOfAny(const List<Char>& chars, UInt64 startIndex, UInt64 count) const noexcept;
 	Int64 IndexOfAny(const List<Char>& chars, UInt64 startIndex) const noexcept;
 	Int64 IndexOfAny(const List<Char>& chars) const noexcept;
 
@@ -273,7 +312,7 @@ public:
 	static inline Boolean IsWhiteSpace(const char* c) { return IsWhiteSpace(String(c)); }
 
 	static String Join(const String& separator, const List<String>& values);
-	
+
 	template<typename T>
 	static String Join(const String& separator, const List<T>& values)
 	{
@@ -427,45 +466,19 @@ public:
 
 	List<String> Split(const String& separator, int maxCount, StringSplitOptions options) const;
 	List<String> Split(const String& separator, StringSplitOptions options) const;
-	List<String> Split(Char separator, int maxCount, StringSplitOptions options) const;
-	List<String> Split(Char separator, StringSplitOptions options) const;
 	List<String> Split(const List<String>& separators, int maxCount, StringSplitOptions options) const;
 	List<String> Split(const List<String>& separators, StringSplitOptions options) const;
 	List<String> Split(const List<Char>& separators, int maxCount, StringSplitOptions options) const;
 	List<String> Split(const List<Char>& separators, StringSplitOptions options) const;
-	List<String> Split(Char separator) const;
 	List<String> Split(const List<Char>& separators) const;
 	List<String> Split(const String& separator) const;
 	List<String> Split(const List<String>& separators) const;
 
-	inline String Substring(uint32_t gcStart) const noexcept { return Substring(gcStart, this->GetLength() - gcStart);	}
+	inline String Substring(uint32_t gcStart) const noexcept { return Substring(gcStart, this->GetLength() - gcStart); }
 	String Substring(uint32_t gcStart, uint32_t gcCount) const noexcept;
-
-	inline Boolean StartsWith(const String& compare, bool ignoreCase, const char* locale) const noexcept
-	{
-		return Boolean(StartsWithInternal(compare, ignoreCase, locale));
-	}
-
-	inline Boolean StartsWith(const char* compare, bool ignoreCase, const char* locale) const noexcept
-	{
-		String tmp(compare);
-		return Boolean(StartsWithInternal(tmp, ignoreCase, locale));
-	}
-
-	inline Boolean StartsWith(const String& compare, bool ignoreCase) const noexcept
-	{
-		return StartsWith(compare, ignoreCase, "en");
-	}
-
-	inline Boolean StartsWith(const char* compare, bool ignoreCase) const noexcept
-	{
-		return StartsWith(String(compare), ignoreCase, "en");
-	}
-
-	inline Boolean StartsWith(const String& compare) const noexcept
-	{
-		return Boolean(StartsWithInternal(compare, false, nullptr));
-	}
+	Boolean StartsWith(const String& compare, Boolean ignoreCase, const Locale& locale) const noexcept;
+	Boolean StartsWith(const String& compare, Boolean ignoreCase) const noexcept;
+	Boolean StartsWith(const String& compare) const noexcept;
 
 	inline Boolean StartsWith(char c) const noexcept
 	{
@@ -486,34 +499,7 @@ public:
 		return StartsWith(s);
 	}
 
-#ifdef _DEBUG
-
-	void DumpHex() {
-		auto len = GetByteCount();
-		const unsigned char* p = reinterpret_cast<const unsigned char*>(data());
-		for (uint32_t i = 0; i < len; ++i) {
-			printf("%02X ", p[i]);
-		}
-		printf("\n");
-	}
-
-	void DumpCodePoints() {
-		constexpr uint32_t MAX = 1024;
-		List<CodePoint> cps = DecodeToCodePoints(*this);
-		uint32_t n = cps.Count();
-		for (uint32_t i = 0; i < n; ++i)
-			printf("U+%04X ", cps[i]);
-		printf("\n");
-	}
-
-	static String Hex(uint32_t value)
-	{
-		char buf[16];
-		snprintf(buf, sizeof(buf), "0x%04X", value);
-		return String(buf);
-	}
-
-#endif
+	String ToHex(Encoding enc = Encoding::UTF8) const noexcept;
 
 	String ToLower(const String& locale) const noexcept;
 	inline String ToLower() const noexcept { return ToLower("en"); }
@@ -521,8 +507,7 @@ public:
 	String ToUpper() const noexcept { return ToUpper("en"); }
 
 	template<typename T>
-	static String ToSingleCharString(T ch)
-		requires(is_single_char_v<T>)
+	static String ToSingleCharString(T ch) requires(is_single_char_v<T>)
 	{
 		if constexpr (is_same_v<T, Char>)
 			return FromChar(ch);
@@ -558,8 +543,6 @@ private:
 	static constexpr uint32_t FLAG_SSO = 1 << 0;
 	static constexpr uint32_t FLAG_ASCII_KNOWN = 1 << 1;
 	static constexpr uint32_t FLAG_IS_ASCII = 1 << 2;
-	static constexpr uint32_t FLAG_HAS_NFC = 1 << 3;
-	static constexpr uint32_t FLAG_HAS_NFKC = 1 << 4;
 
 	union
 	{
@@ -567,13 +550,10 @@ private:
 		Char _sso[SSO_CAPACITY + 1];
 	};
 
-	
 	uint32_t _byteOffset = 0;        // offset em bytes dentro do bloco
 	uint32_t _byteLength = 0;        // comprimento em bytes desta string
 	mutable uint32_t _flags = 0;
 	mutable uint32_t _gcLength = UInt32::MaxValue(); // Grapheme cluster lazy cache
-	mutable String* _nfc = nullptr;
-	mutable String* _nfkc = nullptr;
 
 	explicit String(unsigned char* block) noexcept;
 
@@ -586,7 +566,7 @@ private:
 	void release() noexcept;
 	static unsigned char* allocate_block(size_type lenChars) noexcept;
 	void init_from_cstr(const char* cstr) noexcept;
-	void init_from_bytes(const unsigned char* bytes, size_type len) noexcept;
+	void init_from_bytes(const Byte* bytes, size_type len) noexcept;
 	uint32_t FindByteOffsetOfCodePoint(uint32_t cpIndex) const;
 	static int CompareOrdinalCP(CodePoint cpA, CodePoint cpB) noexcept;
 	static int CompareCodePoints_CaseAware(CodePoint a, CodePoint b) noexcept;
@@ -600,22 +580,16 @@ private:
 
 	Boolean ContainsBytes(const String& sub) const noexcept;
 	String SubstringByBytes(uint32_t byteStart, uint32_t byteLen) const noexcept;
-	
+
 	static void CaseFoldUnicode(const List<CodePoint>& cps, const char* localeBytes, uint32_t localeLen, List<CodePoint>& output);
 	static int CompareFolded(const List<CodePoint>& a, const List<CodePoint>& b);
 	static Boolean ContainsFolded(const List<CodePoint>& hay, const List<CodePoint>& ned);
-	String GetNormalized(UnicodeNormalization::NormalizationForm form) const noexcept;
-	Boolean EndsWithInternal(const String& needle, bool ignoreCase, const char* locale) const noexcept;
-	Boolean StartsWithInternal(const String& needle, bool ignoreCase, const char* locale) const noexcept;
+	Boolean EndsWithInternal(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept;
+	Boolean StartsWithInternal(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept;
 
 	static void RemoveCombiningDotAbove(String& s);
 
-	List<String> SplitImpl(
-		const List<String>& stringSeps,
-		const List<Char>& charSeps,
-		int maxCount,
-		StringSplitOptions options
-	) const;
+	List<String> SplitImpl(const List<String>& stringSeps, const List<Char>& charSeps, int maxCount, StringSplitOptions options) const;
 
 	// Verifica se TODOS os Strings em uma lista são ASCII
 	static bool AllASCII(const List<String>& list) {
@@ -638,23 +612,6 @@ private:
 			total += (count - 1) * sepLen;
 
 		return total;
-	}
-
-	inline void ReleaseNormalizationCache() const noexcept
-	{
-		if (_nfc)
-		{
-			delete _nfc;
-			_nfc = nullptr;
-		}
-
-		if (_nfkc)
-		{
-			delete _nfkc;
-			_nfkc = nullptr;
-		}
-
-		InvalidateNormalization();
 	}
 
 	inline constexpr void SetSSO() const noexcept {
@@ -691,32 +648,6 @@ private:
 
 	inline constexpr void InvalidateAscii() const noexcept {
 		_flags &= ~(FLAG_ASCII_KNOWN | FLAG_IS_ASCII);
-	}
-
-	inline constexpr bool HasNFC() const noexcept {
-		return (_flags & FLAG_HAS_NFC) != 0;
-	}
-
-	inline constexpr bool HasNFKC() const noexcept {
-		return (_flags & FLAG_HAS_NFKC) != 0;
-	}
-
-	inline constexpr void SetHasNFC() const noexcept {
-		_flags |= FLAG_HAS_NFC;
-	}
-
-	inline constexpr void SetHasNFKC() const noexcept {
-		_flags |= FLAG_HAS_NFKC;
-	}
-
-	inline constexpr void InvalidateNormalization() const noexcept {
-		_flags &= ~(FLAG_HAS_NFC | FLAG_HAS_NFKC);
-	}
-
-	inline constexpr void InvalidateCache() const noexcept
-	{
-		_flags &= ~(FLAG_ASCII_KNOWN | FLAG_IS_ASCII |
-			FLAG_HAS_NFC | FLAG_HAS_NFKC);
 	}
 };
 

@@ -2,6 +2,7 @@
 
 #include "system/Globals.hpp"
 #include "system/Marvin32.hpp"
+#include "globalization/Locale.hpp"
 
 #include <stdlib.h>
 #include <cstring>
@@ -24,7 +25,7 @@ String::String(Char c) noexcept
 	_gcLength = 1;
 }
 
-String::String(const unsigned char* bytes, size_type len) noexcept
+String::String(const Byte* bytes, size_type len) noexcept
 {
 	init_from_bytes(bytes, len);
 }
@@ -68,7 +69,7 @@ String::String(const List<CodePoint>& cps) noexcept
 	_byteLength = totalBytes;
 }
 
-String::String(const String& other) noexcept 
+String::String(const String& other) noexcept
 {
 	if (other.IsSSO())
 	{
@@ -91,12 +92,10 @@ String::String(const String& other) noexcept
 	}
 
 	// reset caches
-	InvalidateCache();
 	_gcLength = UInt32::MaxValue();
-	ReleaseNormalizationCache();
 }
 
-String::String(String&& other) noexcept 
+String::String(String&& other) noexcept
 {
 	if (other.IsSSO())
 	{
@@ -129,21 +128,12 @@ String::String(String&& other) noexcept
 	}
 
 	// transfere caches
-	_flags |= (other._flags & (FLAG_ASCII_KNOWN | FLAG_IS_ASCII |
-		FLAG_HAS_NFC | FLAG_HAS_NFKC));
-
-	// transfere ponteiros
-	_nfc = other._nfc;
-	_nfkc = other._nfkc;
+	_flags |= (other._flags & (FLAG_ASCII_KNOWN | FLAG_IS_ASCII));
 
 	// limpa origem
-	other._nfc = nullptr;
-	other._nfkc = nullptr;
 	other._flags = FLAG_SSO;
 
 	_gcLength = UInt32::MaxValue();
-	InvalidateCache();
-	other.InvalidateCache();
 }
 
 String& String::operator=(const String& other) noexcept
@@ -174,7 +164,6 @@ String& String::operator=(const String& other) noexcept
 	}
 
 	// reset caches
-	InvalidateCache();
 	_gcLength = UInt32::MaxValue();
 
 	return *this;
@@ -212,10 +201,7 @@ String& String::operator=(String&& other) noexcept
 	}
 
 	_gcLength = UInt32::MaxValue();
-	_flags |= (other._flags & (FLAG_ASCII_KNOWN | FLAG_IS_ASCII | FLAG_HAS_NFC | FLAG_HAS_NFKC));
-
-	other.ReleaseNormalizationCache();
-	other.InvalidateCache();
+	_flags |= (other._flags & (FLAG_ASCII_KNOWN | FLAG_IS_ASCII));
 
 	return *this;
 }
@@ -225,42 +211,42 @@ String::~String() noexcept
 	release();
 }
 
-Boolean operator==(const String& a, const String& b) noexcept
-{
-	if (a._byteLength == b._byteLength)
-	{
-		if (a.IsSSO() && b.IsSSO())
-		{
-			return memcmp(a._sso, b._sso, a._byteLength * sizeof(Char)) == 0;
-		}
-
-		if (!a.IsSSO() && !b.IsSSO() &&
-			a._ptr == b._ptr &&
-			a._byteOffset == b._byteOffset)
-			return true;
-	}
-
-	// 2) Comprimentos diferentes → diferente
-	if (a._byteLength != b._byteLength)
-		return false;
-
-	// 3) Se ambas são vazias → iguais
-	if (a._byteLength == 0)
-		return true;
-
-	// 4) Comparação de bytes (mais rápida possível)
-	const Char* pa = a.data();
-	const Char* pb = b.data();
-
-	// Comparar byte a byte
-	for (uint32_t i = 0; i < a._byteLength; ++i)
-	{
-		if (pa[i] != pb[i])
-			return false;
-	}
-
-	return true;
-}
+//Boolean operator==(const String& a, const String& b) noexcept
+//{
+//	if (a._byteLength == b._byteLength)
+//	{
+//		if (a.IsSSO() && b.IsSSO())
+//		{
+//			return memcmp(a._sso, b._sso, a._byteLength * sizeof(Char)) == 0;
+//		}
+//
+//		if (!a.IsSSO() && !b.IsSSO() &&
+//			a._ptr == b._ptr &&
+//			a._byteOffset == b._byteOffset)
+//			return true;
+//	}
+//
+//	// 2) Comprimentos diferentes → diferente
+//	if (a._byteLength != b._byteLength)
+//		return false;
+//
+//	// 3) Se ambas são vazias → iguais
+//	if (a._byteLength == 0)
+//		return true;
+//
+//	// 4) Comparação de bytes (mais rápida possível)
+//	const Char* pa = a.data();
+//	const Char* pb = b.data();
+//
+//	// Comparar byte a byte
+//	for (uint32_t i = 0; i < a._byteLength; ++i)
+//	{
+//		if (pa[i] != pb[i])
+//			return false;
+//	}
+//
+//	return true;
+//}
 
 UInt32 String::GetHashCode() const noexcept
 {
@@ -303,7 +289,7 @@ UInt64 String::GetLength() const noexcept
 	uint32_t len = _byteLength;
 	uint32_t pos = 0;
 
-	UTF8::Decode(*this, GetByteCount(), cps);
+	UTF8::Decode(data(), GetByteCount(), cps);
 
 	uint32_t cpCount = cps.Count();
 	if (cpCount == 0)
@@ -334,27 +320,18 @@ Boolean String::Contains(const String& sub) const noexcept {
 	return ContainsBytes(sub);
 }
 
-Boolean String::Contains(const char* cstr) const noexcept {
-	if (!cstr) return false;
-	if (cstr[0] == '\0') return true;
-	return Contains(String(cstr));
-}
-
 Boolean String::Contains(CodePoint cp) const noexcept {
 	if (!cp.IsValid()) return false;
 	String s = FromCodePoint(cp);
 	return Contains(s);
 }
 
-Boolean String::Contains(const String& sub, bool ignoreCase) const noexcept
+Boolean String::Contains(const String& sub, Boolean ignoreCase) const noexcept
 {
-	if (!ignoreCase)
-		return Contains(sub);
-
-	return Contains(sub, true, "en");
+	return Contains(sub, ignoreCase, Locale("en"));
 }
 
-Boolean String::Contains(const String& sub, bool ignoreCase, const String& locale) const noexcept
+Boolean String::Contains(const String& sub, Boolean ignoreCase, const Locale& locale) const noexcept
 {
 	// Se substring vazia → true
 	if (sub.IsEmpty())
@@ -391,23 +368,13 @@ Boolean String::Contains(const String& sub, bool ignoreCase, const String& local
 	//  SLOW PATH: Unicode-aware casefold + normalization
 	// ======================================
 	List<CodePoint> hayFold, subFold;
-	UTF8::FoldAndNormalize(*this, GetByteCount(), locBytes, hayFold);
-	UTF8::FoldAndNormalize(sub, sub.GetByteCount(), locBytes, subFold);
+	UTF8::FoldAndNormalize(data(), GetByteCount(), locBytes, hayFold);
+	UTF8::FoldAndNormalize(sub.data(), sub.GetByteCount(), locBytes, subFold);
 
 	return UTF8::Contains(hayFold, subFold);
 }
 
-Boolean String::Contains(const char* cstr, bool ignoreCase) const noexcept
-{
-	return Contains(String(cstr), ignoreCase);
-}
-
-Boolean String::Contains(const char* cstr, bool ignoreCase, const String& locale) const noexcept
-{
-	return Contains(String(cstr), ignoreCase, locale);
-}
-
-Boolean String::Contains(CodePoint cp, bool ignoreCase) const noexcept
+Boolean String::Contains(CodePoint cp, Boolean ignoreCase) const noexcept
 {
 	if (!ignoreCase)
 		return Contains(cp);
@@ -416,16 +383,8 @@ Boolean String::Contains(CodePoint cp, bool ignoreCase) const noexcept
 	return Contains(s, true);
 }
 
-Boolean String::Contains(CodePoint cp, bool ignoreCase, const String& locale) const noexcept
-{
-	if (!ignoreCase)
-		return Contains(cp);
 
-	String s = FromCodePoint(cp);
-	return Contains(s, true, locale);
-}
-
-Int32 String::Compare(const String& A, const String& B, bool ignoreCase, const String& locale) noexcept
+Int32 String::Compare(const String& A, const String& B, Boolean ignoreCase, const Locale& locale) noexcept
 {
 	// Mesma região? iguais.
 	if (A._ptr == B._ptr &&
@@ -470,16 +429,21 @@ Int32 String::Compare(const String& A, const String& B, bool ignoreCase, const S
 	// SLOW-PATH Unicode: casefold + normalize
 	// ====================================
 	List<CodePoint> Ac, Bc;
-	UTF8::FoldAndNormalize(A, A.GetByteCount(), locale, Ac);
-	UTF8::FoldAndNormalize(B, B.GetByteCount(), locale, Bc);
+	UTF8::FoldAndNormalize(A.data(), A.GetByteCount(), (const char*)locale.data(), Ac);
+	UTF8::FoldAndNormalize(B.data(), B.GetByteCount(), (const char*)locale.data(), Bc);
 	return UTF8::Compare(Ac, Bc);
 }
 
-Boolean String::Compare(const String& a, const String& b, const char* locale) noexcept
+Boolean String::Contains(CodePoint cp, Boolean ignoreCase, const Locale& locale) const noexcept
+{
+	return Contains(cp, true, Locale("en"));
+}
+
+Boolean String::Compare(const String& a, const String& b, const Locale& locale) noexcept
 {
 	List<CodePoint> A, B;
-	UTF8::FoldAndNormalize(a, a.GetByteCount(), locale, A);
-	UTF8::FoldAndNormalize(b, b.GetByteCount(), locale, B);
+	UTF8::FoldAndNormalize(a.data(), a.GetByteCount(), locale.data(), A);
+	UTF8::FoldAndNormalize(b.data(), b.GetByteCount(), locale.data(), B);
 
 	if (A.Count() != B.Count()) return false;
 	for (uint32_t i = 0; i < A.Count(); ++i)
@@ -509,17 +473,30 @@ Boolean String::Equals(const String& other) const noexcept
 	return true;
 }
 
-Boolean String::Equals(const String& other, bool ignoreCase) const noexcept
+Boolean String::EndsWith(const String& compare, Boolean ignoreCase, const Locale& locale) const noexcept
+{
+	return Boolean(EndsWithInternal(compare, ignoreCase, locale));
+}
+
+Boolean String::EndsWith(const String& compare, Boolean ignoreCase) const noexcept
+{
+	return EndsWith(compare, ignoreCase, Locale("en"));
+}
+
+Boolean String::EndsWith(const String& compare) const noexcept
+{
+	return Boolean(EndsWithInternal(compare, false, Locale("en")));
+}
+
+Boolean String::Equals(const String& other, Boolean ignoreCase) const noexcept
 {
 	if (!ignoreCase)
 		return Equals(other);
 
-	return String::Compare(*this, other, true, "en") == 0;
+	return String::Compare(*this, other, true, Locale("en")) == 0;
 }
 
-Boolean String::Equals(const String& other,
-	bool ignoreCase,
-	const String& locale) const noexcept
+Boolean String::Equals(const String& other, Boolean ignoreCase, const Locale& locale) const noexcept
 {
 	if (!ignoreCase)
 		return Equals(other);
@@ -527,20 +504,15 @@ Boolean String::Equals(const String& other,
 	return String::Compare(*this, other, true, locale) == 0;
 }
 
-Boolean String::Equals(const String& a,
-	const String& b,
-	bool ignoreCase) noexcept
+Boolean String::Equals(const String& a, const String& b, Boolean ignoreCase) noexcept
 {
 	if (!ignoreCase)
 		return a.Equals(b);
 
-	return String::Compare(a, b, true, "en") == 0;
+	return String::Compare(a, b, true, Locale("en")) == 0;
 }
 
-Boolean String::Equals(const String& a,
-	const String& b,
-	bool ignoreCase,
-	const String& locale) noexcept
+Boolean String::Equals(const String& a, const String& b, Boolean ignoreCase, const Locale& locale) noexcept
 {
 	if (!ignoreCase)
 		return a.Equals(b);
@@ -1088,30 +1060,80 @@ Int64 String::LastIndexOfAny(const List<Char>& chars) const noexcept
 
 String String::Normalize(UnicodeNormalization::NormalizationForm form) const noexcept
 {
-	if (form == UnicodeNormalization::NormalizationForm::NFC)
-	{
-		if (HasNFC())
-			return *_nfc;
+	if (IsEmpty()) return *this;
 
-		String tmp = GetNormalized(form);
-		_nfc = new String(tmp);
-		SetHasNFC();
-		return *_nfc;
+	// 0) Decode to codepoints
+	List<CodePoint> cps = DecodeToCodePoints(*this);
+	uint32_t cpCount = cps.Count();
+	if (cpCount == 0) return *this;
+
+	// 1) ZWJ → skip normalization
+	for (uint32_t i = 0; i < cpCount; ++i)
+		if ((uint32_t)cps[i] == 0x200D)
+			return *this;
+
+	// 2) Decompose dynamically
+	const bool compat = (form == UnicodeNormalization::NormalizationForm::NFKC ||
+		form == UnicodeNormalization::NormalizationForm::NFKD);
+
+	List<CodePoint> temp;
+	temp.EnsureCapacity(cpCount * 3);
+
+	for (uint32_t i = 0; i < cpCount; ++i)
+	{
+		CodePoint local[32];
+		uint32_t localLen = 0;
+		
+		UnicodeNormalization::DecomposeCodePoint(cps[i], compat, local, localLen);
+
+		for (uint32_t k = 0; k < localLen; ++k)
+			temp.Add(local[k]);
 	}
 
-	if (form == UnicodeNormalization::NormalizationForm::NFKC)
+	// 3) If nothing was produced, fallback to original cps
+	if (temp.Count() == 0 && cpCount > 0)
 	{
-		if (HasNFKC())
-			return *_nfkc;
-
-		String tmp = GetNormalized(form);
-		_nfkc = new String(tmp);
-		SetHasNFKC();
-		return *_nfkc;
+		temp.Clear();
+		for (uint32_t i = 0; i < cpCount; ++i)
+			temp.Add(cps[i]);
 	}
 
-	// Formas não cacheadas (NFD/NFKD)
-	return this->GetNormalized(form);
+	// 4) Reorder
+	UnicodeNormalization::ReorderByCCC(temp);
+
+	// 5) Compose
+	if (form == UnicodeNormalization::NormalizationForm::NFC ||
+		form == UnicodeNormalization::NormalizationForm::NFKC)
+	{
+		UnicodeNormalization::Compose(temp);
+	}
+
+	// 6) Re-encode UTF-8
+	uint32_t totalBytes = 0;
+	for (uint32_t i = 0; i < temp.Count(); ++i)
+	{
+		uint32_t cpv = temp[i];
+		totalBytes += (cpv <= 0x7F ? 1 :
+			cpv <= 0x7FF ? 2 :
+			cpv <= 0xFFFF ? 3 : 4);
+	}
+
+	unsigned char* block = allocate_block(totalBytes);
+	if (!block) return String();
+
+	Char* dst = reinterpret_cast<Char*>(block + sizeof(refcount_type) + sizeof(size_type));
+
+	uint32_t w = 0;
+	for (uint32_t i = 0; i < temp.Count(); ++i)
+	{
+		UTF8::UTF8EncodeResult enc = UTF8::encode_utf8(temp[i]);
+		for (uint32_t j = 0; j < enc.Length; ++j)
+			dst[w++] = enc.Bytes[j];
+	}
+
+	String out(block);
+	out._byteLength = totalBytes;
+	return out;
 }
 
 String String::Remove(int start) const noexcept
@@ -1446,8 +1468,7 @@ String String::Replace(const String& oldValue, const String& newValue, StringCom
 	return Replace(oldValue, newValue, true, "en");
 }
 
-String String::Replace(const String& oldValue, const String& newValue,
-	bool ignoreCase, const String& locale) const noexcept
+String String::Replace(const String& oldValue, const String& newValue, bool ignoreCase, const String& locale) const noexcept
 {
 	if (oldValue.IsEmpty()) return *this;
 
@@ -1497,8 +1518,8 @@ String String::Replace(const String& oldValue, const String& newValue,
 	// 1. Normalize + casefold haystack and needle
 	// ------------------------------
 	List<CodePoint> hayFold, oldFold;
-	UTF8::FoldAndNormalize(*this, GetByteCount(), locale, hayFold);
-	UTF8::FoldAndNormalize(oldValue, oldValue.GetByteCount(), locale, oldFold);
+	UTF8::FoldAndNormalize(data(), GetByteCount(), (const char*)locale.data(), hayFold);
+	UTF8::FoldAndNormalize(oldValue.data(), oldValue.GetByteCount(), (const char*)locale.data(), oldFold);
 
 	// decode newValue to pure CPs (NO folding)
 	List<CodePoint> newCP = DecodeToCodePoints(newValue);
@@ -1697,20 +1718,6 @@ List<String> String::Split(const String& separator, StringSplitOptions options) 
 	return SplitImpl(s, {}, Int32::MaxValue(), options);
 }
 
-List<String> String::Split(Char sep, int max, StringSplitOptions opt) const
-{
-	List<Char> c;
-	c.Add(sep);
-	return SplitImpl({}, c, max, opt);
-}
-
-List<String> String::Split(Char separator, StringSplitOptions options) const
-{
-	List<Char> c;
-	c.Add(separator);
-	return SplitImpl({}, c, Int32::MaxValue(), options);
-}
-
 List<String> String::Split(const List<String>& seps, StringSplitOptions opt) const
 {
 	return SplitImpl(seps, {}, Int32::MaxValue(), opt);
@@ -1731,13 +1738,6 @@ List<String> String::Split(const List<Char>& separators, StringSplitOptions opti
 	return SplitImpl({}, separators, Int32::MaxValue(), options);
 }
 
-List<String> String::Split(Char separator) const
-{
-	List<Char> c;
-	c.Add(separator);
-	return SplitImpl({}, c, Int32::MaxValue(), StringSplitOptions::None);
-}
-
 List<String> String::Split(const List<Char>& separators) const
 {
 	return SplitImpl({}, separators, Int32::MaxValue(), StringSplitOptions::None);
@@ -1753,6 +1753,21 @@ List<String> String::Split(const String& separator) const
 List<String> String::Split(const List<String>& separators) const
 {
 	return SplitImpl(separators, {}, Int32::MaxValue(), StringSplitOptions::None);
+}
+
+Boolean String::StartsWith(const String& compare, Boolean ignoreCase, const Locale& locale) const noexcept
+{
+	return Boolean(StartsWithInternal(compare, ignoreCase, locale));
+}
+
+Boolean String::StartsWith(const String& compare, Boolean ignoreCase) const noexcept
+{
+	return StartsWith(compare, ignoreCase, Locale("en"));
+}
+
+Boolean String::StartsWith(const String& compare) const noexcept
+{
+	return Boolean(StartsWithInternal(compare, false, Locale("en")));
 }
 
 String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
@@ -1777,7 +1792,7 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 		if (IsSSO())
 		{
 			// COPY
-			return String(reinterpret_cast<const unsigned char*>(data() + start), len);
+			return String(reinterpret_cast<const Byte*>(data() + start), len);
 		}
 		else
 		{
@@ -1788,7 +1803,6 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 
 			sub.InvalidateAscii();
 			sub._gcLength = UInt32::MaxValue();
-			sub.ReleaseNormalizationCache();
 
 			return sub;
 		}
@@ -1823,7 +1837,7 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 
 	if (IsSSO())
 	{
-		return String(reinterpret_cast<const unsigned char*>(data() + byteStart), len);
+		return String(reinterpret_cast<const Byte*>(data() + byteStart), len);
 	}
 
 	String sub(*this);
@@ -1832,9 +1846,116 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 
 	sub.InvalidateAscii();
 	sub._gcLength = UInt32::MaxValue();
-	sub.ReleaseNormalizationCache();
 
 	return sub;
+}
+
+String String::ToHex(Encoding enc) const noexcept
+{
+	uint32_t len = GetByteCount();
+	if (len == 0)
+		return String::Empty();
+
+	switch (enc)
+	{
+	case Encoding::ASCII:
+	case Encoding::UTF8:
+	{
+		uint32_t outLen = UTF8Encoding::ToHexLength(len);
+
+		unsigned char* block = allocate_block(outLen);
+		if (!block) return String::Empty();
+
+		Char* dst = reinterpret_cast<Char*>(
+			block + sizeof(refcount_type) + sizeof(size_type)
+			);
+
+		UTF8Encoding::ToHex(
+			reinterpret_cast<const unsigned char*>(data()),
+			len,
+			dst
+		);
+
+		String out(block);
+		out._byteLength = outLen;
+		return out;
+	}
+
+	case Encoding::UTF16:
+	{
+		List<CodePoint> cps = DecodeToCodePoints(*this);
+		if (cps.IsEmpty())
+			return String::Empty();
+
+		uint32_t unitCount = 0;
+		for (CodePoint cp : cps)
+			unitCount += (cp.Value <= 0xFFFF) ? 1 : 2;
+
+		uint32_t outLen = UTF16Encoding::ToHexLength(unitCount);
+
+		unsigned char* block = allocate_block(outLen);
+		if (!block) return String::Empty();
+
+		Char* dst = reinterpret_cast<Char*>(
+			block + sizeof(refcount_type) + sizeof(size_type)
+			);
+
+		List<char16_t> units;
+		units.EnsureCapacity(unitCount);
+
+		for (CodePoint cp : cps)
+		{
+			uint32_t v = cp.Value;
+			if (v <= 0xFFFF)
+			{
+				units.Add(static_cast<char16_t>(v));
+			}
+			else
+			{
+				v -= 0x10000;
+				units.Add(static_cast<char16_t>(0xD800 + (v >> 10)));
+				units.Add(static_cast<char16_t>(0xDC00 + (v & 0x3FF)));
+			}
+		}
+
+		UTF16Encoding::ToHex(units.Data(), unitCount, dst);
+
+		String out(block);
+		out._byteLength = outLen;
+		return out;
+	}
+
+	case Encoding::UTF32:
+	{
+		List<CodePoint> cps = DecodeToCodePoints(*this);
+		uint32_t unitCount = cps.Count();
+
+		if (unitCount == 0)
+			return String::Empty();
+
+		uint32_t outLen = UTF32Encoding::ToHexLength(unitCount);
+
+		unsigned char* block = allocate_block(outLen);
+		if (!block) return String::Empty();
+
+		Char* dst = reinterpret_cast<Char*>(
+			block + sizeof(refcount_type) + sizeof(size_type)
+			);
+
+		UTF32Encoding::ToHex(
+			reinterpret_cast<const char32_t*>(cps.Data()),
+			unitCount,
+			dst
+		);
+
+		String out(block);
+		out._byteLength = outLen;
+		return out;
+	}
+	}
+
+	// fallback defensivo
+	return String::Empty();
 }
 
 String String::ToLower(const String& locale) const noexcept
@@ -1873,7 +1994,7 @@ String String::ToLower(const String& locale) const noexcept
 	const Char* ptr = data();
 	uint32_t pos = 0;
 
-	UTF8::Decode(*this, GetByteCount(), cps);
+	UTF8::Decode(data(), GetByteCount(), cps);
 
 	if (cps.IsEmpty())
 		return String();
@@ -1963,7 +2084,7 @@ String String::ToUpper(const String& locale) const noexcept
 	const Char* ptr = data();
 	uint32_t pos = 0;
 
-	UTF8::Decode(*this, GetByteCount(), cps);
+	UTF8::Decode(data(), GetByteCount(), cps);
 
 	if (cps.IsEmpty())
 		return String();
@@ -2306,7 +2427,6 @@ void String::release() noexcept
 	// invalidate caches
 	InvalidateAscii();
 	_gcLength = UInt32::MaxValue();
-	ReleaseNormalizationCache();
 }
 
 unsigned char* String::allocate_block(String::size_type lenChars) noexcept
@@ -2337,10 +2457,10 @@ void String::init_from_cstr(const char* cstr) noexcept
 		return;
 	}
 	size_type len = 0; while (cstr[len] != '\0') ++len;
-	init_from_bytes(reinterpret_cast<const unsigned char*>(cstr), len);
+	init_from_bytes(reinterpret_cast<const Byte*>(cstr), len);
 }
 
-void String::init_from_bytes(const unsigned char* bytes, size_type len) noexcept
+void String::init_from_bytes(const Byte* bytes, size_type len) noexcept
 {
 	static_assert(sizeof(Char) == sizeof(Byte));
 
@@ -2512,7 +2632,7 @@ List<CodePoint> String::DecodeToCodePoints(const String& s)
 	// Reserva capacidade aproximada: pior caso 1 byte = 1 CP
 	result.EnsureCapacity(len);
 
-	UTF8::Decode(s, s.GetByteCount(), result);
+	UTF8::Decode(s.data(), s.GetByteCount(), result);
 
 	return result;
 }
@@ -2601,85 +2721,7 @@ Boolean String::ContainsFolded(const List<CodePoint>& hay, const List<CodePoint>
 	return false;
 }
 
-String String::GetNormalized(UnicodeNormalization::NormalizationForm form) const noexcept
-{
-	if (IsEmpty()) return *this;
-
-	// 0) Decode to codepoints
-	List<CodePoint> cps = DecodeToCodePoints(*this);
-	uint32_t cpCount = cps.Count();
-	if (cpCount == 0) return *this;
-
-	// 1) ZWJ → skip normalization
-	for (uint32_t i = 0; i < cpCount; ++i)
-		if ((uint32_t)cps[i] == 0x200D)
-			return *this;
-
-	// 2) Decompose dynamically
-	const bool compat = (form == UnicodeNormalization::NormalizationForm::NFKC ||
-		form == UnicodeNormalization::NormalizationForm::NFKD);
-
-	List<CodePoint> temp;
-	temp.EnsureCapacity(cpCount * 3);
-
-	for (uint32_t i = 0; i < cpCount; ++i)
-	{
-		CodePoint local[32];
-		uint32_t localLen = 0;
-
-		UnicodeNormalization::DecomposeCodePoint(cps[i], compat, local, localLen);
-
-		for (uint32_t k = 0; k < localLen; ++k)
-			temp.Add(local[k]);
-	}
-
-	// 3) If nothing was produced, fallback to original cps
-	if (temp.Count() == 0 && cpCount > 0)
-	{
-		temp.Clear();
-		for (uint32_t i = 0; i < cpCount; ++i)
-			temp.Add(cps[i]);
-	}
-
-	// 4) Reorder
-	UnicodeNormalization::ReorderByCCC(temp);
-
-	// 5) Compose
-	if (form == UnicodeNormalization::NormalizationForm::NFC ||
-		form == UnicodeNormalization::NormalizationForm::NFKC)
-	{
-		UnicodeNormalization::Compose(temp);
-	}
-
-	// 6) Re-encode UTF-8
-	uint32_t totalBytes = 0;
-	for (uint32_t i = 0; i < temp.Count(); ++i)
-	{
-		uint32_t cpv = temp[i];
-		totalBytes += (cpv <= 0x7F ? 1 :
-			cpv <= 0x7FF ? 2 :
-			cpv <= 0xFFFF ? 3 : 4);
-	}
-
-	unsigned char* block = allocate_block(totalBytes);
-	if (!block) return String();
-
-	Char* dst = reinterpret_cast<Char*>(block + sizeof(refcount_type) + sizeof(size_type));
-
-	uint32_t w = 0;
-	for (uint32_t i = 0; i < temp.Count(); ++i)
-	{
-		UTF8::UTF8EncodeResult enc = UTF8::encode_utf8(temp[i]);
-		for (uint32_t j = 0; j < enc.Length; ++j)
-			dst[w++] = enc.Bytes[j];
-	}
-
-	String out(block);
-	out._byteLength = totalBytes;
-	return out;
-}
-
-Boolean String::EndsWithInternal(const String& needle, bool ignoreCase, const char* locale) const noexcept
+Boolean String::EndsWithInternal(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept
 {
 	if (needle.IsEmpty())
 		return true;
@@ -2694,7 +2736,7 @@ Boolean String::EndsWithInternal(const String& needle, bool ignoreCase, const ch
 
 	uint32_t start = H - N;
 
-	const char* loc = (locale ? locale : "en");
+	const char* loc = locale.data();
 	uint32_t locLen = (uint32_t)strlen(loc);
 	bool isTurkic = UnicodeCase::locale_is_turkic(loc, locLen);
 
@@ -2717,8 +2759,8 @@ Boolean String::EndsWithInternal(const String& needle, bool ignoreCase, const ch
 	// SLOW-PATH: Unicode Casefold + Normalize (Full Unicode Standard)
 	// ====================================
 	List<CodePoint> hayFold, neeFold;
-	UTF8::FoldAndNormalize(*this, GetByteCount(), loc, hayFold);
-	UTF8::FoldAndNormalize(needle, needle.GetByteCount(), loc, neeFold);
+	UTF8::FoldAndNormalize(data(), GetByteCount(), loc, hayFold);
+	UTF8::FoldAndNormalize(needle.data(), needle.GetByteCount(), loc, neeFold);
 
 	if (ignoreCase)
 		return UTF8::EndsWithIgnoreCase(hayFold, neeFold, loc);
@@ -2726,7 +2768,7 @@ Boolean String::EndsWithInternal(const String& needle, bool ignoreCase, const ch
 		return UTF8::EndsWith(hayFold, neeFold);
 }
 
-Boolean String::StartsWithInternal(const String& needle, bool ignoreCase, const char* locale) const noexcept
+Boolean String::StartsWithInternal(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept
 {
 	if (needle.IsEmpty())
 		return true;
@@ -2740,7 +2782,7 @@ Boolean String::StartsWithInternal(const String& needle, bool ignoreCase, const 
 		return false;
 
 	// Locale detection
-	const char* loc = (locale ? locale : "en");
+	const char* loc = locale.data();
 	uint32_t locLen = (uint32_t)strlen(loc);
 	bool isTurkic = UnicodeCase::locale_is_turkic(loc, locLen);
 
@@ -2763,12 +2805,12 @@ Boolean String::StartsWithInternal(const String& needle, bool ignoreCase, const 
 	// SLOW-PATH: Unicode Casefold + Normalize (Full Unicode Standard)
 	// ====================================
 	List<CodePoint> hayFold, neeFold;
-	UTF8::FoldAndNormalize(*this, GetByteCount(), loc, hayFold);
-	UTF8::FoldAndNormalize(needle, needle.GetByteCount(), loc, neeFold);
+	UTF8::FoldAndNormalize(data(), GetByteCount(), loc, hayFold);
+	UTF8::FoldAndNormalize(needle.data(), needle.GetByteCount(), loc, neeFold);
 
 	if (ignoreCase)
 		return UTF8::StartsWithIgnoreCase(hayFold, neeFold, loc);
-	else		   
+	else
 		return UTF8::StartsWith(hayFold, neeFold);
 }
 
@@ -2898,16 +2940,14 @@ String String::SubstringByBytes(uint32_t byteStart, uint32_t byteLen) const noex
 	if (IsSSO())
 	{
 		// COPY — nunca slice em SSO
-		return String(reinterpret_cast<const unsigned char*>(data() + byteStart), byteLen);
+		return String(reinterpret_cast<const Byte*>(data() + byteStart), byteLen);
 	}
 
 	String sub(*this);
 	sub._byteOffset += byteStart;
 	sub._byteLength = byteLen;
 
-	sub.InvalidateCache();
 	sub._gcLength = UInt32::MaxValue();
-	sub.ReleaseNormalizationCache();
 
 	return sub;
 }

@@ -60,7 +60,7 @@ StringBuilder& StringBuilder::Append(const String& s) noexcept
 	if (len == 0)
 		return *this;
 
-	const Char* p = s;
+	const Char* p = static_cast<const Char*>(s);
 
 	_buffer.EnsureCapacity(_buffer.Count() + len);
 	_buffer.AddRange(p, len);
@@ -106,8 +106,5 @@ String StringBuilder::ToString() const noexcept
 	if (_buffer.IsEmpty())
 		return String::Empty();
 
-	return String(
-		reinterpret_cast<const unsigned char*>(_buffer.Data()),
-		_buffer.Count()
-	);
+	return String(_buffer.Data(), _buffer.Count());
 }

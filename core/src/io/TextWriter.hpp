@@ -56,7 +56,7 @@ public:
     // Write String (UTF-8)
     void Write(const String& s) noexcept {
         if (!IsValid()) return;
-        const Char* data = s;
+        const Char* data = static_cast<const Char*>(s);
         UInt64 len = s.GetByteCount(); // GetByteCount always! We need to handle CodePoints if you have it
 
         if (len == 0) return;

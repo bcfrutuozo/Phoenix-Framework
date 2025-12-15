@@ -2,6 +2,7 @@
 
 #include "catch_amalgamated.hpp"
 #include "types/String.hpp"
+#include "globalization/Locale.hpp"
 #include "text/unicode/UnicodeCase_utils.hpp"
 #include "text/unicode/UnicodeNormalization_utils.hpp"
 #include "collections/List.hpp"
@@ -163,12 +164,13 @@ TEST_CASE("String: Equals")
     {
         String a((const char*)u8"Stra\u00DFe");
         String b((const char*)u8"STRASSE");
-        REQUIRE(String::Equals(a, b, true, (const char*)u8"de"));
+        REQUIRE(String::Equals(a, b, true, Locale((const char*)u8"de")));
     }
 
     SECTION("IgnoreCase Unicode – Turkish I")
     {
-        String locale((const char*)u8"tr");
+        String loc = (const char*)u8"tr";
+        Locale locale(loc);
         // U+0049 LATIN CAPITAL LETTER I  -> dotless i (U+0131) in Turkish casefold
         REQUIRE(String::Equals((const char*)u8"I", (const char*)u8"\u0131", true, locale));   // I -> dotless i
         // U+0130 LATIN CAPITAL LETTER I WITH DOT ABOVE -> maps to 'i' with dot in Turkish
@@ -179,7 +181,7 @@ TEST_CASE("String: Equals")
     {
         // U+FB03 = LATIN SMALL LIGATURE FFI
         String a((const char*)u8"\uFB03");
-        REQUIRE(String::Equals(a, (const char*)u8"ffi", true));
+        REQUIRE(String::Equals(a, u8"ffi", true));
     }
 }
 
@@ -189,15 +191,15 @@ TEST_CASE("String: Equals")
 
 TEST_CASE("String: Compare (Unicode casefold aware)")
 {
-    REQUIRE(String::Compare("abc", "ABC", true, (const char*)u8"en") == 0);
-    REQUIRE(String::Compare((const char*)u8"Stra\u00DFe", (const char*)u8"STRASSE", true, (const char*)u8"de") == 0);
+    REQUIRE(String::Compare("abc", "ABC", true, Locale((const char*)u8"en")) == 0);
+    REQUIRE(String::Compare((const char*)u8"Stra\u00DFe", (const char*)u8"STRASSE", true, Locale((const char*)u8"de")) == 0);
 
-    REQUIRE(String::Compare("a", "b", false, (const char*)u8"en") < 0);
-    REQUIRE(String::Compare("b", "a", false, (const char*)u8"en") > 0);
+    REQUIRE(String::Compare("a", "b", false, Locale((const char*)u8"en")) < 0);
+    REQUIRE(String::Compare("b", "a", false, Locale((const char*)u8"en")) > 0);
 
     // Turkish dotted/dotless I: compare with Turkish locale
-    REQUIRE(String::Compare((const char*)u8"\u0130", (const char*)u8"i", true, (const char*)u8"tr") == 0); // İ == i (locale aware)
-    REQUIRE(String::Compare((const char*)u8"I", (const char*)u8"\u0131", true, (const char*)u8"tr") == 0); // I == ı
+    REQUIRE(String::Compare((const char*)u8"\u0130", (const char*)u8"i", true, Locale((const char*)u8"tr")) == 0); // İ == i (locale aware)
+    REQUIRE(String::Compare((const char*)u8"I", (const char*)u8"\u0131", true, Locale((const char*)u8"tr")) == 0); // I == ı
 }
 
 
@@ -802,8 +804,8 @@ TEST_CASE("String: StartsWith / EndsWith / Contains — ASCII ignoreCase")
 {
     String s("HelloWorld");
 
-    REQUIRE(s.StartsWith("hello", true, "en"));
-    REQUIRE(s.EndsWith("world", true, "en"));
+    REQUIRE(s.StartsWith("hello", true, Locale("en")));
+    REQUIRE(s.EndsWith("world", true, Locale("en")));
     REQUIRE(s.Contains("helloworld", true));
     REQUIRE(s.Contains("HELLO", true));
     REQUIRE(s.Contains("world", true));
@@ -819,12 +821,12 @@ TEST_CASE("String: StartsWith / EndsWith / Contains — German ß")
     String s((const char*)u8"Stra\u00DFe");
 
     // StartsWith
-    REQUIRE(s.StartsWith((const char*)u8"STR", true, "de"));
+    REQUIRE(s.StartsWith((const char*)u8"STR", true, Locale("de")));
     REQUIRE(s.StartsWith((const char*)u8"stra", true));
 
     // EndsWith
     REQUIRE(s.EndsWith((const char*)u8"\u00DFe", true));   // ße → ss e
-    REQUIRE(s.EndsWith("SSE", true, "de"));
+    REQUIRE(s.EndsWith("SSE", true, Locale("de")));
 
     // Contains
     REQUIRE(s.Contains((const char*)u8"\u00DF", false));   // exact ß
@@ -839,20 +841,20 @@ TEST_CASE("String: StartsWith / EndsWith / Contains — German ß")
 
 TEST_CASE("String: StartsWith / EndsWith / Contains — Turkish I")
 {
-    String locale("tr");
+    Locale locale("tr");
 
     // "I" vs "ı"
-    REQUIRE(String((const char*)u8"I").Equals((const char*)u8"\u0131", true, "tr"));
+    REQUIRE(String(u8"I").Equals(u8"\u0131", Boolean(true), locale));
 
     // StartsWith
-    REQUIRE(String((const char*)u8"Istanbul").StartsWith((const char*)u8"\u0131s", true, "tr"));
+    REQUIRE(String(u8"Istanbul").StartsWith(u8"\u0131s", true, locale));
 
     // EndsWith
-    REQUIRE(String((const char*)u8"\u0130").EndsWith("i", true, "tr")); // İ → i
+    REQUIRE(String(u8"\u0130").EndsWith("i", true, locale)); // İ → i
 
     // Contains
-    REQUIRE(String("I").Contains((const char*)u8"\u0131", true, locale)); // I → ı
-    REQUIRE(String((const char*)u8"\u0130").Contains("i", true, locale));               // İ → i
+    REQUIRE(String("I").Contains(u8"\u0131", true, locale)); // I → ı
+    REQUIRE(String(u8"\u0130").Contains("i", true, locale));               // İ → i
 }
 
 // =====================================================
@@ -927,10 +929,10 @@ TEST_CASE("String: Contains — emoji flags (regional indicators)")
     // 🇧🇷 = U+1F1E7 U+1F1F7
     String flag((const char*)u8"\U0001F1E7\U0001F1F7!");
 
-   // REQUIRE(flag.StartsWith((const char*)u8"\U0001F1E7"));
-   // REQUIRE(flag.StartsWith((const char*)u8"\U0001F1E7\U0001F1F7"));
-    //REQUIRE(flag.Contains("!"));
-    //REQUIRE(flag.EndsWith("!"));
+    REQUIRE(flag.StartsWith((const char*)u8"\U0001F1E7"));
+    REQUIRE(flag.StartsWith((const char*)u8"\U0001F1E7\U0001F1F7"));
+    REQUIRE(flag.Contains("!"));
+    REQUIRE(flag.EndsWith("!"));
 }
 
 // =====================================================
@@ -2482,8 +2484,8 @@ TEST_CASE("String::Remove - ASCII vs Unicode consistency [.NET]", "[Remove]")
 static int CountOccurrences(const String& s, const String& sub) {
     if (sub.IsEmpty()) return 0;
 
-    const Char* hay = s;
-    const Char* ned = sub;
+    const char* hay = static_cast<const char*>(s);
+    const char* ned = static_cast<const char*>(sub);
 
     uint32_t H = s.GetByteCount();
     uint32_t N = sub.GetByteCount();
@@ -2536,7 +2538,7 @@ TEST_CASE("String::Replace(Char, Char) — UTF-8 is not interpreted as char")
 
     String r = s.Replace(Char(0xC3), Char(0xFF));
 
-    const unsigned char* raw = reinterpret_cast<const unsigned char*>((const char*)r);
+    const unsigned char* raw = static_cast<const unsigned char*>(r);
     // we're replacing the first byte of 'é' (0xC3)
     REQUIRE(raw[3] == 0xFF);
 }
@@ -2577,7 +2579,7 @@ TEST_CASE("String::Replace(CodePoint, CodePoint) — no match")
 TEST_CASE("String::Replace(CodePoint, CodePoint) — combining marks preserved (explicit bytes)")
 {
     // construct explicitly 'a' + COMBINING ACUTE (NFD): 0x61 0xCC 0x81
-    unsigned char raw[] = { 0x61, 0xCC, 0x81 };
+    Char raw[] = { 0x61, 0xCC, 0x81 };
     String s(raw, 3);
 
     String r = s.Replace(CodePoint(U'a'), CodePoint(U'b'));
@@ -2735,7 +2737,7 @@ TEST_CASE("String::Replace — replace with empty newValue removes correctly")
 
 TEST_CASE("String::Replace(CodePoint,CodePoint) — invalid UTF-8 becomes U+FFFD")
 {
-    unsigned char raw[] = { 'A', 0xFF, 'B' };
+    Char raw[] = { 'A', 0xFF, 'B' };
     String s(raw, 3);
 
     String r = s.Replace(CodePoint(0xFFFD), CodePoint(U'?'));

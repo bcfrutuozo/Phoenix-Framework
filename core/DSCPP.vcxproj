@@ -119,6 +119,7 @@
       <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(ProjectDir)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,6 +136,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,6 +148,7 @@
     <ClInclude Include="src\collections\List.hpp" />
     <ClInclude Include="src\collections\Queue.hpp" />
     <ClInclude Include="src\collections\Stack.hpp" />
+    <ClInclude Include="src\globalization\Locale.hpp" />
     <ClInclude Include="src\meta\BaseDef.hpp" />
     <ClInclude Include="src\meta\TypeTraits.hpp" />
     <ClInclude Include="src\meta\ValueType.hpp" />
@@ -162,6 +165,7 @@
     <ClInclude Include="src\system\Globals.hpp" />
     <ClInclude Include="src\system\Marvin32.hpp" />
     <ClInclude Include="src\text\ASCII.hpp" />
+    <ClInclude Include="src\text\Encoding.hpp" />
     <ClInclude Include="src\text\StringBuilder.hpp" />
     <ClInclude Include="src\text\unicode\UnicodeCase_folding.hpp" />
     <ClInclude Include="src\text\unicode\UnicodeCase_generated.hpp" />
