@@ -5,6 +5,9 @@
 
 int main(int argc, char* argv[])
 {
+    const char* p = "ABCDEF";
+    String oooo = p;
+
     String x = "\xF0\x9F\x91\x8D\xF0\x9F\x91\x8D Bruno Corrêa Frutuozo \xF0\x9F\x91\x8D\xF0\x9F\x91\x8D";
     String y = "UTF8: " + x.ToHex();
     String w = "UTF16: " + x.ToHex(Encoding::UTF16);

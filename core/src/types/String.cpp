@@ -7,9 +7,14 @@
 #include <stdlib.h>
 #include <cstring>
 
-String::String(const char* cstr) noexcept
+String::String() : _ptr(0), _byteOffset(0), _byteLength(0)
 {
-	init_from_cstr(cstr);
+	_sso[0] = Char(0);
+}
+
+String::String(char c) noexcept : String(Char(c))
+{
+
 }
 
 String::String(Char c) noexcept
@@ -20,7 +25,7 @@ String::String(Char c) noexcept
 	_sso[0] = c;
 	_sso[1] = Char(0);
 
-	SetAscii((unsigned char)c.Value < 0x80);
+	set_string_as_ascii((unsigned char)c.Value < 0x80);
 
 	_gcLength = 1;
 }
@@ -67,6 +72,91 @@ String::String(const List<CodePoint>& cps) noexcept
 	_ptr = block;
 	_byteOffset = 0;
 	_byteLength = totalBytes;
+}
+
+String::String(const Char* bytes, size_t len) noexcept : String(reinterpret_cast<const Byte*>(bytes), len)
+{
+
+}
+
+String::String(const char* p) noexcept
+{
+	if (!p || *p == '\0')
+	{
+		*this = String::Empty();
+		return;
+	}
+
+	size_type len = 0;
+	while (p[len] != '\0')
+		++len;
+
+	init_from_bytes(reinterpret_cast<const Byte*>(p), len);
+}
+
+String::String(const char* p, size_type length) noexcept : String(reinterpret_cast<const Byte*>(p), length) 
+{
+}
+
+String::String(const wchar_t* p, uint32_t length) noexcept
+{
+	if (!p || length == 0)
+	{
+		*this = String::Empty();
+		return;
+	}
+
+	List<CodePoint> cps;
+#if WCHAR_MAX == 0xFFFF
+	UTF16Encoding::Decode(reinterpret_cast<const char16_t*>(p), length, cps);
+#elif WCHAR_MAX == 0x10FFFF
+	UTF32Encoding::Decode(reinterpret_cast<const char32_t*>(p), length, cps);
+#else
+	static_assert(false, "Unsupported wchar_t size");
+#endif
+
+	* this = FromCodePoints(cps);
+}
+
+String::String(const char8_t* p, uint32_t length) noexcept
+{
+	if (!p || length == 0)
+	{
+		*this = String::Empty();
+		return;
+	}
+
+	*this = String(reinterpret_cast<const Char*>(p), length);
+}
+
+String::String(const char16_t* p, uint32_t length) noexcept
+{
+	if (!p || length == 0)
+	{
+		*this = String::Empty();
+		return;
+	}
+	List<CodePoint> cps;
+	UTF16Encoding::Decode(p, length, cps);
+	*this = String::FromCodePoints(cps);
+}
+
+String::String(const char32_t* p, uint32_t length) noexcept
+{
+	if (!p || length == 0)
+	{
+		*this = String::Empty();
+		return;
+	}
+
+	List<CodePoint> cps;
+	UTF32Encoding::Decode(p, length, cps);
+	*this = String::FromCodePoints(cps);
+}
+
+String::String(CodePoint cp) noexcept
+{
+	*this = String::FromCodePoint(cp);
 }
 
 String::String(const String& other) noexcept
@@ -308,6 +398,47 @@ UInt64 String::GetLength() const noexcept
 	return gcTotal;
 }
 
+//template<typename... Args>
+//String String::Concat(Args&&... args)
+//{
+//	// materializa StringArg para cada argumento
+//	StringArg packed[] = { StringArg(std::forward<Args>(args))... };
+//
+//	uint32_t totalBytes = 0;
+//	for (const auto& a : packed)
+//		totalBytes += a.Get().GetByteCount();
+//
+//	if (totalBytes == 0)
+//		return String::Empty();
+//
+//	if (totalBytes <= SSO_CAPACITY)
+//	{
+//		String out;
+//		out._flags = FLAG_SSO;
+//		out._byteLength = totalBytes;
+//
+//		uint32_t offset = 0;
+//		for (const auto& a : packed)
+//			copy_bytes(out._sso, offset, a.Get());
+//
+//		out._sso[totalBytes] = Char(0);
+//		return out;
+//	}
+//
+//	unsigned char* block = allocate_block(totalBytes);
+//	Char* dst = reinterpret_cast<Char*>(
+//		block + sizeof(refcount_type) + sizeof(size_type)
+//		);
+//
+//	uint32_t offset = 0;
+//	for (const auto& a : packed)
+//		copy_bytes(dst, offset, a.Get());
+//
+//	String result(block);
+//	result._byteLength = totalBytes;
+//	return result;
+//}
+
 Boolean String::Contains(const String& sub) const noexcept {
 	if (sub.IsEmpty()) return true;
 
@@ -317,7 +448,7 @@ Boolean String::Contains(const String& sub) const noexcept {
 		_byteLength == sub._byteLength)
 		return true;
 
-	return ContainsBytes(sub);
+	return contain_byte(sub);
 }
 
 Boolean String::Contains(CodePoint cp) const noexcept {
@@ -475,7 +606,7 @@ Boolean String::Equals(const String& other) const noexcept
 
 Boolean String::EndsWith(const String& compare, Boolean ignoreCase, const Locale& locale) const noexcept
 {
-	return Boolean(EndsWithInternal(compare, ignoreCase, locale));
+	return Boolean(impl_EndsWith(compare, ignoreCase, locale));
 }
 
 Boolean String::EndsWith(const String& compare, Boolean ignoreCase) const noexcept
@@ -485,7 +616,7 @@ Boolean String::EndsWith(const String& compare, Boolean ignoreCase) const noexce
 
 Boolean String::EndsWith(const String& compare) const noexcept
 {
-	return Boolean(EndsWithInternal(compare, false, Locale("en")));
+	return Boolean(impl_EndsWith(compare, false, Locale("en")));
 }
 
 Boolean String::Equals(const String& other, Boolean ignoreCase) const noexcept
@@ -525,7 +656,7 @@ Int64 String::IndexOf(const String& value, size_t startIndex) const
 	// -----------------------------
 	// 1) Fast-path: ambas ASCII puras
 	// -----------------------------
-	if (IsASCII(*this) && IsASCII(value))
+	if (is_ascii(*this) && is_ascii(value))
 	{
 		UInt64 H = _byteLength;
 		UInt64 N = value._byteLength;
@@ -581,8 +712,8 @@ Int64 String::IndexOf(const String& value, size_t startIndex, StringComparison c
 	String RHS = value.ToLower("en");
 
 	// remove U+0307 — required for .NET compatibility
-	RemoveCombiningDotAbove(LHS);
-	RemoveCombiningDotAbove(RHS);
+	remove_combining_dot_above(LHS);
+	remove_combining_dot_above(RHS);
 
 	return LHS.IndexOf(RHS, startIndex);
 }
@@ -614,8 +745,8 @@ Int64 String::IndexOf(const String& value, size_t startIndex, size_t count, Stri
 	String LHS = this->ToLower("en").Substring((uint32_t)sIndex, (uint32_t)c);
 	String RHS = value.ToLower("en");
 
-	RemoveCombiningDotAbove(LHS);
-	RemoveCombiningDotAbove(RHS);
+	remove_combining_dot_above(LHS);
+	remove_combining_dot_above(RHS);
 
 	Int64 idx = LHS.IndexOf(RHS);
 	if (idx < 0) return -1;
@@ -662,7 +793,7 @@ Int64 String::IndexOfAny(const List<Char>& chars, UInt64 startIndex, UInt64 coun
 	for (UInt64 g = startIndex; g < end; ++g)
 	{
 		// Grapheme index → byte offset do primeiro byte UTF-8
-		uint32_t byteOffset = FindByteOffsetOfCodePoint((uint32_t)g);
+		uint32_t byteOffset = find_byte_offset_of_code_point((uint32_t)g);
 		if (byteOffset >= _byteLength)
 			continue;
 
@@ -701,7 +832,7 @@ String String::Insert(uint32_t cpIndex, const String& value) const noexcept
 	if (IsEmpty()) return value;
 
 	// Converter cpIndex → offset em bytes
-	uint32_t insertBytePos = FindByteOffsetOfCodePoint(cpIndex);
+	uint32_t insertBytePos = find_byte_offset_of_code_point(cpIndex);
 	if (insertBytePos > _byteLength)
 		insertBytePos = _byteLength; // insere no fim se passou
 
@@ -742,8 +873,8 @@ String String::Join(const String& separator, const List<String>& values)
 	if (count == 1)
 		return values[0];
 
-	bool sepASCII = String::IsASCII(separator);
-	bool allASCII = sepASCII && AllASCII(values);
+	bool sepASCII = String::is_ascii(separator);
+	bool allASCII = sepASCII && are_all_strings_ascii(values);
 
 	// ============================================
 	// FAST ASCII PATH
@@ -751,7 +882,7 @@ String String::Join(const String& separator, const List<String>& values)
 	if (allASCII)
 	{
 		uint32_t sepLen = separator.GetByteCount();
-		uint32_t total = ComputeJoinASCIIByteCount(values, sepLen);
+		uint32_t total = compute_join_ascii_byte_count(values, sepLen);
 
 		if (total <= SSO_CAPACITY)
 		{
@@ -857,7 +988,7 @@ Int64 String::LastIndexOf(const String& value, size_t startIndex) const noexcept
 	// -----------------------------
 	// 1) Fast-path: ambas ASCII puras
 	// -----------------------------
-	if (IsASCII(*this) && IsASCII(value))
+	if (is_ascii(*this) && is_ascii(value))
 	{
 		Int64 H = _byteLength;
 		Int64 N = value._byteLength;
@@ -927,8 +1058,8 @@ Int64 String::LastIndexOf(const String& value, size_t startIndex, StringComparis
 	String LHS = this->ToLower("en");
 	String RHS = value.ToLower("en");
 
-	RemoveCombiningDotAbove(LHS);
-	RemoveCombiningDotAbove(RHS);
+	remove_combining_dot_above(LHS);
+	remove_combining_dot_above(RHS);
 
 	return LHS.LastIndexOf(RHS, startIndex);
 }
@@ -968,8 +1099,8 @@ Int64 String::LastIndexOf(const String& value, size_t startIndex, size_t count, 
 	String LHS = this->ToLower("en").Substring((uint32_t)first, (uint32_t)c);
 	String RHS = value.ToLower("en");
 
-	RemoveCombiningDotAbove(LHS);
-	RemoveCombiningDotAbove(RHS);
+	remove_combining_dot_above(LHS);
+	remove_combining_dot_above(RHS);
 
 	Int64 idx = LHS.LastIndexOf(RHS);
 	if (idx < 0)
@@ -1021,7 +1152,7 @@ Int64 String::LastIndexOfAny(const List<Char>& chars, UInt64 startIndex, UInt64 
 
 	for (Int64 g = sIndex; g >= first; --g)
 	{
-		uint32_t byteOffset = FindByteOffsetOfCodePoint((uint32_t)g);
+		uint32_t byteOffset = find_byte_offset_of_code_point((uint32_t)g);
 		if (byteOffset >= _byteLength)
 			continue;
 
@@ -1181,7 +1312,7 @@ String String::Remove(int start, int count) const noexcept
 	// ===========================
 	// ASCII FAST-PATH
 	// ===========================
-	if (IsASCII(*this))
+	if (is_ascii(*this))
 	{
 		uint32_t byteStart = (uint32_t)start;
 		uint32_t byteCount = (uint32_t)rem;
@@ -1238,8 +1369,8 @@ String String::Remove(int start, int count) const noexcept
 	uint32_t startCpIndex = boundaries[s];
 	uint32_t endCpIndex = (s + c < gcTotal) ? (uint32_t)boundaries[s + c] : cpCount;
 
-	uint32_t byteStart = FindByteOffsetOfCodePoint(startCpIndex);
-	uint32_t byteEnd = FindByteOffsetOfCodePoint(endCpIndex);
+	uint32_t byteStart = find_byte_offset_of_code_point(startCpIndex);
+	uint32_t byteEnd = find_byte_offset_of_code_point(endCpIndex);
 
 	if (byteStart > _byteLength) byteStart = _byteLength;
 	if (byteEnd > _byteLength) byteEnd = _byteLength;
@@ -1317,7 +1448,7 @@ String String::Replace(CodePoint oldCp, CodePoint newCp) const noexcept
 	// -----------------------
 	// FAST-PATH ASCII CP replace
 	// -----------------------
-	if (oldCp.Value <= 0x7F && newCp.Value <= 0x7F && IsASCII(*this))
+	if (oldCp.Value <= 0x7F && newCp.Value <= 0x7F && is_ascii(*this))
 	{
 		unsigned char oldb = (unsigned char)oldCp.Value;
 		unsigned char newb = (unsigned char)newCp.Value;
@@ -1376,7 +1507,7 @@ String String::Replace(const String& oldValue, const String& newValue) const noe
 	// -----------------------------------------
 	// FAST-PATH: ASCII ordinal replace
 	// -----------------------------------------
-	if (IsASCII(*this) && IsASCII(oldValue) && IsASCII(newValue))
+	if (is_ascii(*this) && is_ascii(oldValue) && is_ascii(newValue))
 	{
 		const Char* h = data();
 		const Char* o = oldValue.data();
@@ -1433,7 +1564,7 @@ String String::Replace(const String& oldValue, const String& newValue, StringCom
 	// ---------------------------------------
 	// OrdinalIgnoreCase ASCII fast-path
 	// ---------------------------------------
-	if (IsASCII(*this) && IsASCII(oldValue) && IsASCII(newValue))
+	if (is_ascii(*this) && is_ascii(oldValue) && is_ascii(newValue))
 	{
 		const Char* h = data();
 		const Char* o = oldValue.data();
@@ -1468,14 +1599,14 @@ String String::Replace(const String& oldValue, const String& newValue, StringCom
 	return Replace(oldValue, newValue, true, "en");
 }
 
-String String::Replace(const String& oldValue, const String& newValue, bool ignoreCase, const String& locale) const noexcept
+String String::Replace(const String& oldValue, const String& newValue, Boolean ignoreCase, const String& locale) const noexcept
 {
 	if (oldValue.IsEmpty()) return *this;
 
 	bool asciiAll =
-		IsASCII(*this) &&
-		IsASCII(oldValue) &&
-		IsASCII(newValue);
+		is_ascii(*this) &&
+		is_ascii(oldValue) &&
+		is_ascii(newValue);
 
 	bool isTurkic = UnicodeCase::locale_is_turkic(
 		(const char*)locale.data(),
@@ -1708,56 +1839,56 @@ List<String> String::Split(const String& sep, int max, StringSplitOptions opt) c
 {
 	List<String> s;
 	s.Add(sep);
-	return SplitImpl(s, {}, max, opt);
+	return impl_Split(s, {}, max, opt);
 }
 
 List<String> String::Split(const String& separator, StringSplitOptions options) const
 {
 	List<String> s;
 	s.Add(separator);
-	return SplitImpl(s, {}, Int32::MaxValue(), options);
+	return impl_Split(s, {}, Int32::MaxValue(), options);
 }
 
 List<String> String::Split(const List<String>& seps, StringSplitOptions opt) const
 {
-	return SplitImpl(seps, {}, Int32::MaxValue(), opt);
+	return impl_Split(seps, {}, Int32::MaxValue(), opt);
 }
 
 List<String> String::Split(const List<String>& separators, int maxCount, StringSplitOptions options) const
 {
-	return SplitImpl(separators, {}, maxCount, options);
+	return impl_Split(separators, {}, maxCount, options);
 }
 
 List<String> String::Split(const List<Char>& separators, int maxCount, StringSplitOptions options) const
 {
-	return SplitImpl({}, separators, maxCount, options);
+	return impl_Split({}, separators, maxCount, options);
 }
 
 List<String> String::Split(const List<Char>& separators, StringSplitOptions options) const
 {
-	return SplitImpl({}, separators, Int32::MaxValue(), options);
+	return impl_Split({}, separators, Int32::MaxValue(), options);
 }
 
 List<String> String::Split(const List<Char>& separators) const
 {
-	return SplitImpl({}, separators, Int32::MaxValue(), StringSplitOptions::None);
+	return impl_Split({}, separators, Int32::MaxValue(), StringSplitOptions::None);
 }
 
 List<String> String::Split(const String& separator) const
 {
 	List<String> s;
 	s.Add(separator);
-	return SplitImpl(s, {}, Int32::MaxValue(), StringSplitOptions::None);
+	return impl_Split(s, {}, Int32::MaxValue(), StringSplitOptions::None);
 }
 
 List<String> String::Split(const List<String>& separators) const
 {
-	return SplitImpl(separators, {}, Int32::MaxValue(), StringSplitOptions::None);
+	return impl_Split(separators, {}, Int32::MaxValue(), StringSplitOptions::None);
 }
 
 Boolean String::StartsWith(const String& compare, Boolean ignoreCase, const Locale& locale) const noexcept
 {
-	return Boolean(StartsWithInternal(compare, ignoreCase, locale));
+	return Boolean(impl_StartsWith(compare, ignoreCase, locale));
 }
 
 Boolean String::StartsWith(const String& compare, Boolean ignoreCase) const noexcept
@@ -1767,7 +1898,7 @@ Boolean String::StartsWith(const String& compare, Boolean ignoreCase) const noex
 
 Boolean String::StartsWith(const String& compare) const noexcept
 {
-	return Boolean(StartsWithInternal(compare, false, Locale("en")));
+	return Boolean(impl_StartsWith(compare, false, Locale("en")));
 }
 
 String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
@@ -1776,7 +1907,7 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 		return String::Empty();
 
 	// FAST ASCII PATH
-	if (IsASCII(*this))
+	if (is_ascii(*this))
 	{
 		uint32_t start = gcStart;
 		uint32_t end = gcStart + gcCount;
@@ -1801,7 +1932,7 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 			sub._byteOffset += start;
 			sub._byteLength = len;
 
-			sub.InvalidateAscii();
+			sub.invalidate_ascii_flag();
 			sub._gcLength = UInt32::MaxValue();
 
 			return sub;
@@ -1829,8 +1960,8 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 	uint32_t startCp = boundaries[gcStart];
 	uint32_t endCp = (gcEnd < gcTotal ? (uint32_t)boundaries[gcEnd] : cpCount);
 
-	uint32_t byteStart = FindByteOffsetOfCodePoint(startCp);
-	uint32_t byteEnd = FindByteOffsetOfCodePoint(endCp);
+	uint32_t byteStart = find_byte_offset_of_code_point(startCp);
+	uint32_t byteEnd = find_byte_offset_of_code_point(endCp);
 	if (byteEnd > _byteLength) byteEnd = _byteLength;
 
 	uint32_t len = byteEnd - byteStart;
@@ -1844,7 +1975,7 @@ String String::Substring(uint32_t gcStart, uint32_t gcCount) const noexcept
 	sub._byteOffset += byteStart;
 	sub._byteLength = len;
 
-	sub.InvalidateAscii();
+	sub.invalidate_ascii_flag();
 	sub._gcLength = UInt32::MaxValue();
 
 	return sub;
@@ -1965,7 +2096,7 @@ String String::ToLower(const String& locale) const noexcept
 	bool isTurkic = UnicodeCase::locale_is_turkic(localeBytes, localeLen);
 
 	// FAST ASCII path (not turkic)
-	if (!isTurkic && IsASCII(*this))
+	if (!isTurkic && is_ascii(*this))
 	{
 		uint32_t len = _byteLength;
 		if (len == 0) return String();
@@ -2055,7 +2186,7 @@ String String::ToUpper(const String& locale) const noexcept
 	bool isTurkic = UnicodeCase::locale_is_turkic(localeBytes, localeLen);
 
 	// ASCII fast-path (not turkic)
-	if (!isTurkic && IsASCII(*this))
+	if (!isTurkic && is_ascii(*this))
 	{
 		uint32_t len = _byteLength;
 		if (len == 0) return String();
@@ -2375,7 +2506,6 @@ String String::ToString() const noexcept
 	return *this;
 }
 
-
 String::String(unsigned char* block) noexcept
 {
 	if (!block)
@@ -2425,7 +2555,7 @@ void String::release() noexcept
 	_flags = FLAG_SSO;
 
 	// invalidate caches
-	InvalidateAscii();
+	invalidate_ascii_flag();
 	_gcLength = UInt32::MaxValue();
 }
 
@@ -2446,20 +2576,6 @@ unsigned char* String::allocate_block(String::size_type lenChars) noexcept
 	return p;
 }
 
-void String::init_from_cstr(const char* cstr) noexcept
-{
-	if (!cstr || cstr[0] == '\0')
-	{
-		_flags = FLAG_SSO;
-		_byteOffset = 0;
-		_byteLength = 0;
-		_sso[0] = Char(0);
-		return;
-	}
-	size_type len = 0; while (cstr[len] != '\0') ++len;
-	init_from_bytes(reinterpret_cast<const Byte*>(cstr), len);
-}
-
 void String::init_from_bytes(const Byte* bytes, size_type len) noexcept
 {
 	static_assert(sizeof(Char) == sizeof(Byte));
@@ -2470,7 +2586,7 @@ void String::init_from_bytes(const Byte* bytes, size_type len) noexcept
 		_byteLength = 0;
 		_byteOffset = 0;
 		_sso[0] = Char(0);
-		SetAscii(true);
+		set_string_as_ascii(true);
 		return;
 	}
 
@@ -2488,7 +2604,7 @@ void String::init_from_bytes(const Byte* bytes, size_type len) noexcept
 		}
 
 		_sso[len] = Char(0);
-		SetAscii(ascii);
+		set_string_as_ascii(ascii);
 		return;
 	}
 
@@ -2506,10 +2622,10 @@ void String::init_from_bytes(const Byte* bytes, size_type len) noexcept
 		if (bytes[i] & 0x80) ascii = false;
 	}
 
-	SetAscii(ascii);
+	set_string_as_ascii(ascii);
 }
 
-uint32_t String::FindByteOffsetOfCodePoint(uint32_t cpIndex) const
+uint32_t String::find_byte_offset_of_code_point(uint32_t cpIndex) const
 {
 	if (cpIndex == 0) return 0;
 
@@ -2535,14 +2651,14 @@ uint32_t String::FindByteOffsetOfCodePoint(uint32_t cpIndex) const
 	return pos;
 }
 
-int String::CompareOrdinalCP(CodePoint cpA, CodePoint cpB) noexcept
+int String::compare_ordinal_icp(CodePoint cpA, CodePoint cpB) noexcept
 {
 	if (cpA < cpB) return -1;
 	if (cpA > cpB) return 1;
 	return 0;
 }
 
-int String::CompareCodePoints_CaseAware(CodePoint a, CodePoint b) noexcept
+int String::compare_code_points_case_aware(CodePoint a, CodePoint b) noexcept
 {
 	if (a < b) return -1;
 	if (a > b) return 1;
@@ -2551,37 +2667,30 @@ int String::CompareCodePoints_CaseAware(CodePoint a, CodePoint b) noexcept
 
 CodePoint String::GetCodePointAt(uint32_t cpIndex) const noexcept
 {
-	uint32_t offset = FindByteOffsetOfCodePoint(cpIndex);
+	uint32_t offset = find_byte_offset_of_code_point(cpIndex);
 	if (offset >= _byteLength) return CodePoint(0);
 	auto r = UTF8::decode_utf8(data() + offset, _byteLength - offset);
 	if (!r.IsValid) return CodePoint(0);
 	return r.cp;
 }
 
-uint32_t String::GetByteLen(const char* cstr) noexcept {
-	if (!cstr) return 0;
-	uint32_t len = 0;
-	while (cstr[len] != '\0') ++len;   // UTF-8 byte count
-	return len;
-}
-
-void String::CopyBytes(Char* dst, uint32_t& offset, const String& s) noexcept {
+void String::copy_bytes(Char* dst, uint32_t& offset, const String& s) noexcept {
 	uint32_t len = s.GetByteCount();
 	const Char* src = s.data();
 	for (uint32_t i = 0; i < len; ++i)
 		dst[offset++] = src[i];
 }
 
-void String::CopyBytes(Char* dst, uint32_t& offset, const char* cstr) noexcept {
+void String::copy_bytes(Char* dst, uint32_t& offset, const char* cstr) noexcept {
 	if (!cstr) return;
 	while (*cstr)
 		dst[offset++] = Char(static_cast<unsigned char>(*cstr++));
 }
 
-bool String::IsASCII(const String& s) noexcept
+bool String::is_ascii(const String& s) noexcept
 {
 	// if known, return quickly
-	if (s.IsAsciiKnown()) return s.IsAsciiCached();
+	if (s.is_ascii_known()) return s.is_ascii_cached();
 
 	const Char* p = s.data();
 	uint32_t len = s._byteLength;
@@ -2591,17 +2700,17 @@ bool String::IsASCII(const String& s) noexcept
 		if ((unsigned char)p[i].Value >= 0x80)
 		{
 			// cache negative
-			s.SetAscii(false);
+			s.set_string_as_ascii(false);
 			return false;
 		}
 	}
 
 	// all ascii
-	s.SetAscii(true);
+	s.set_string_as_ascii(true);
 	return true;
 }
 
-Boolean String::ContainsBytes(const String& sub) const noexcept
+Boolean String::contain_byte(const String& sub) const noexcept
 {
 	const Char* hay = data();
 	const Char* needle = sub.data();
@@ -2637,7 +2746,7 @@ List<CodePoint> String::DecodeToCodePoints(const String& s)
 	return result;
 }
 
-void String::CaseFoldUnicode(
+void String::case_fold_unicode(
 	const List<CodePoint>& cps,        // input sequence
 	const char* localeBytes,        // ex: "tr", "en"
 	uint32_t localeLen,
@@ -2677,7 +2786,7 @@ void String::CaseFoldUnicode(
 	}
 }
 
-int String::CompareFolded(const List<CodePoint>& a, const List<CodePoint>& b)
+int String::compare_folded(const List<CodePoint>& a, const List<CodePoint>& b)
 {
 	uint32_t lenA = a.Count();
 	uint32_t lenB = b.Count();
@@ -2696,7 +2805,7 @@ int String::CompareFolded(const List<CodePoint>& a, const List<CodePoint>& b)
 	return 0;
 }
 
-Boolean String::ContainsFolded(const List<CodePoint>& hay, const List<CodePoint>& ned)
+Boolean String::contain_folded(const List<CodePoint>& hay, const List<CodePoint>& ned)
 {
 	uint32_t hayLen = hay.Count();
 	uint32_t nedLen = ned.Count();
@@ -2721,7 +2830,7 @@ Boolean String::ContainsFolded(const List<CodePoint>& hay, const List<CodePoint>
 	return false;
 }
 
-Boolean String::EndsWithInternal(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept
+Boolean String::impl_EndsWith(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept
 {
 	if (needle.IsEmpty())
 		return true;
@@ -2768,7 +2877,7 @@ Boolean String::EndsWithInternal(const String& needle, Boolean ignoreCase, const
 		return UTF8::EndsWith(hayFold, neeFold);
 }
 
-Boolean String::StartsWithInternal(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept
+Boolean String::impl_StartsWith(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept
 {
 	if (needle.IsEmpty())
 		return true;
@@ -2814,7 +2923,7 @@ Boolean String::StartsWithInternal(const String& needle, Boolean ignoreCase, con
 		return UTF8::StartsWith(hayFold, neeFold);
 }
 
-List<String> String::SplitImpl(
+List<String> String::impl_Split(
 	const List<String>& stringSeps,
 	const List<Char>& charSeps,
 	int maxCount,
@@ -2893,7 +3002,7 @@ List<String> String::SplitImpl(
 
 		// Extrai token (byte-based)
 		uint32_t tokLen = cutPos - pos;
-		String token = this->SubstringByBytes(pos, tokLen);
+		String token = this->substring_by_bytes(pos, tokLen);
 
 		if (HasFlag(options, StringSplitOptions::TrimEntries))
 			token = token.Trim();
@@ -2908,7 +3017,7 @@ List<String> String::SplitImpl(
 	if (pos <= H)
 	{
 		uint32_t tokLen = H - pos;
-		String token = this->SubstringByBytes(pos, tokLen);
+		String token = this->substring_by_bytes(pos, tokLen);
 
 		if (HasFlag(options, StringSplitOptions::TrimEntries))
 			token = token.Trim();
@@ -2920,7 +3029,7 @@ List<String> String::SplitImpl(
 	return result;
 }
 
-void String::RemoveCombiningDotAbove(String& s)
+void String::remove_combining_dot_above(String& s)
 {
 	List<CodePoint> cps = String::DecodeToCodePoints(s);
 	for (int i = (int)cps.Count() - 1; i >= 0; --i)
@@ -2929,7 +3038,7 @@ void String::RemoveCombiningDotAbove(String& s)
 	s = String::FromCodePoints(cps);
 }
 
-String String::SubstringByBytes(uint32_t byteStart, uint32_t byteLen) const noexcept
+String String::substring_by_bytes(uint32_t byteStart, uint32_t byteLen) const noexcept
 {
 	if (byteStart >= _byteLength || byteLen == 0)
 		return String::Empty();

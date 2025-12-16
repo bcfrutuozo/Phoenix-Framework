@@ -21,11 +21,6 @@ public:
 		: _message(msg) {
 	}
 
-	// From const char*
-	explicit Exception(const char* msg) noexcept
-		: _message(msg) {
-	}
-
 	// Copy constructor
 	Exception(const Exception& other) noexcept
 		: _message(other._message) {

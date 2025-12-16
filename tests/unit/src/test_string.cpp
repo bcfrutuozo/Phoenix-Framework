@@ -50,7 +50,7 @@ TEST_CASE("String: Construction and Basic Properties")
     SECTION("From UTF-8 C-string")
     {
         // "Straße" : S t r a ß e => 6 codepoints, 7 bytes
-        String s((const char*)u8"Stra\u00DFe");
+        String s(u8"Stra\u00DFe");
         REQUIRE(s.GetLength() == 6);
         REQUIRE(s.GetByteCount() == 7);
     }
@@ -162,25 +162,25 @@ TEST_CASE("String: Equals")
 
     SECTION("IgnoreCase Unicode – German ß → ss")
     {
-        String a((const char*)u8"Stra\u00DFe");
-        String b((const char*)u8"STRASSE");
-        REQUIRE(String::Equals(a, b, true, Locale((const char*)u8"de")));
+        String a(u8"Stra\u00DFe");
+        String b(u8"STRASSE");
+        REQUIRE(String::Equals(a, b, true, Locale(u8"de")));
     }
 
     SECTION("IgnoreCase Unicode – Turkish I")
     {
-        String loc = (const char*)u8"tr";
+        String loc = u8"tr";
         Locale locale(loc);
         // U+0049 LATIN CAPITAL LETTER I  -> dotless i (U+0131) in Turkish casefold
-        REQUIRE(String::Equals((const char*)u8"I", (const char*)u8"\u0131", true, locale));   // I -> dotless i
+        REQUIRE(String::Equals(u8"I", u8"\u0131", true, locale));   // I -> dotless i
         // U+0130 LATIN CAPITAL LETTER I WITH DOT ABOVE -> maps to 'i' with dot in Turkish
-        REQUIRE(String::Equals((const char*)u8"\u0130", (const char*)u8"i", true, locale));
+        REQUIRE(String::Equals(u8"\u0130", u8"i", true, locale));
     }
 
     SECTION("IgnoreCase ligatures")
     {
         // U+FB03 = LATIN SMALL LIGATURE FFI
-        String a((const char*)u8"\uFB03");
+        String a(u8"\uFB03");
         REQUIRE(String::Equals(a, u8"ffi", true));
     }
 }
@@ -191,15 +191,15 @@ TEST_CASE("String: Equals")
 
 TEST_CASE("String: Compare (Unicode casefold aware)")
 {
-    REQUIRE(String::Compare("abc", "ABC", true, Locale((const char*)u8"en")) == 0);
-    REQUIRE(String::Compare((const char*)u8"Stra\u00DFe", (const char*)u8"STRASSE", true, Locale((const char*)u8"de")) == 0);
+    REQUIRE(String::Compare("abc", "ABC", true, Locale(u8"en")) == 0);
+    REQUIRE(String::Compare(u8"Stra\u00DFe", u8"STRASSE", true, Locale(u8"de")) == 0);
 
-    REQUIRE(String::Compare("a", "b", false, Locale((const char*)u8"en")) < 0);
-    REQUIRE(String::Compare("b", "a", false, Locale((const char*)u8"en")) > 0);
+    REQUIRE(String::Compare("a", "b", false, Locale(u8"en")) < 0);
+    REQUIRE(String::Compare("b", "a", false, Locale(u8"en")) > 0);
 
     // Turkish dotted/dotless I: compare with Turkish locale
-    REQUIRE(String::Compare((const char*)u8"\u0130", (const char*)u8"i", true, Locale((const char*)u8"tr")) == 0); // İ == i (locale aware)
-    REQUIRE(String::Compare((const char*)u8"I", (const char*)u8"\u0131", true, Locale((const char*)u8"tr")) == 0); // I == ı
+    REQUIRE(String::Compare(u8"\u0130", u8"i", true, Locale(u8"tr")) == 0); // İ == i (locale aware)
+    REQUIRE(String::Compare(u8"I", u8"\u0131", true, Locale(u8"tr")) == 0); // I == ı
 }
 
 
@@ -227,11 +227,11 @@ TEST_CASE("String: Substring (Grapheme-Cluster Aware)")
     //
     SECTION("Unicode BMP – German ß")
     {
-        String s((const char*)u8"Stra\u00DFe"); // S t r a ß e  → 6 clusters
+        String s(u8"Stra\u00DFe"); // S t r a ß e  → 6 clusters
 
         REQUIRE(s.Substring(0, 1).Equals("S"));
         REQUIRE(s.Substring(1, 3).Equals("tra"));
-        REQUIRE(s.Substring(4, 1).Equals((const char*)u8"\u00DF"));
+        REQUIRE(s.Substring(4, 1).Equals(u8"\u00DF"));
         REQUIRE(s.Substring(5, 1).Equals("e"));
     }
 
@@ -240,12 +240,12 @@ TEST_CASE("String: Substring (Grapheme-Cluster Aware)")
     //
     SECTION("Composed cluster – e + ◌́ (U+0301)")
     {
-        String s((const char*)u8"e\u0301x");
+        String s(u8"e\u0301x");
         // "é" → 1 grapheme cluster
         // "x" → 1 grapheme cluster
 
         REQUIRE(s.GetLength() == 2);
-        REQUIRE(s.Substring(0, 1).Equals((const char*)u8"e\u0301"));
+        REQUIRE(s.Substring(0, 1).Equals(u8"e\u0301"));
         REQUIRE(s.Substring(1, 1).Equals("x"));
     }
 
@@ -254,10 +254,10 @@ TEST_CASE("String: Substring (Grapheme-Cluster Aware)")
     //
     SECTION("Emoji – single cluster")
     {
-        String s((const char*)u8"\U0001F600ABC");
+        String s(u8"\U0001F600ABC");
 
         REQUIRE(s.GetLength() == 4);
-        REQUIRE(s.Substring(0, 1).Equals((const char*)u8"\U0001F600"));
+        REQUIRE(s.Substring(0, 1).Equals(u8"\U0001F600"));
         REQUIRE(s.Substring(1, 3).Equals("ABC"));
     }
 
@@ -267,10 +267,10 @@ TEST_CASE("String: Substring (Grapheme-Cluster Aware)")
     SECTION("Emoji + skin tone modifier (👍🏽)")
     {
         // 👍🏽 = U+1F44D U+1F3FD
-        String s((const char*)u8"\U0001F44D\U0001F3FDOK");
+        String s(u8"\U0001F44D\U0001F3FDOK");
 
         REQUIRE(s.GetLength() == 3);
-        REQUIRE(s.Substring(0, 1).Equals((const char*)u8"\U0001F44D\U0001F3FD"));
+        REQUIRE(s.Substring(0, 1).Equals(u8"\U0001F44D\U0001F3FD"));
         REQUIRE(s.Substring(1, 2).Equals("OK"));
     }
 
@@ -280,10 +280,10 @@ TEST_CASE("String: Substring (Grapheme-Cluster Aware)")
     SECTION("Emoji ZWJ Family")
     {
         // 👨‍👩‍👧‍👦 = U+1F468 ZWJ U+1F469 ZWJ U+1F467 ZWJ U+1F466
-        String s((const char*)u8"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466END");
+        String s(u8"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466END");
 
         REQUIRE(s.GetLength() == 4);
-        REQUIRE(s.Substring(0, 1).Equals((const char*)u8"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466"));
+        REQUIRE(s.Substring(0, 1).Equals(u8"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466"));
         REQUIRE(s.Substring(1, 3).Equals("END"));
     }
 
@@ -293,10 +293,10 @@ TEST_CASE("String: Substring (Grapheme-Cluster Aware)")
     SECTION("Flag – Brazil 🇧🇷")
     {
         // 🇧🇷 = U+1F1E7 U+1F1F7
-        String s((const char*)u8"\U0001F1E7\U0001F1F7123");
+        String s(u8"\U0001F1E7\U0001F1F7123");
 
         REQUIRE(s.GetLength() == 4);
-        REQUIRE(s.Substring(0, 1).Equals((const char*)u8"\U0001F1E7\U0001F1F7"));
+        REQUIRE(s.Substring(0, 1).Equals(u8"\U0001F1E7\U0001F1F7"));
         REQUIRE(s.Substring(1, 3).Equals("123"));
     }
 
@@ -306,13 +306,13 @@ TEST_CASE("String: Substring (Grapheme-Cluster Aware)")
     SECTION("Mixed clusters")
     {
         // 😀 é 👍🏽 🇧🇷 X
-        String s((const char*)u8"\U0001F600e\u0301\U0001F44D\U0001F3FD\U0001F1E7\U0001F1F7X");
+        String s(u8"\U0001F600e\u0301\U0001F44D\U0001F3FD\U0001F1E7\U0001F1F7X");
 
         REQUIRE(s.GetLength() == 5);
 
-        REQUIRE(s.Substring(0, 2).Equals((const char*)u8"\U0001F600e\u0301"));
-        REQUIRE(s.Substring(1, 3).Equals((const char*)u8"e\u0301\U0001F44D\U0001F3FD\U0001F1E7\U0001F1F7"));
-        REQUIRE(s.Substring(2, 2).Equals((const char*)u8"\U0001F44D\U0001F3FD\U0001F1E7\U0001F1F7"));
+        REQUIRE(s.Substring(0, 2).Equals(u8"\U0001F600e\u0301"));
+        REQUIRE(s.Substring(1, 3).Equals(u8"e\u0301\U0001F44D\U0001F3FD\U0001F1E7\U0001F1F7"));
+        REQUIRE(s.Substring(2, 2).Equals(u8"\U0001F44D\U0001F3FD\U0001F1E7\U0001F1F7"));
         REQUIRE(s.Substring(4, 1).Equals("X"));
     }
 
@@ -380,7 +380,7 @@ TEST_CASE("String: ToLower/ToUpper")
 
     SECTION("German sharp s")
     {
-        REQUIRE(String((const char*)u8"Stra\u00DFe").ToUpper().Equals((const char*)u8"STRASSE"));
+        REQUIRE(String(u8"Stra\u00DFe").ToUpper().Equals(u8"STRASSE"));
     }
 
     SECTION("Greek final sigma (contextual)")
@@ -388,16 +388,16 @@ TEST_CASE("String: ToLower/ToUpper")
         // Use explicit codepoints to avoid encoding issues:
         // U+039C U+039F U+03A3  => "ΜΟΣ" (Greek capital letters M O Sigma)
         // Lowercase expected: U+03BC U+03BF U+03C2 => "μος" with final sigma (U+03C2)
-        String s((const char*)u8"\u039C\u039F\u03A3");
-        REQUIRE(s.ToLower().Equals((const char*)u8"\u03BC\u03BF\u03C2"));
+        String s(u8"\u039C\u039F\u03A3");
+        REQUIRE(s.ToLower().Equals(u8"\u03BC\u03BF\u03C2"));
     }
 
     SECTION("Turkish locale correct behavior")
     {
-        String s((const char*)u8"I");
+        String s(u8"I");
         String lower = s.ToLower("tr");
 
-        CHECK(lower.Equals((const char*)u8"\u0131"));   // correto: "ı"
+        CHECK(lower.Equals(u8"\u0131"));   // correto: "ı"
     }
 }
 
@@ -483,17 +483,17 @@ TEST_CASE("String: Reference Counting (Heap)")
 TEST_CASE("Unicode Normalization – Basic Sanity")
 {
     // á (U+0061 + U+0301)
-    String decomposed((const char*)u8"a\u0301");
+    String decomposed(u8"a\u0301");
     // á (U+00E1)
-    String composed((const char*)u8"\u00E1");
+    String composed(u8"\u00E1");
 
     // NFD: both must equal decomposed
-    REQUIRE(decomposed.Normalize(NF::NFD).Equals((const char*)u8"a\u0301"));
-    REQUIRE(composed.Normalize(NF::NFD).Equals((const char*)u8"a\u0301"));
+    REQUIRE(decomposed.Normalize(NF::NFD).Equals(u8"a\u0301"));
+    REQUIRE(composed.Normalize(NF::NFD).Equals(u8"a\u0301"));
 
     // NFC: both must equal precomposed
-    REQUIRE(decomposed.Normalize(NF::NFC).Equals((const char*)u8"\u00E1"));
-    REQUIRE(composed.Normalize(NF::NFC).Equals((const char*)u8"\u00E1"));
+    REQUIRE(decomposed.Normalize(NF::NFC).Equals(u8"\u00E1"));
+    REQUIRE(composed.Normalize(NF::NFC).Equals(u8"\u00E1"));
 }
 
 // =====================================================
@@ -503,16 +503,16 @@ TEST_CASE("Unicode Normalization – Basic Sanity")
 TEST_CASE("Unicode Normalization – Combining marks")
 {
     // "e + combining acute"
-    String s1((const char*)u8"e\u0301");
-    String s2((const char*)u8"\u00E9"); // é
+    String s1(u8"e\u0301");
+    String s2(u8"\u00E9"); // é
 
     // NFC must compose
-    REQUIRE(s1.Normalize(NF::NFC).Equals((const char*)u8"\u00E9"));
-    REQUIRE(s2.Normalize(NF::NFC).Equals((const char*)u8"\u00E9"));
+    REQUIRE(s1.Normalize(NF::NFC).Equals(u8"\u00E9"));
+    REQUIRE(s2.Normalize(NF::NFC).Equals(u8"\u00E9"));
 
     // NFD must decompose
-    REQUIRE(s1.Normalize(NF::NFD).Equals((const char*)u8"e\u0301"));
-    REQUIRE(s2.Normalize(NF::NFD).Equals((const char*)u8"e\u0301"));
+    REQUIRE(s1.Normalize(NF::NFD).Equals(u8"e\u0301"));
+    REQUIRE(s2.Normalize(NF::NFD).Equals(u8"e\u0301"));
 }
 
 // =====================================================
@@ -522,7 +522,7 @@ TEST_CASE("Unicode Normalization – Combining marks")
 TEST_CASE("Unicode Normalization – Compatibility decomposition")
 {
     // ﬁ = U+FB01 (ligature f + i)
-    String lig((const char*)u8"\uFB01");
+    String lig(u8"\uFB01");
 
     // NFKD decomposes into "fi"
     REQUIRE(lig.Normalize(NF::NFKD).Equals("fi"));
@@ -531,7 +531,7 @@ TEST_CASE("Unicode Normalization – Compatibility decomposition")
     REQUIRE(lig.Normalize(NF::NFKC).Equals("fi"));
 
     // NFC must NOT decompose ligatures
-    REQUIRE(lig.Normalize(NF::NFC).Equals((const char*)u8"\uFB01"));
+    REQUIRE(lig.Normalize(NF::NFC).Equals(u8"\uFB01"));
 }
 
 // =====================================================
@@ -545,14 +545,14 @@ TEST_CASE("Unicode Normalization – Compatibility decomposition")
 TEST_CASE("Unicode Normalization – Hangul")
 {
     // 가 (U+AC00)
-    String s((const char*)u8"\uAC00");
+    String s(u8"\uAC00");
 
     // NFD decomposes algorithmically
     String nfd = s.Normalize(NF::NFD);
-    REQUIRE(nfd.Equals((const char*)u8"\u1100\u1161"));
+    REQUIRE(nfd.Equals(u8"\u1100\u1161"));
 
     // NFC recomposes
-    REQUIRE(nfd.Normalize(NF::NFC).Equals((const char*)u8"\uAC00"));
+    REQUIRE(nfd.Normalize(NF::NFC).Equals(u8"\uAC00"));
 }
 
 // =====================================================
@@ -562,11 +562,11 @@ TEST_CASE("Unicode Normalization – Hangul")
 TEST_CASE("Unicode Normalization – Canonical equivalences")
 {
     // Greek tonos: ό (U+03CC)
-    String composed((const char*)u8"\u03CC");
-    String decomposed((const char*)u8"\u03BF\u0301");
+    String composed(u8"\u03CC");
+    String decomposed(u8"\u03BF\u0301");
 
-    REQUIRE(composed.Normalize(NF::NFD).Equals((const char*)u8"\u03BF\u0301"));
-    REQUIRE(decomposed.Normalize(NF::NFC).Equals((const char*)u8"\u03CC"));
+    REQUIRE(composed.Normalize(NF::NFD).Equals(u8"\u03BF\u0301"));
+    REQUIRE(decomposed.Normalize(NF::NFC).Equals(u8"\u03CC"));
 }
 
 // =====================================================
@@ -576,13 +576,13 @@ TEST_CASE("Unicode Normalization – Canonical equivalences")
 TEST_CASE("Unicode Normalization – NFK* special mappings")
 {
     // "Fullwidth A" U+FF21 → compatibility → "A"
-    String fwA((const char*)u8"\uFF21");
+    String fwA(u8"\uFF21");
 
     REQUIRE(fwA.Normalize(NF::NFKD).Equals("A"));
     REQUIRE(fwA.Normalize(NF::NFKC).Equals("A"));
 
     // Roman numeral Ⅻ (U+216B) → compat → "XII"
-    String rn((const char*)u8"\u216B");
+    String rn(u8"\u216B");
     REQUIRE(rn.Normalize(NF::NFKC).Equals("XII"));
 }
 
@@ -592,8 +592,8 @@ TEST_CASE("Unicode Normalization – NFK* special mappings")
 
 TEST_CASE("Unicode Normalization – IsNormalized")
 {
-    String decomposed((const char*)u8"a\u0301");
-    String composed((const char*)u8"\u00E1");
+    String decomposed(u8"a\u0301");
+    String composed(u8"\u00E1");
 
     // decomposed is NFD, not NFC
     REQUIRE(decomposed.IsNormalized(NF::NFD));
@@ -621,13 +621,13 @@ TEST_CASE("Unicode Normalization – Edge cases")
     REQUIRE(ascii.Normalize(NF::NFD).Equals("Hello World!"));
 
     // Already-composed sequences should stay unchanged
-    String composed((const char*)u8"\u00C1"); // Á
-    REQUIRE(composed.Normalize(NF::NFC).Equals((const char*)u8"\u00C1"));
+    String composed(u8"\u00C1"); // Á
+    REQUIRE(composed.Normalize(NF::NFC).Equals(u8"\u00C1"));
 
     // Combining marks order
     // U+0301 (acute) has CCC=230 ; U+0327 (cedilla)=202 → reordered in NFD
-    String combo((const char*)u8"a\u0301\u0327");
-    String ordered((const char*)u8"a\u0327\u0301"); // correct order
+    String combo(u8"a\u0301\u0327");
+    String ordered(u8"a\u0327\u0301"); // correct order
 
     REQUIRE(combo.Normalize(NF::NFD).Equals(ordered));
 }
@@ -639,16 +639,16 @@ TEST_CASE("Unicode Normalization – Edge cases")
 TEST_CASE("Unicode Normalization – Complex test vectors")
 {
     // "①" (U+2460) = circled digit ONE → NFKC → "1"
-    String circled1((const char*)u8"\u2460");
+    String circled1(u8"\u2460");
     REQUIRE(circled1.Normalize(NF::NFKC).Equals("1"));
 
     // Å (U+212B ANGSTROM SIGN) → canonically same as Å (U+00C5)
-    String angstrom((const char*)u8"\u212B");
-    String A_ring((const char*)u8"\u00C5");
+    String angstrom(u8"\u212B");
+    String A_ring(u8"\u00C5");
 
     // NFC normalizes both to U+00C5
-    REQUIRE(angstrom.Normalize(NF::NFC).Equals((const char*)u8"\u00C5"));
-    REQUIRE(A_ring.Normalize(NF::NFC).Equals((const char*)u8"\u00C5"));
+    REQUIRE(angstrom.Normalize(NF::NFC).Equals(u8"\u00C5"));
+    REQUIRE(A_ring.Normalize(NF::NFC).Equals(u8"\u00C5"));
 
     // NFD decomposes both to A + combining ring
     REQUIRE(angstrom.Normalize(NF::NFD).Equals(A_ring.Normalize(NF::NFD)));
@@ -661,7 +661,7 @@ TEST_CASE("Unicode Normalization – Complex test vectors")
 TEST_CASE("Unicode Normalization – Emojis and ZWJ")
 {
     // 👩‍❤️‍💋‍👨  (woman kiss man sequence)
-    String kiss((const char*)u8"\U0001F469\u200D\u2764\uFE0F\u200D\u1F48B\u200D\U0001F468");
+    String kiss(u8"\U0001F469\u200D\u2764\uFE0F\u200D\u1F48B\u200D\U0001F468");
 
     // Normalization must NOT break emoji sequences
     REQUIRE(kiss.Normalize(NF::NFC).Equals(kiss));
@@ -670,7 +670,7 @@ TEST_CASE("Unicode Normalization – Emojis and ZWJ")
 
 TEST_CASE("Unicode Normalization – Inert characters")
 {
-    String inert((const char*)u8"ABCxyz0123!@#$%^&*()[]{};:,.-");
+    String inert(u8"ABCxyz0123!@#$%^&*()[]{};:,.-");
 
     REQUIRE(inert.Normalize(NF::NFC).Equals(inert));
     REQUIRE(inert.Normalize(NF::NFD).Equals(inert));
@@ -682,87 +682,79 @@ TEST_CASE("Unicode Normalization – Blocked canonical composition")
 {
     // a + 0301 + 031B  (acute = 230, horn = 216)
     // 031B blocks composition with 0301
-    String s((const char*)u8"a\u0301\u031B");
+    String s(u8"a\u0301\u031B");
 
     // NFD keeps exact order after canonical reorder
-    REQUIRE(s.Normalize(NF::NFD).Equals((const char*)u8"a\u031B\u0301"));
+    REQUIRE(s.Normalize(NF::NFD).Equals(u8"a\u031B\u0301"));
 
     // NFC must NOT compose “á̛” → should remain decomposed
-    REQUIRE(s.Normalize(NF::NFC).Equals((const char*)u8"a\u031B\u0301"));
+    REQUIRE(s.Normalize(NF::NFC).Equals(u8"a\u031B\u0301"));
 }
 
 TEST_CASE("Unicode Normalization – Multi-mark composition (Vietnamese)")
 {
     // o + ̂ + ́
-    String s((const char*)u8"o\u0302\u0301");
+    String s(u8"o\u0302\u0301");
 
     // NFC must produce ố (U+1ED1)
-    REQUIRE(s.Normalize(NF::NFC).Equals((const char*)u8"\u1ED1"));
+    REQUIRE(s.Normalize(NF::NFC).Equals(u8"\u1ED1"));
 
     // NFD must decompose back
-    REQUIRE(s.Normalize(NF::NFD).Equals((const char*)u8"o\u0302\u0301"));
+    REQUIRE(s.Normalize(NF::NFD).Equals(u8"o\u0302\u0301"));
 }
 
 TEST_CASE("Unicode Normalization – Hangul LV composition")
 {
     // ㄱ (1100) + ㅏ (1161)  → 가 (AC00)
-    String s((const char*)u8"\u1100\u1161");
+    String s(u8"\u1100\u1161");
 
-    REQUIRE(s.Normalize(NF::NFC).Equals((const char*)u8"\uAC00"));
-    REQUIRE(s.Normalize(NF::NFD).Equals((const char*)u8"\u1100\u1161"));
+    REQUIRE(s.Normalize(NF::NFC).Equals(u8"\uAC00"));
+    REQUIRE(s.Normalize(NF::NFD).Equals(u8"\u1100\u1161"));
 }
 
 TEST_CASE("Unicode Normalization – Hangul LVT composition")
 {
     // 가 + jongseong ㄱ (11A8) → 각 (AC01)
-    String s((const char*)u8"\u1100\u1161\u11A8");
+    String s(u8"\u1100\u1161\u11A8");
 
-    REQUIRE(s.Normalize(NF::NFC).Equals((const char*)u8"\uAC01"));
-    REQUIRE(s.Normalize(NF::NFD).Equals((const char*)u8"\u1100\u1161\u11A8"));
+    REQUIRE(s.Normalize(NF::NFC).Equals(u8"\uAC01"));
+    REQUIRE(s.Normalize(NF::NFD).Equals(u8"\u1100\u1161\u11A8"));
 }
 
 TEST_CASE("Unicode Normalization – Fraction compatibility")
 {
-    String frac((const char*)u8"\u00BC"); // ¼ (one quarter)
-    REQUIRE(frac.Normalize(NF::NFKC).Equals((const char*)u8"1\u20444"));
-    REQUIRE(frac.Normalize(NF::NFKD).Equals((const char*)u8"1\u20444"));
+    String frac(u8"\u00BC"); // ¼ (one quarter)
+    REQUIRE(frac.Normalize(NF::NFKC).Equals(u8"1\u20444"));
+    REQUIRE(frac.Normalize(NF::NFKD).Equals(u8"1\u20444"));
 }
 
 TEST_CASE("Unicode Normalization – Ligature DZ compatibility")
 {
-    String lig((const char*)u8"\u01C6"); // ǆ
-    REQUIRE(lig.Normalize(NF::NFKC).Equals((const char*)u8"d\u017E"));
-    REQUIRE(lig.Normalize(NF::NFKD).Equals((const char*)u8"dz\u030C"));
+    String lig(u8"\u01C6"); // ǆ
+    REQUIRE(lig.Normalize(NF::NFKC).Equals(u8"d\u017E"));
+    REQUIRE(lig.Normalize(NF::NFKD).Equals(u8"dz\u030C"));
 }
 
 TEST_CASE("Unicode Normalization – Stress combining sequence")
 {
     // a + 5 combining marks
-    String s((const char*)u8"a\u0301\u0302\u0303\u0304\u0305");
+    String s(u8"a\u0301\u0302\u0303\u0304\u0305");
 
     String nfd = s.Normalize(NF::NFD);
     // canonical order must be sorted by CCC
-    REQUIRE(nfd.Equals((const char*)u8"a\u0301\u0302\u0303\u0304\u0305"));
+    REQUIRE(nfd.Equals(u8"a\u0301\u0302\u0303\u0304\u0305"));
 
     // NFC must keep (não há composição para esses)
-    REQUIRE(s.Normalize(NF::NFC).Equals((const char*)u8"\u00E1\u0302\u0303\u0304\u0305"));
+    REQUIRE(s.Normalize(NF::NFC).Equals(u8"\u00E1\u0302\u0303\u0304\u0305"));
 }
 
 TEST_CASE("Unicode Normalization – Idempotence")
 {
-    const char8_t* samples[] = {
-        u8"a\u0301",
-        u8"\u00E1",
-        u8"\uAC00",
-        u8"\u1100\u1161",
-        u8"\u01C6",
-        u8"\u2460",
-        u8"\u1ED1"
-    };
+    const char8_t samples[23] = u8"a\u0301\u00E1\uAC00\u1100\u1161\u01C6\u2460\u1ED1";
 
     for (auto s : samples)
     {
-        String str((const char*)s);
+        String str(s);
 
         REQUIRE(str.Normalize(NF::NFC).Normalize(NF::NFC).Equals(str.Normalize(NF::NFC)));
         REQUIRE(str.Normalize(NF::NFD).Normalize(NF::NFD).Equals(str.Normalize(NF::NFD)));
@@ -773,9 +765,9 @@ TEST_CASE("Unicode Normalization – Idempotence")
 
 TEST_CASE("Unicode Normalization – Fraktur letters")
 {
-    String frak((const char*)u8"\u210C"); // ℌ
+    String frak(u8"\u210C"); // ℌ
 
-    REQUIRE(frak.Normalize(NF::NFC).Equals((const char*)u8"\u210C"));
+    REQUIRE(frak.Normalize(NF::NFC).Equals(u8"\u210C"));
     REQUIRE(frak.Normalize(NF::NFKC).Equals("H"));
 }
 
@@ -818,18 +810,18 @@ TEST_CASE("String: StartsWith / EndsWith / Contains — ASCII ignoreCase")
 TEST_CASE("String: StartsWith / EndsWith / Contains — German ß")
 {
     // Straße
-    String s((const char*)u8"Stra\u00DFe");
+    String s(u8"Stra\u00DFe");
 
     // StartsWith
-    REQUIRE(s.StartsWith((const char*)u8"STR", true, Locale("de")));
-    REQUIRE(s.StartsWith((const char*)u8"stra", true));
+    REQUIRE(s.StartsWith(u8"STR", true, Locale("de")));
+    REQUIRE(s.StartsWith(u8"stra", true));
 
     // EndsWith
-    REQUIRE(s.EndsWith((const char*)u8"\u00DFe", true));   // ße → ss e
+    REQUIRE(s.EndsWith(u8"\u00DFe", true));   // ße → ss e
     REQUIRE(s.EndsWith("SSE", true, Locale("de")));
 
     // Contains
-    REQUIRE(s.Contains((const char*)u8"\u00DF", false));   // exact ß
+    REQUIRE(s.Contains(u8"\u00DF", false));   // exact ß
     REQUIRE(s.Contains("SS", true));                       // ß → ss
     REQUIRE(s.Contains("sse", true));
     REQUIRE(s.Contains("SSE", true));
@@ -864,7 +856,7 @@ TEST_CASE("String: StartsWith / EndsWith / Contains — Turkish I")
 TEST_CASE("String: Contains — ligatures")
 {
     // ﬁ = U+FB01
-    String lig((const char*)u8"\uFB01");
+    String lig(u8"\uFB01");
 
     REQUIRE(lig.Contains("fi", true));     // ﬁ → f + i (NFKD folding)
     REQUIRE_FALSE(lig.Contains("fi"));     
@@ -878,12 +870,12 @@ TEST_CASE("String: Contains — ligatures")
 
 TEST_CASE("String: Contains — composed vs decomposed")
 {
-    String composed((const char*)u8"\u00E1");     // á
-    String decomposed((const char*)u8"a\u0301");  // a + ◌́
+    String composed(u8"\u00E1");     // á
+    String decomposed(u8"a\u0301");  // a + ◌́
 
     // Case-sensitive Contains
-    REQUIRE_FALSE(composed.Contains((const char*)u8"a\u0301")); // byte mismatch
-    REQUIRE_FALSE(decomposed.Contains((const char*)u8"\u00E1"));
+    REQUIRE_FALSE(composed.Contains(u8"a\u0301")); // byte mismatch
+    REQUIRE_FALSE(decomposed.Contains(u8"\u00E1"));
 
     // Unicode-aware Contains (case-insensitive or canonical-aware)
     REQUIRE(composed.Contains(decomposed, true));
@@ -897,13 +889,13 @@ TEST_CASE("String: Contains — composed vs decomposed")
 TEST_CASE("String: StartsWith / EndsWith / Contains — Greek final sigma")
 {
     // ΜΟΣ → lowercase = μος (final sigma)
-    String greek((const char*)u8"\u039C\u039F\u03A3");
+    String greek(u8"\u039C\u039F\u03A3");
 
-    REQUIRE(greek.Contains((const char*)u8"\u03BC\u03BF\u03C3", true)); // σ
-    REQUIRE(greek.Contains((const char*)u8"\u03BC\u03BF\u03C2", true)); // ς (final sigma)
+    REQUIRE(greek.Contains(u8"\u03BC\u03BF\u03C3", true)); // σ
+    REQUIRE(greek.Contains(u8"\u03BC\u03BF\u03C2", true)); // ς (final sigma)
 
-    REQUIRE(greek.EndsWith((const char*)u8"\u03C2", true));
-    REQUIRE(greek.EndsWith((const char*)u8"\u03C3", true));
+    REQUIRE(greek.EndsWith(u8"\u03C2", true));
+    REQUIRE(greek.EndsWith(u8"\u03C3", true));
 }
 
 // =====================================================
@@ -913,24 +905,24 @@ TEST_CASE("String: StartsWith / EndsWith / Contains — Greek final sigma")
 TEST_CASE("String: Contains — Emoji ZWJ sequences")
 {
     // Family emoji: 👨‍👩‍👧‍👦
-    String fam((const char*)u8"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466X");
+    String fam(u8"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466X");
 
-    REQUIRE(fam.StartsWith((const char*)u8"\U0001F468"));            // father
-    REQUIRE(fam.Contains((const char*)u8"\U0001F469"));              // mother
-    REQUIRE(fam.Contains((const char*)u8"\U0001F467"));              // daughter
+    REQUIRE(fam.StartsWith(u8"\U0001F468"));            // father
+    REQUIRE(fam.Contains(u8"\U0001F469"));              // mother
+    REQUIRE(fam.Contains(u8"\U0001F467"));              // daughter
     REQUIRE(fam.EndsWith("X"));
 
     // The full ZWJ family must match exactly
-    REQUIRE(fam.StartsWith((const char*)u8"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466"));
+    REQUIRE(fam.StartsWith(u8"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466"));
 }
 
 TEST_CASE("String: Contains — emoji flags (regional indicators)")
 {
     // 🇧🇷 = U+1F1E7 U+1F1F7
-    String flag((const char*)u8"\U0001F1E7\U0001F1F7!");
+    String flag(u8"\U0001F1E7\U0001F1F7!");
 
-    REQUIRE(flag.StartsWith((const char*)u8"\U0001F1E7"));
-    REQUIRE(flag.StartsWith((const char*)u8"\U0001F1E7\U0001F1F7"));
+    REQUIRE(flag.StartsWith(u8"\U0001F1E7"));
+    REQUIRE(flag.StartsWith(u8"\U0001F1E7\U0001F1F7"));
     REQUIRE(flag.Contains("!"));
     REQUIRE(flag.EndsWith("!"));
 }
@@ -941,7 +933,7 @@ TEST_CASE("String: Contains — emoji flags (regional indicators)")
 
 TEST_CASE("String: StartsWith / EndsWith — CodePoint overloads")
 {
-    String s = String((const char*)u8"\u00E1BC").Normalize();
+    String s = String(u8"\u00E1BC").Normalize();
     REQUIRE(s.StartsWith(CodePoint(0x00E1)));
 }
 
@@ -951,14 +943,14 @@ TEST_CASE("String: StartsWith / EndsWith — CodePoint overloads")
 
 TEST_CASE("String: Unicode complex — combined")
 {
-    String s((const char*)u8"\U0001F600Stra\u00DFe\U0001F44D\U0001F3FD\U0001F1E7\U0001F1F7");
+    String s(u8"\U0001F600Stra\u00DFe\U0001F44D\U0001F3FD\U0001F1E7\U0001F1F7");
     
     s = s.Normalize();
-    REQUIRE(s.Contains((const char*)u8"Stra\u00DFe"));
+    REQUIRE(s.Contains(u8"Stra\u00DFe"));
 
-    REQUIRE(s.Contains((const char*)u8"\U0001F600")); // 😀
-    REQUIRE(s.Contains((const char*)u8"\U0001F44D\U0001F3FD")); // 👍🏽
-    REQUIRE(s.Contains((const char*)u8"\U0001F1E7\U0001F1F7")); // 🇧🇷
+    REQUIRE(s.Contains(u8"\U0001F600")); // 😀
+    REQUIRE(s.Contains(u8"\U0001F44D\U0001F3FD")); // 👍🏽
+    REQUIRE(s.Contains(u8"\U0001F1E7\U0001F1F7")); // 🇧🇷
 }
 
 // =====================================================
@@ -1310,30 +1302,30 @@ TEST_CASE("Trim performance large string")
 //  UTF-8 SAFE LITERALS FOR MSVC
 // =======================================================
 // café com açúcar
-static const char* UTF8_CAFE = "\x63\x61\x66\xC3\xA9";
-static const char* UTF8_ACUCAR = "\x61\xC3\xA7\xC3\xBA\x63\x61\x72";
-static const char* UTF8_CAFE_COM_ACUCAR =
+static const char UTF8_CAFE[] = "\x63\x61\x66\xC3\xA9";
+static const char UTF8_ACUCAR[] = "\x61\xC3\xA7\xC3\xBA\x63\x61\x72";
+static const char UTF8_CAFE_COM_ACUCAR[] =
 "\x63\x61\x66\xC3\xA9\x20\x63\x6F\x6D\x20\x61\xC3\xA7\xC3\xBA\x63\x61\x72";
 
 // á (a + U+0301)
-static const char* UTF8_A_DECOMPOSED = "\x61\xCC\x81";
-static const char* UTF8_A_COMPOSED = "\xC3\xA1";
+static const char UTF8_A_DECOMPOSED[] = "\x61\xCC\x81";
+static const char UTF8_A_COMPOSED[] = "\xC3\xA1";
 
 // olá mundo (com 'a' decomposed)
-static const char* UTF8_OLA_MUNDO =
+static const char UTF8_OLA_MUNDO[] =
 "\x6F\x6C\x61\xCC\x81\x20\x6D\x75\x6E\x64\x6F";
 
 // 👍👍🙂👍
 // 👍 = U+1F44D = F0 9F 91 8D
 // 🙂 = U+1F642 = F0 9F 99 82
-static const char* UTF8_EMOJI_SEQ =
+static const char UTF8_EMOJI_SEQ[] =
 "\xF0\x9F\x91\x8D"
 "\xF0\x9F\x91\x8D"
 "\xF0\x9F\x99\x82"
 "\xF0\x9F\x91\x8D";
 
 // Straße TEST İSTANBUL i̇stanbul
-static const char* UTF8_STRASSE_TEST =
+static const char UTF8_STRASSE_TEST[] =
 "\x53\x74\x72\x61\xC3\x9F\x65"         // Straße
 "\x20\x54\x45\x53\x54\x20"             //  TEST 
 "\xC4\xB0\x53\x54\x41\x4E\x42\x55\x4C" // İSTANBUL
@@ -1341,7 +1333,7 @@ static const char* UTF8_STRASSE_TEST =
 
 // abc def ghi ãç🙂
 // ã = C3 A3, ç = C3 A7, 🙂 = F0 9F 99 82
-static const char* UTF8_MIXED =
+static const char UTF8_MIXED[] =
 "abc def ghi "
 "\xC3\xA3\xC3\xA7\xF0\x9F\x99\x82";
 
@@ -1580,7 +1572,7 @@ TEST_CASE("String::IndexOf - Boundary and error conditions")
 // =======================================================
 
 // "café ãç🙂"
-static const char* UTF8_SAMPLE =
+static const char UTF8_SAMPLE[] =
 "\x63\x61\x66\xC3\xA9\x20"        // café 
 "\xC3\xA3"                        // ã
 "\xC3\xA7"                        // ç
@@ -1756,7 +1748,7 @@ TEST_CASE("String::IndexOfAny - Boundary conditions")
 }
 
 // StraßE TEST İSTANBUL i̇stanbul
-static const char* UTF8_CASE =
+static const char UTF8_CASE[] =
 "Stra\xC3\x9F""e TEST "
 "\xC4\xB0""STANBUL "
 "i\xCC\x87""stanbul";
@@ -1860,8 +1852,8 @@ TEST_CASE("String::LastIndexOf - Emoji (4-byte UTF-8)")
     // 2 🙂
     // 3 👍
 
-    const char* thumbs = "\xF0\x9F\x91\x8D";
-    const char* smile = "\xF0\x9F\x99\x82";
+    const char thumbs[] = "\xF0\x9F\x91\x8D";
+    const char smile[] = "\xF0\x9F\x99\x82";
 
     SECTION("Simple last search")
     {
@@ -2084,7 +2076,7 @@ TEST_CASE("String::LastIndexOfAny - UTF-8 accents")
 
 TEST_CASE("String::LastIndexOfAny - Emoji (4-byte UTF-8)")
 {
-    const char* text =
+    const char text[] =
         "\xF0\x9F\x91\x8D"  // 👍 0
         "\x20"
         "\xF0\x9F\x99\x82"  // 🙂 2
@@ -2753,7 +2745,11 @@ static List<String> L(std::initializer_list<const char*> arr)
 {
     List<String> out;
     for (auto& s : arr)
-        out.Add(String(s));
+    {
+        // Determina o tamanho da string
+        size_t len = strlen(s);  // ou `strlen(s)` para UTF-8
+        out.Add(String(s, len));  // Construa o String com o tamanho explicitamente
+    }
     return out;
 }
 

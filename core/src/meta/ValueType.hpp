@@ -167,11 +167,13 @@ template<typename T>
 struct is_single_char : false_type {};
 
 template<> struct is_single_char<Char> : true_type {};
-template<> struct is_single_char<CodePoint> : true_type {};
 template<> struct is_single_char<char> : true_type {};
+template<> struct is_single_char<wchar_t> : true_type {};
+template<> struct is_single_char<char8_t> : true_type {};
+template<> struct is_single_char<char16_t> : true_type {};
 template<> struct is_single_char<char32_t> : true_type {};
-template<> struct is_single_char<uint8_t> : true_type {};
 template<> struct is_single_char<Byte> : true_type {};
+template<> struct is_single_char<CodePoint> : true_type {};
 
 template<typename T>
 inline constexpr bool is_single_char_v = is_single_char<T>::value;
