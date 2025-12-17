@@ -16,5 +16,5 @@ String Single::ToString() const noexcept
 {
 	char buf[32];
 	int n = snprintf(buf, sizeof(buf), "%g", (double)Value);
-	return String(buf);
+	return String(buf, n);
 }

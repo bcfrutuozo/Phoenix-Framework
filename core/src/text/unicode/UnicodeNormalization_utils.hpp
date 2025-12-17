@@ -7,10 +7,16 @@
 #include <cstdint>
 #include <stdio.h>
 
+enum class NormalizationForm 
+{ 
+	NFC, 
+	NFD, 
+	NFKC, 
+	NFKD
+};
+
 namespace UnicodeNormalization
 {
-    enum class NormalizationForm : uint8_t { NFC, NFD, NFKC, NFKD };
-
     // Hangul constants
     static constexpr char32_t SBase = 0xAC00;
     static constexpr char32_t LBase = 0x1100;

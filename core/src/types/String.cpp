@@ -7,9 +7,10 @@
 #include <stdlib.h>
 #include <cstring>
 
-String::String() : _ptr(0), _byteOffset(0), _byteLength(0)
+String::String() : _ptr(0), _byteOffset(0), _byteLength(0), _flags(FLAG_SSO), _gcLength(0)
 {
 	_sso[0] = Char(0);
+	set_string_as_ascii(true);
 }
 
 String::String(char c) noexcept : String(Char(c))
@@ -30,129 +31,135 @@ String::String(Char c) noexcept
 	_gcLength = 1;
 }
 
-String::String(const Byte* bytes, size_type len) noexcept
-{
-	init_from_bytes(bytes, len);
-}
-
-String::String(const List<CodePoint>& cps) noexcept
-{
-	uint32_t count = cps.Count();
-	if (count == 0) {
-		_ptr = nullptr;
-		_byteOffset = 0;
-		_byteLength = 0;
-		return;
-	}
-
-	// calcula bytes
-	uint32_t totalBytes = 0;
-	for (uint32_t cp : cps)
-		totalBytes += (cp <= 0x7F ? 1 :
-			cp <= 0x7FF ? 2 :
-			cp <= 0xFFFF ? 3 : 4);
-
-	unsigned char* block = allocate_block(totalBytes);
-	if (!block) {
-		_ptr = nullptr;
-		_byteOffset = 0;
-		_byteLength = 0;
-		return;
-	}
-
-	Char* dst = reinterpret_cast<Char*>(block + sizeof(refcount_type) + sizeof(size_type));
-	uint32_t w = 0;
-
-	for (uint32_t cp : cps) {
-		UTF8::UTF8EncodeResult enc = UTF8::encode_utf8(CodePoint(cp));
-		for (uint32_t i = 0; i < enc.Length; ++i)
-			dst[w++] = enc.Bytes[i];
-	}
-
-	_ptr = block;
-	_byteOffset = 0;
-	_byteLength = totalBytes;
-}
-
-String::String(const Char* bytes, size_t len) noexcept : String(reinterpret_cast<const Byte*>(bytes), len)
+String::String(const List<CodePoint>& cps) noexcept : String(String::FromCodePoints(cps))
 {
 
 }
 
 String::String(const char* p) noexcept
 {
-	if (!p || *p == '\0')
+	if (!p)
 	{
 		*this = String::Empty();
 		return;
 	}
 
-	size_type len = 0;
-	while (p[len] != '\0')
-		++len;
-
-	init_from_bytes(reinterpret_cast<const Byte*>(p), len);
+	*this = String(p, get_pointer_length(p));
 }
 
-String::String(const char* p, size_type length) noexcept : String(reinterpret_cast<const Byte*>(p), length) 
+String::String(const wchar_t* p) noexcept
 {
-}
-
-String::String(const wchar_t* p, uint32_t length) noexcept
-{
-	if (!p || length == 0)
+	if (!p)
 	{
 		*this = String::Empty();
 		return;
 	}
 
+	*this = String(p, get_pointer_length(p));
+}
+
+String::String(const char8_t* p) noexcept
+{
+	if (!p)
+	{
+		*this = String::Empty();
+		return;
+	}
+
+	*this = String(p, get_pointer_length(p));
+}
+
+String::String(const char16_t* p) noexcept
+{
+	if (!p)
+	{
+		*this = String::Empty();
+		return;
+	}
+
+	*this = String(p, get_pointer_length(p));
+}
+
+String::String(const char32_t* p) noexcept
+{
+	if (!p)
+	{
+		*this = String::Empty();
+		return;
+	}
+
+	*this = String(p, get_pointer_length(p));
+}
+
+String::String(const Byte* p) noexcept
+{
+	if (!p)
+	{
+		*this = String::Empty();
+		return;
+	}
+
+	*this = String(p, get_pointer_length(p));
+}
+String::String(const Char* p) noexcept
+{
+	if (!p)
+	{
+		*this = String::Empty();
+		return;
+	}
+
+	*this = String(p, get_pointer_length(p));
+}
+
+String::String(const char* p, size_type length) noexcept 
+	: String(reinterpret_cast<const Byte*>(p), length)
+{
+}
+
+String::String(const wchar_t* p, size_type length) noexcept
+{
 	List<CodePoint> cps;
 #if WCHAR_MAX == 0xFFFF
-	UTF16Encoding::Decode(reinterpret_cast<const char16_t*>(p), length, cps);
+	* this = String(reinterpret_cast<const char16_t*>(p), length);
 #elif WCHAR_MAX == 0x10FFFF
-	UTF32Encoding::Decode(reinterpret_cast<const char32_t*>(p), length, cps);
+	* this = String(reinterpret_cast<const char32_t*>(p), length);
 #else
 	static_assert(false, "Unsupported wchar_t size");
 #endif
-
-	* this = FromCodePoints(cps);
 }
 
-String::String(const char8_t* p, uint32_t length) noexcept
+String::String(const char8_t* p, size_type length) noexcept
+	: String(reinterpret_cast<const Byte*>(p), length)
 {
-	if (!p || length == 0)
-	{
-		*this = String::Empty();
-		return;
-	}
 
-	*this = String(reinterpret_cast<const Char*>(p), length);
 }
 
-String::String(const char16_t* p, uint32_t length) noexcept
+String::String(const char16_t* p, size_type length) noexcept
 {
-	if (!p || length == 0)
-	{
-		*this = String::Empty();
-		return;
-	}
 	List<CodePoint> cps;
 	UTF16Encoding::Decode(p, length, cps);
 	*this = String::FromCodePoints(cps);
 }
 
-String::String(const char32_t* p, uint32_t length) noexcept
+String::String(const char32_t* p, size_type length) noexcept
 {
-	if (!p || length == 0)
-	{
-		*this = String::Empty();
-		return;
-	}
-
 	List<CodePoint> cps;
 	UTF32Encoding::Decode(p, length, cps);
 	*this = String::FromCodePoints(cps);
 }
+
+String::String::String(const Byte* bytes, size_type len) noexcept
+{
+	init_from_bytes(bytes, len);
+}
+
+String::String(const Char* bytes, size_t len) noexcept 
+	: String(reinterpret_cast<const Byte*>(bytes), len)
+{
+
+}
+
 
 String::String(CodePoint cp) noexcept
 {
@@ -478,7 +485,7 @@ Boolean String::Contains(const String& sub, Boolean ignoreCase, const Locale& lo
 	// Detectar locale
 	const char* locBytes = reinterpret_cast<const char*>(locale.data());
 	uint32_t locLen = locale.GetByteCount();
-	bool isTurkic = UnicodeCase::locale_is_turkic(locBytes, locLen);
+	bool isTurkic = locale.IsTurkish();
 
 	bool asciiHay = ASCII::IsAllASCII(hayBytes, H);
 	bool asciiSub = ASCII::IsAllASCII(subBytes, N);
@@ -531,7 +538,7 @@ Int32 String::Compare(const String& A, const String& B, Boolean ignoreCase, cons
 
 	const char* loc = reinterpret_cast<const char*>(locale.data());
 	uint32_t locLen = locale.GetByteCount();
-	bool isTurkic = UnicodeCase::locale_is_turkic(loc, locLen);
+	bool isTurkic = locale.IsTurkish();
 
 	bool asciiA = ASCII::IsAllASCII(aBytes, lenA);
 	bool asciiB = ASCII::IsAllASCII(bBytes, lenB);
@@ -708,8 +715,8 @@ Int64 String::IndexOf(const String& value, size_t startIndex, StringComparison c
 		return IndexOf(value, startIndex);
 
 	// OrdinalIgnoreCase – .NET-compatible mode
-	String LHS = this->ToLower("en");
-	String RHS = value.ToLower("en");
+	String LHS = this->ToLower(Locale("en"));
+	String RHS = value.ToLower(Locale("en"));
 
 	// remove U+0307 — required for .NET compatibility
 	remove_combining_dot_above(LHS);
@@ -742,8 +749,8 @@ Int64 String::IndexOf(const String& value, size_t startIndex, size_t count, Stri
 		return -1;
 
 	// Safe substring window
-	String LHS = this->ToLower("en").Substring((uint32_t)sIndex, (uint32_t)c);
-	String RHS = value.ToLower("en");
+	String LHS = this->ToLower(Locale("en")).Substring((uint32_t)sIndex, (uint32_t)c);
+	String RHS = value.ToLower(Locale("en"));
 
 	remove_combining_dot_above(LHS);
 	remove_combining_dot_above(RHS);
@@ -1055,8 +1062,8 @@ Int64 String::LastIndexOf(const String& value, size_t startIndex, StringComparis
 	if (comp == StringComparison::Ordinal)
 		return LastIndexOf(value, startIndex);
 
-	String LHS = this->ToLower("en");
-	String RHS = value.ToLower("en");
+	String LHS = this->ToLower(Locale("en"));
+	String RHS = value.ToLower(Locale("en"));
 
 	remove_combining_dot_above(LHS);
 	remove_combining_dot_above(RHS);
@@ -1096,8 +1103,8 @@ Int64 String::LastIndexOf(const String& value, size_t startIndex, size_t count, 
 
 	// --------------- ORDINAL IGNORE CASE -----------------
 
-	String LHS = this->ToLower("en").Substring((uint32_t)first, (uint32_t)c);
-	String RHS = value.ToLower("en");
+	String LHS = this->ToLower(Locale("en")).Substring((uint32_t)first, (uint32_t)c);
+	String RHS = value.ToLower(Locale("en"));
 
 	remove_combining_dot_above(LHS);
 	remove_combining_dot_above(RHS);
@@ -1189,7 +1196,7 @@ Int64 String::LastIndexOfAny(const List<Char>& chars) const noexcept
 	return LastIndexOfAny(chars, len - 1, len);
 }
 
-String String::Normalize(UnicodeNormalization::NormalizationForm form) const noexcept
+String String::Normalize(NormalizationForm form) const noexcept
 {
 	if (IsEmpty()) return *this;
 
@@ -1204,8 +1211,7 @@ String String::Normalize(UnicodeNormalization::NormalizationForm form) const noe
 			return *this;
 
 	// 2) Decompose dynamically
-	const bool compat = (form == UnicodeNormalization::NormalizationForm::NFKC ||
-		form == UnicodeNormalization::NormalizationForm::NFKD);
+	const bool compat = (form == NormalizationForm::NFKC || form == NormalizationForm::NFKD);
 
 	List<CodePoint> temp;
 	temp.EnsureCapacity(cpCount * 3);
@@ -1233,8 +1239,7 @@ String String::Normalize(UnicodeNormalization::NormalizationForm form) const noe
 	UnicodeNormalization::ReorderByCCC(temp);
 
 	// 5) Compose
-	if (form == UnicodeNormalization::NormalizationForm::NFC ||
-		form == UnicodeNormalization::NormalizationForm::NFKC)
+	if (form == NormalizationForm::NFC || form == NormalizationForm::NFKC)
 	{
 		UnicodeNormalization::Compose(temp);
 	}
@@ -1599,7 +1604,7 @@ String String::Replace(const String& oldValue, const String& newValue, StringCom
 	return Replace(oldValue, newValue, true, "en");
 }
 
-String String::Replace(const String& oldValue, const String& newValue, Boolean ignoreCase, const String& locale) const noexcept
+String String::Replace(const String& oldValue, const String& newValue, Boolean ignoreCase, const Locale& locale) const noexcept
 {
 	if (oldValue.IsEmpty()) return *this;
 
@@ -1608,11 +1613,7 @@ String String::Replace(const String& oldValue, const String& newValue, Boolean i
 		is_ascii(oldValue) &&
 		is_ascii(newValue);
 
-	bool isTurkic = UnicodeCase::locale_is_turkic(
-		(const char*)locale.data(),
-		locale.GetByteCount()
-	);
-
+	bool isTurkic = locale.IsTurkish();
 	// ---------------------------------------------------------------
 	// FAST PATH: ASCII ignore-case + NON-TURKIC locale
 	// ---------------------------------------------------------------
@@ -2089,11 +2090,11 @@ String String::ToHex(Encoding enc) const noexcept
 	return String::Empty();
 }
 
-String String::ToLower(const String& locale) const noexcept
+String String::ToLower(const Locale& locale) const noexcept
 {
 	const char* localeBytes = reinterpret_cast<const char*>(locale.data());
 	uint32_t localeLen = locale.GetByteCount();
-	bool isTurkic = UnicodeCase::locale_is_turkic(localeBytes, localeLen);
+	bool isTurkic = locale.IsTurkish();
 
 	// FAST ASCII path (not turkic)
 	if (!isTurkic && is_ascii(*this))
@@ -2179,11 +2180,16 @@ String String::ToLower(const String& locale) const noexcept
 	return result;
 }
 
-String String::ToUpper(const String& locale) const noexcept
+String String::ToLower() const noexcept
+{
+	return ToLower(Locale("en"));
+}
+
+String String::ToUpper(const Locale& locale) const noexcept
 {
 	const char* localeBytes = reinterpret_cast<const char*>(locale.data());
 	uint32_t localeLen = locale.GetByteCount();
-	bool isTurkic = UnicodeCase::locale_is_turkic(localeBytes, localeLen);
+	bool isTurkic = locale.IsTurkish();
 
 	// ASCII fast-path (not turkic)
 	if (!isTurkic && is_ascii(*this))
@@ -2265,6 +2271,11 @@ String String::ToUpper(const String& locale) const noexcept
 	result._byteOffset = 0;
 	result._byteLength = totalBytes;
 	return result;
+}
+
+String String::ToUpper() const noexcept
+{
+	return ToUpper(Locale("en"));
 }
 
 String String::Trim() const
@@ -2651,20 +2662,6 @@ uint32_t String::find_byte_offset_of_code_point(uint32_t cpIndex) const
 	return pos;
 }
 
-int String::compare_ordinal_icp(CodePoint cpA, CodePoint cpB) noexcept
-{
-	if (cpA < cpB) return -1;
-	if (cpA > cpB) return 1;
-	return 0;
-}
-
-int String::compare_code_points_case_aware(CodePoint a, CodePoint b) noexcept
-{
-	if (a < b) return -1;
-	if (a > b) return 1;
-	return 0;
-}
-
 CodePoint String::GetCodePointAt(uint32_t cpIndex) const noexcept
 {
 	uint32_t offset = find_byte_offset_of_code_point(cpIndex);
@@ -2746,90 +2743,6 @@ List<CodePoint> String::DecodeToCodePoints(const String& s)
 	return result;
 }
 
-void String::case_fold_unicode(
-	const List<CodePoint>& cps,        // input sequence
-	const char* localeBytes,        // ex: "tr", "en"
-	uint32_t localeLen,
-	List<CodePoint>& output)         // output dinâmico
-{
-	output.Clear();
-	output.EnsureCapacity(cps.Count() * 4);
-
-	uint32_t cpCount = cps.Count();
-
-	for (uint32_t i = 0; i < cpCount; ++i)
-	{
-		List<CodePoint> seq;
-		seq.EnsureCapacity(4);
-
-		UnicodeCase::map_to_casefold_sequence_nostd(
-			cps[i],
-			localeBytes,
-			localeLen,
-			cps,     // contexto
-			i,       // index
-			seq      // saída
-		);
-
-		for (uint32_t k = 0; k < seq.Count(); ++k)
-			output.Add(seq[k]);
-	}
-
-	// Turkish rule: remove U+0307 after folding
-	bool isTurkic = UnicodeCase::locale_is_turkic(localeBytes, localeLen);
-
-	if (isTurkic)
-	{
-		for (int i = (int)output.Count() - 1; i >= 0; --i)
-			if ((uint32_t)output[i] == 0x0307) // combining dot above
-				output.RemoveAt(i);
-	}
-}
-
-int String::compare_folded(const List<CodePoint>& a, const List<CodePoint>& b)
-{
-	uint32_t lenA = a.Count();
-	uint32_t lenB = b.Count();
-
-	uint32_t m = lenA < lenB ? lenA : lenB;
-
-	for (uint32_t i = 0; i < m; ++i)
-	{
-		if (a[i] < b[i]) return -1;
-		if (a[i] > b[i]) return 1;
-	}
-
-	if (lenA < lenB) return -1;
-	if (lenA > lenB) return 1;
-
-	return 0;
-}
-
-Boolean String::contain_folded(const List<CodePoint>& hay, const List<CodePoint>& ned)
-{
-	uint32_t hayLen = hay.Count();
-	uint32_t nedLen = ned.Count();
-
-	if (nedLen == 0) return true;
-	if (hayLen < nedLen) return false;
-
-	for (uint32_t i = 0; i + nedLen <= hayLen; ++i)
-	{
-		bool match = true;
-		for (uint32_t j = 0; j < nedLen; ++j)
-		{
-			if (hay[i + j] != ned[j])
-			{
-				match = false;
-				break;
-			}
-		}
-		if (match)
-			return true;
-	}
-	return false;
-}
-
 Boolean String::impl_EndsWith(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept
 {
 	if (needle.IsEmpty())
@@ -2847,7 +2760,7 @@ Boolean String::impl_EndsWith(const String& needle, Boolean ignoreCase, const Lo
 
 	const char* loc = locale.data();
 	uint32_t locLen = (uint32_t)strlen(loc);
-	bool isTurkic = UnicodeCase::locale_is_turkic(loc, locLen);
+	bool isTurkic = locale.IsTurkish();
 
 	bool asciiHay = ASCII::IsAllASCII(hayBytes, H);
 	bool asciiNee = ASCII::IsAllASCII(neeBytes, N);
@@ -2893,7 +2806,7 @@ Boolean String::impl_StartsWith(const String& needle, Boolean ignoreCase, const 
 	// Locale detection
 	const char* loc = locale.data();
 	uint32_t locLen = (uint32_t)strlen(loc);
-	bool isTurkic = UnicodeCase::locale_is_turkic(loc, locLen);
+	bool isTurkic = locale.IsTurkish();
 
 	bool asciiHay = ASCII::IsAllASCII(hayBytes, H);
 	bool asciiNee = ASCII::IsAllASCII(neeBytes, N);

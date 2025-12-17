@@ -1,14 +1,21 @@
-#pragma once
+﻿#pragma once
 
 #include "types/Object.hpp"
 #include "types/String.hpp"
+#include "types/Char.hpp"
 
 class Locale : public Object<Locale>
 {
 public:
 
 	Locale() : Locale("en") { }
-	explicit Locale(const String& locale) : _locale(locale) {  };
+	Locale(const char* c) : Locale(String(c)) {}
+	Locale(const wchar_t* c): Locale(String(c)) {}
+	Locale(const char8_t* c) : Locale(String(c)) {}
+	Locale(const char16_t* c) : Locale(String(c)) {}
+	Locale(const char32_t* c) : Locale(String(c)) {}
+	Locale(const Char* c) : Locale(String(c)) {}
+	Locale(const String& locale) : _locale(locale) {}
 
 	inline constexpr UInt64 GetByteCount() const noexcept { return _locale.GetByteCount(); }
 	
@@ -18,6 +25,11 @@ public:
 	}
 
 	inline const char* data() const noexcept { return static_cast<const char*>(_locale); }
+
+	String ToString() const noexcept
+	{
+		return _locale;
+	}
 
 private:
 

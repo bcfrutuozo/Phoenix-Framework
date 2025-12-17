@@ -6,7 +6,9 @@
 int main(int argc, char* argv[])
 {
     const char* p = "ABCDEF";
+    const char pp[7] = "ABCEDF";
     String oooo = p;
+   
 
     String x = "\xF0\x9F\x91\x8D\xF0\x9F\x91\x8D Bruno Corrêa Frutuozo \xF0\x9F\x91\x8D\xF0\x9F\x91\x8D";
     String y = "UTF8: " + x.ToHex();
@@ -17,6 +19,8 @@ int main(int argc, char* argv[])
     Console::WriteLine(y);
     Console::WriteLine(w);
     Console::WriteLine(z);
+
+
 
     String ooo = 'A';
     ooo.Contains(u8"ABCDEF");

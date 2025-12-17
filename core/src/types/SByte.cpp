@@ -16,5 +16,5 @@ String SByte::ToString() const noexcept
 {
 	char buf[4];
 	int n = snprintf(buf, sizeof(buf), "%i", (signed)Value);
-	return String(buf);
+	return String(buf, n);
 }

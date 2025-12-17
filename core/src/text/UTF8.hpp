@@ -215,7 +215,7 @@ namespace UTF8
 	// ---------------------------------------------
 	// 4) Normalize (NFC/NFD/NFKC/NFKD)
 	// ---------------------------------------------
-	inline void Normalize(const List<CodePoint>& in, UnicodeNormalization::NormalizationForm form, List<CodePoint>& out)
+	inline void Normalize(const List<CodePoint>& in, ::NormalizationForm form, List<CodePoint>& out)
 	{
 		out.Clear();
 
@@ -223,8 +223,7 @@ namespace UTF8
 			return;
 
 		// 1) Decompose
-		bool compat = (form == UnicodeNormalization::NormalizationForm::NFKC ||
-			form == UnicodeNormalization::NormalizationForm::NFKD);
+		bool compat = (form == ::NormalizationForm::NFKC || form == ::NormalizationForm::NFKD);
 
 		List<CodePoint> temp;
 		temp.EnsureCapacity(in.Count() * 3);
@@ -244,8 +243,7 @@ namespace UTF8
 		UnicodeNormalization::ReorderByCCC(temp);
 
 		// 3) Compose if NFC/NFKC
-		if (form == UnicodeNormalization::NormalizationForm::NFC ||
-			form == UnicodeNormalization::NormalizationForm::NFKC)
+		if (form == ::NormalizationForm::NFC || form == ::NormalizationForm::NFKC)
 		{
 			UnicodeNormalization::Compose(temp);
 		}
@@ -272,7 +270,7 @@ namespace UTF8
 		CaseFold(cps, locale, localeLen, folded);
 
 		// normalize NFC
-		Normalize(folded, UnicodeNormalization::NormalizationForm::NFC, out);
+		Normalize(folded, NormalizationForm::NFC, out);
 	}
 
 	// ---------------------------------------------
@@ -321,8 +319,8 @@ namespace UTF8
 		CaseFold(a, locale, (uint32_t)strlen(locale), fa);
 		CaseFold(b, locale, (uint32_t)strlen(locale), fb);
 
-		Normalize(fa, UnicodeNormalization::NormalizationForm::NFC, fa);
-		Normalize(fb, UnicodeNormalization::NormalizationForm::NFC, fb);
+		Normalize(fa, ::NormalizationForm::NFC, fa);
+		Normalize(fb, ::NormalizationForm::NFC, fb);
 
 		return Compare(fa, fb);
 	}
@@ -393,8 +391,8 @@ namespace UTF8
 		CaseFold(hay, locale, (uint32_t)strlen(locale), fh);
 		CaseFold(nee, locale, (uint32_t)strlen(locale), fn);
 
-		Normalize(fh, UnicodeNormalization::NormalizationForm::NFC, fh);
-		Normalize(fn, UnicodeNormalization::NormalizationForm::NFC, fn);
+		Normalize(fh, ::NormalizationForm::NFC, fh);
+		Normalize(fn, ::NormalizationForm::NFC, fn);
 
 		return StartsWith(fh, fn);
 	}
@@ -406,8 +404,8 @@ namespace UTF8
 		CaseFold(hay, locale, (uint32_t)strlen(locale), fh);
 		CaseFold(nee, locale, (uint32_t)strlen(locale), fn);
 
-		Normalize(fh, UnicodeNormalization::NormalizationForm::NFC, fh);
-		Normalize(fn, UnicodeNormalization::NormalizationForm::NFC, fn);
+		Normalize(fh, ::NormalizationForm::NFC, fh);
+		Normalize(fn, ::NormalizationForm::NFC, fn);
 
 		return EndsWith(fh, fn);
 	}

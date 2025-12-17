@@ -17,5 +17,5 @@ String UInt64::ToString() const noexcept
 {
 	char buf[32];
 	int n = snprintf(buf, sizeof(buf), "%llu", (uint64_t)Value);
-	return String(buf);
+	return String(buf, n);
 }

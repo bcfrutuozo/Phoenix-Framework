@@ -41,17 +41,28 @@ public:
 	String(CodePoint cp) noexcept;
 	String(const List<CodePoint>& cps) noexcept;
 
-	String(const char* p) noexcept;
-	String(const char* p, size_type length) noexcept;
-	String(const wchar_t* p, uint32_t length) noexcept;
-	String(const char8_t* p, uint32_t length) noexcept;
-	String(const char16_t* p, uint32_t length) noexcept;
-	String(const char32_t* p, uint32_t length) noexcept;
-	String(const Byte* bytes, size_type len) noexcept;
-	String(const Char* bytes, size_t len) noexcept;
-
+	// ⚠️ WARNING:
+	// Array constructor assumes FULLY VALID CONTENT (string literal / static buffer).
+	// Do NOT use with snprintf/local buffers.
+	// Use (ptr, length) instead.
 	template<size_t N, typename T, enable_if_t<is_single_char<T>::value, bool> = true>
 	String(const T(&p)[N]) noexcept : String(p, N - 1) {}
+
+	String(const char* p) noexcept;
+	String(const wchar_t* p) noexcept;
+	String(const char8_t* p) noexcept;
+	String(const char16_t* p) noexcept;
+	String(const char32_t* p) noexcept;
+	String(const Byte* p) noexcept;
+	String(const Char* p) noexcept;
+
+	String(const char* p, size_type length) noexcept;
+	String(const wchar_t* p, size_type length) noexcept;
+	String(const char8_t* p, size_type length) noexcept;
+	String(const char16_t* p, size_type length) noexcept;
+	String(const char32_t* p, size_type length) noexcept;
+	String(const Byte* bytes, size_type len) noexcept;
+	String(const Char* bytes, size_t len) noexcept;
 
 	String(const String& other) noexcept;
 	String(String&& other) noexcept;
@@ -216,7 +227,7 @@ public:
 
 	static inline Boolean IsEmpty(const String& s) { return s == String::Empty(); }
 
-	inline Boolean IsNormalized(UnicodeNormalization::NormalizationForm form = UnicodeNormalization::NormalizationForm::NFC) const noexcept
+	inline Boolean IsNormalized(NormalizationForm form = NormalizationForm::NFC) const noexcept
 	{
 		return Equals(Normalize(form));
 	}
@@ -272,7 +283,7 @@ public:
 	Int64 LastIndexOfAny(const List<Char>& chars, UInt64 startIndex) const noexcept;
 	Int64 LastIndexOfAny(const List<Char>& chars) const noexcept;
 
-	String Normalize(UnicodeNormalization::NormalizationForm form = UnicodeNormalization::NormalizationForm::NFC) const noexcept;
+	String Normalize(NormalizationForm form = NormalizationForm::NFC) const noexcept;
 
 	template<typename T>
 	String PadLeft(uint32_t width, T ch) const requires(is_single_char_v<T>)
@@ -372,7 +383,7 @@ public:
 	String Replace(CodePoint oldCp, CodePoint newCp) const noexcept;
 	String Replace(const String& oldValue, const String& newValue) const noexcept;
 	String Replace(const String& oldValue, const String& newValue, StringComparison comp) const noexcept;
-	String Replace(const String& oldValue, const String& newValue, Boolean ignoreCase, const String& locale) const noexcept;
+	String Replace(const String& oldValue, const String& newValue, Boolean ignoreCase, const Locale& locale) const noexcept;
 
 	String ReplaceLineEndings() const noexcept;
 	String ReplaceLineEndings(const String& replacement) const noexcept;
@@ -395,10 +406,10 @@ public:
 
 	String ToHex(Encoding enc = Encoding::UTF8) const noexcept;
 
-	String ToLower(const String& locale) const noexcept;
-	inline String ToLower() const noexcept { return ToLower("en"); }
-	String ToUpper(const String& locale) const noexcept;
-	String ToUpper() const noexcept { return ToUpper("en"); }
+	String ToLower(const Locale& locale) const noexcept;
+	String ToLower() const noexcept;
+	String ToUpper(const Locale& locale) const noexcept;
+	String ToUpper() const noexcept;
 
 	template<typename T>
 	static String ToSingleCharString(T ch) requires(is_single_char_v<T>)
@@ -452,8 +463,6 @@ private:
 	static unsigned char* allocate_block(size_type lenChars) noexcept;
 	void init_from_bytes(const Byte* bytes, size_type len) noexcept;
 	uint32_t find_byte_offset_of_code_point(uint32_t cpIndex) const;
-	static int compare_ordinal_icp(CodePoint cpA, CodePoint cpB) noexcept;
-	static int compare_code_points_case_aware(CodePoint a, CodePoint b) noexcept;
 
 	static void copy_bytes(Char* dst, uint32_t& offset, const String& s) noexcept;
 	static void copy_bytes(Char* dst, uint32_t& offset, const char* cstr) noexcept;
@@ -463,9 +472,6 @@ private:
 	Boolean contain_byte(const String& sub) const noexcept;
 	String substring_by_bytes(uint32_t byteStart, uint32_t byteLen) const noexcept;
 
-	static void case_fold_unicode(const List<CodePoint>& cps, const char* localeBytes, uint32_t localeLen, List<CodePoint>& output);
-	static int compare_folded(const List<CodePoint>& a, const List<CodePoint>& b);
-	static Boolean contain_folded(const List<CodePoint>& hay, const List<CodePoint>& ned);
 	Boolean impl_EndsWith(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept;
 	Boolean impl_StartsWith(const String& needle, Boolean ignoreCase, const Locale& locale) const noexcept;
 
@@ -494,6 +500,15 @@ private:
 			total += (count - 1) * sepLen;
 
 		return total;
+	}
+
+	template<typename T,
+	enable_if_t<is_single_char<T>::value, bool> = true>
+	static inline uint32_t get_pointer_length(const T* p) noexcept
+	{
+		uint32_t len = 0;
+		while (p[len]) ++len;
+		return len;
 	}
 
 	inline constexpr void set_sso_flag() const noexcept {

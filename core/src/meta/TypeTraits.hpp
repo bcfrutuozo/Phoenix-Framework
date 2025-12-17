@@ -69,3 +69,29 @@ template<> struct is_floating_point<long double> : true_type {};
 
 template<typename T>
 inline constexpr bool is_floating_point_v = is_floating_point<T>::value;
+
+// -----------------------------------------------------------------------------
+//  is_array
+// -----------------------------------------------------------------------------
+//  Detects:
+//    T[N]
+//    T[]
+// -----------------------------------------------------------------------------
+
+template<typename T>
+struct is_array {
+    static constexpr bool value = false;
+};
+
+template<typename T, unsigned long N>
+struct is_array<T[N]> {
+    static constexpr bool value = true;
+};
+
+template<typename T>
+struct is_array<T[]> {
+    static constexpr bool value = true;
+};
+
+template<typename T>
+inline constexpr bool is_array_v = is_array<T>::value;

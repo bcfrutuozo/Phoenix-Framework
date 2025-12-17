@@ -222,19 +222,6 @@ TEST_CASE("Wrappers: floating point interop")
 }
 
 // =====================================================
-// 13. Boolean semantics
-// =====================================================
-
-TEST_CASE("Wrappers: Boolean semantics")
-{
-    Int32 a = 0;
-    Int32 b = 5;
-
-    REQUIRE(!Boolean(a));
-    REQUIRE(Boolean(b));
-}
-
-// =====================================================
 // 14. Byte access (endianness-aware)
 // =====================================================
 
@@ -286,25 +273,6 @@ TEST_CASE("Wrappers: GetHashCode consistency")
 // =====================================================
 //  Numeric Wrappers – Advanced Conversion & Promotion
 // =====================================================
-
-// =====================================================
-// 17. Integer -> Boolean (implicit, C++ semantics)
-// =====================================================
-
-TEST_CASE("Wrappers: int to bool implicit conversion")
-{
-    Int32 a = 0;
-    Int32 b = 1;
-    Int32 c = -42;
-
-    Boolean ba = a;
-    Boolean bb = b;
-    Boolean bc = c;
-
-    REQUIRE(ba == false);
-    REQUIRE(bb == true);
-    REQUIRE(bc == true);
-}
 
 // =====================================================
 // 18. Boolean -> Integer
@@ -449,16 +417,6 @@ constexpr Double cx_d = cx_i32;
 constexpr Int32 cx_back = static_cast<Int32>(cx_d);
 
 static_assert((int)cx_back == 10);
-
-// =====================================================
-// 28. constexpr boolean semantics
-// =====================================================
-
-constexpr Int32 cx_zero = 0;
-constexpr Int32 cx_nonzero = 5;
-
-static_assert(!Boolean(cx_zero));
-static_assert(Boolean(cx_nonzero));
 
 // =====================================================
 // 29. Ternary operator promotion

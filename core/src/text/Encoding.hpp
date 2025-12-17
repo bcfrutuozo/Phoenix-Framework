@@ -226,6 +226,18 @@ struct UTF8Encoding
 
 struct UTF16Encoding
 {
+	static constexpr bool IsHighSurrogate(char16_t c) noexcept {
+		return c >= 0xD800 && c <= 0xDBFF;
+	}
+
+	static constexpr bool IsLowSurrogate(char16_t c) noexcept {
+		return c >= 0xDC00 && c <= 0xDFFF;
+	}
+
+	static constexpr bool IsSurrogate(char16_t c) noexcept {
+		return c >= 0xD800 && c <= 0xDFFF;
+	}
+
 	static void Decode(const char16_t* units, uint32_t unitCount, List<CodePoint>& outCodePoints) noexcept
 	{
 		outCodePoints.Clear();
@@ -237,11 +249,10 @@ struct UTF16Encoding
 		{
 			uint32_t u = units[i];
 
-			// surrogate pair
-			if (u >= 0xD800 && u <= 0xDBFF && i + 1 < unitCount)
+			if (IsHighSurrogate(u) && i + 1 < unitCount)
 			{
 				uint32_t lo = units[i + 1];
-				if (lo >= 0xDC00 && lo <= 0xDFFF)
+				if (IsLowSurrogate(u))
 				{
 					uint32_t cp =
 						0x10000 +

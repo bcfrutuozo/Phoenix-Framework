@@ -22,7 +22,7 @@ static List<String> Strings(std::initializer_list<String> list)
     return r;
 }
 
-using NF = UnicodeNormalization::NormalizationForm;
+using NF = NormalizationForm;
 
 // =====================================================
 // 1. Construction & Basic Properties
@@ -164,7 +164,7 @@ TEST_CASE("String: Equals")
     {
         String a(u8"Stra\u00DFe");
         String b(u8"STRASSE");
-        REQUIRE(String::Equals(a, b, true, Locale(u8"de")));
+        REQUIRE(String::Equals(a, b, true, u8"de"));
     }
 
     SECTION("IgnoreCase Unicode – Turkish I")
@@ -191,14 +191,14 @@ TEST_CASE("String: Equals")
 
 TEST_CASE("String: Compare (Unicode casefold aware)")
 {
-    REQUIRE(String::Compare("abc", "ABC", true, Locale(u8"en")) == 0);
-    REQUIRE(String::Compare(u8"Stra\u00DFe", u8"STRASSE", true, Locale(u8"de")) == 0);
+    REQUIRE(String::Compare("abc", "ABC", true, u8"en") == 0);
+    REQUIRE(String::Compare(u8"Stra\u00DFe", u8"STRASSE", true, u8"de") == 0);
 
-    REQUIRE(String::Compare("a", "b", false, Locale(u8"en")) < 0);
-    REQUIRE(String::Compare("b", "a", false, Locale(u8"en")) > 0);
+    REQUIRE(String::Compare("a", "b", false, u8"en") < 0);
+    REQUIRE(String::Compare("b", "a", false, u8"en") > 0);
 
     // Turkish dotted/dotless I: compare with Turkish locale
-    REQUIRE(String::Compare(u8"\u0130", u8"i", true, Locale(u8"tr")) == 0); // İ == i (locale aware)
+    REQUIRE(String::Compare(u8"\u0130", u8"i", true, u8"tr") == 0); // İ == i (locale aware)
     REQUIRE(String::Compare(u8"I", u8"\u0131", true, Locale(u8"tr")) == 0); // I == ı
 }
 
@@ -796,8 +796,8 @@ TEST_CASE("String: StartsWith / EndsWith / Contains — ASCII ignoreCase")
 {
     String s("HelloWorld");
 
-    REQUIRE(s.StartsWith("hello", true, Locale("en")));
-    REQUIRE(s.EndsWith("world", true, Locale("en")));
+    REQUIRE(s.StartsWith("hello", true, "en"));
+    REQUIRE(s.EndsWith("world", true, "en"));
     REQUIRE(s.Contains("helloworld", true));
     REQUIRE(s.Contains("HELLO", true));
     REQUIRE(s.Contains("world", true));
@@ -813,12 +813,12 @@ TEST_CASE("String: StartsWith / EndsWith / Contains — German ß")
     String s(u8"Stra\u00DFe");
 
     // StartsWith
-    REQUIRE(s.StartsWith(u8"STR", true, Locale("de")));
+    REQUIRE(s.StartsWith(u8"STR", true, "de"));
     REQUIRE(s.StartsWith(u8"stra", true));
 
     // EndsWith
     REQUIRE(s.EndsWith(u8"\u00DFe", true));   // ße → ss e
-    REQUIRE(s.EndsWith("SSE", true, Locale("de")));
+    REQUIRE(s.EndsWith("SSE", true, "de"));
 
     // Contains
     REQUIRE(s.Contains(u8"\u00DF", false));   // exact ß
@@ -833,20 +833,18 @@ TEST_CASE("String: StartsWith / EndsWith / Contains — German ß")
 
 TEST_CASE("String: StartsWith / EndsWith / Contains — Turkish I")
 {
-    Locale locale("tr");
-
     // "I" vs "ı"
-    REQUIRE(String(u8"I").Equals(u8"\u0131", Boolean(true), locale));
+    REQUIRE(String(u8"I").Equals(u8"\u0131", true, u8"tr"));
 
     // StartsWith
-    REQUIRE(String(u8"Istanbul").StartsWith(u8"\u0131s", true, locale));
+    REQUIRE(String(u8"Istanbul").StartsWith(u8"\u0131s", true, u8"tr"));
 
     // EndsWith
-    REQUIRE(String(u8"\u0130").EndsWith("i", true, locale)); // İ → i
+    REQUIRE(String(u8"\u0130").EndsWith("i", true, U"tr")); // İ → i
 
     // Contains
-    REQUIRE(String("I").Contains(u8"\u0131", true, locale)); // I → ı
-    REQUIRE(String(u8"\u0130").Contains("i", true, locale));               // İ → i
+    REQUIRE(String("I").Contains(u8"\u0131", true, L"tr")); // I → ı
+    REQUIRE(String(u8"\u0130").Contains("i", true, u8"tr"));               // İ → i
 }
 
 // =====================================================

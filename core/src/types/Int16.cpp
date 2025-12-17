@@ -16,5 +16,5 @@ String Int16::ToString() const noexcept
 {
 	char buf[8];
 	int n = snprintf(buf, sizeof(buf), "%d", (int16_t)Value);
-	return String(buf);
+	return String(buf, n);
 }

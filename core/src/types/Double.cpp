@@ -16,5 +16,5 @@ String Double::ToString() const noexcept
 {
 	char buf[64];
 	int n = snprintf(buf, sizeof(buf), "%g", Value);
-	return String(buf);
+	return String(buf, n);
 }

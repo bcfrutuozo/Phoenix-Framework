@@ -17,5 +17,5 @@ String Int64::ToString() const noexcept
 {
 	char buf[32];
 	int n = snprintf(buf, sizeof(buf), "%lld", (long long)Value);
-	return String(buf);
+	return String(buf, n);
 }
