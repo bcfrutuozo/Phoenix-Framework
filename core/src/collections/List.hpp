@@ -39,7 +39,7 @@ private:
     // allocate and copy existing elements via assignment
     static pointer allocate_and_copy(const_pointer src, size_type n) {
         if (n == 0) return nullptr;
-        pointer p = new value_type[n];
+        pointer p = new value_type[n]();
         for (size_type i = 0; i < n; ++i) p[i] = src[i];
         return p;
     }
@@ -62,7 +62,7 @@ private:
 
         pointer newBuf = nullptr;
         if (newCap > 0) {
-            newBuf = new value_type[newCap]; // default-constructed (not value-initialized)
+            newBuf = new value_type[newCap](); // default-constructed (not value-initialized)
             // copy existing elements
             for (size_type i = 0; i < m_size; ++i) newBuf[i] = m_data[i];
             // if new slots should be zeroed, user can call ClearRange or rely on default constructor
@@ -234,7 +234,7 @@ public:
     // append (move)
     void Add(value_type&& value) {
         if (m_size + 1 > m_capacity) grow_to_at_least(m_size + 1);
-        m_data[m_size++] = value;
+        m_data[m_size++] = static_cast<value_type&&>(value);
     }
 
     // append range from another List

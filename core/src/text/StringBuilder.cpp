@@ -1,6 +1,5 @@
 #include "StringBuilder.hpp"
 
-#include "StringBuilder.hpp"
 #include "text/UTF8.hpp"
 
 StringBuilder::StringBuilder() noexcept
@@ -75,7 +74,7 @@ StringBuilder& StringBuilder::Append(const unsigned char* bytes, size_type len) 
 
 	_buffer.EnsureCapacity(_buffer.Count() + len);
 
-	for (auto i = 0; i < len; ++i)
+	for (size_t i = 0; i < len; ++i)
 		_buffer.Add(Char(bytes[i]));
 
 	return *this;
