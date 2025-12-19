@@ -26,7 +26,7 @@ String::String(Char c) noexcept
 	_sso[0] = c;
 	_sso[1] = Char(0);
 
-	set_string_as_ascii((unsigned char)c.Value < 0x80);
+	set_string_as_ascii((unsigned char)c < 0x80);
 
 	_gcLength = 1;
 }
@@ -804,11 +804,11 @@ Int64 String::IndexOfAny(const List<Char>& chars, UInt64 startIndex, UInt64 coun
 		if (byteOffset >= _byteLength)
 			continue;
 
-		unsigned char lead = (unsigned char)bytes[byteOffset].Value;
+		unsigned char lead = (unsigned char)bytes[byteOffset];
 
 		for (UInt64 k = 0; k < chars.Count(); ++k)
 		{
-			if ((unsigned char)chars[k].Value == lead)
+			if ((unsigned char)chars[k] == lead)
 				return (Int64)g;
 		}
 	}
@@ -1163,11 +1163,11 @@ Int64 String::LastIndexOfAny(const List<Char>& chars, UInt64 startIndex, UInt64 
 		if (byteOffset >= _byteLength)
 			continue;
 
-		unsigned char lead = (unsigned char)bytes[byteOffset].Value;
+		unsigned char lead = (unsigned char)bytes[byteOffset];
 
 		for (UInt64 k = 0; k < chars.Count(); ++k)
 		{
-			if ((unsigned char)chars[k].Value == lead)
+			if ((unsigned char)chars[k] == lead)
 				return g;
 		}
 	}
@@ -1416,7 +1416,7 @@ String String::Replace(Char oldChar, Char newChar) const noexcept
 
 	bool hasAny = false;
 	for (uint32_t i = 0; i < len; ++i)
-		if (src[i].Value == oldChar.Value)
+		if (src[i] == oldChar)
 			hasAny = true;
 
 	if (!hasAny) return *this;
@@ -1428,7 +1428,7 @@ String String::Replace(Char oldChar, Char newChar) const noexcept
 		out._byteLength = len;
 
 		for (uint32_t i = 0; i < len; ++i)
-			out._sso[i] = (src[i].Value == oldChar.Value ? newChar : src[i]);
+			out._sso[i] = (src[i] == oldChar ? newChar : src[i]);
 
 		out._sso[len] = Char(0);
 		return out;
@@ -1439,7 +1439,7 @@ String String::Replace(Char oldChar, Char newChar) const noexcept
 	Char* dst = reinterpret_cast<Char*>(block + sizeof(refcount_type) + sizeof(size_type));
 
 	for (uint32_t i = 0; i < len; ++i)
-		dst[i] = (src[i].Value == oldChar.Value ? newChar : src[i]);
+		dst[i] = (src[i] == oldChar ? newChar : src[i]);
 
 	String out(block);
 	out._byteLength = len;
@@ -1453,10 +1453,10 @@ String String::Replace(CodePoint oldCp, CodePoint newCp) const noexcept
 	// -----------------------
 	// FAST-PATH ASCII CP replace
 	// -----------------------
-	if (oldCp.Value <= 0x7F && newCp.Value <= 0x7F && is_ascii(*this))
+	if (oldCp <= 0x7F && newCp <= 0x7F && is_ascii(*this))
 	{
-		unsigned char oldb = (unsigned char)oldCp.Value;
-		unsigned char newb = (unsigned char)newCp.Value;
+		unsigned char oldb = (unsigned char)oldCp;
+		unsigned char newb = (unsigned char)newCp;
 
 		const unsigned char* src = reinterpret_cast<const unsigned char*>(data());
 		uint32_t len = _byteLength;
@@ -1676,12 +1676,12 @@ String String::ReplaceLineEndings() const noexcept
 	uint32_t outLen = 0;
 	for (uint32_t i = 0; i < len; )
 	{
-		unsigned char c = (unsigned char)src[i].Value;
+		unsigned char c = (unsigned char)src[i];
 
 		if (c == '\r')
 		{
 			// CRLF?
-			if (i + 1 < len && (unsigned char)src[i + 1].Value == '\n')
+			if (i + 1 < len && (unsigned char)src[i + 1] == '\n')
 			{
 				outLen += 1;   // becomes '\n'
 				i += 2;
@@ -1714,11 +1714,11 @@ String String::ReplaceLineEndings() const noexcept
 	// Second pass: write transformed string
 	for (uint32_t i = 0; i < len; )
 	{
-		unsigned char c = (unsigned char)src[i].Value;
+		unsigned char c = (unsigned char)src[i];
 
 		if (c == '\r')
 		{
-			if (i + 1 < len && (unsigned char)src[i + 1].Value == '\n')
+			if (i + 1 < len && (unsigned char)src[i + 1] == '\n')
 			{
 				dst[w++] = Char('\n');
 				i += 2;
@@ -1763,11 +1763,11 @@ String String::ReplaceLineEndings(const String& replacement) const noexcept
 
 	for (uint32_t i = 0; i < len; )
 	{
-		unsigned char c = (unsigned char)src[i].Value;
+		unsigned char c = (unsigned char)src[i];
 
 		if (c == '\r')
 		{
-			if (i + 1 < len && (unsigned char)src[i + 1].Value == '\n')
+			if (i + 1 < len && (unsigned char)src[i + 1] == '\n')
 			{
 				outLen += repLen;
 				i += 2;
@@ -1800,11 +1800,11 @@ String String::ReplaceLineEndings(const String& replacement) const noexcept
 	// Second pass: escrever saída
 	for (uint32_t i = 0; i < len; )
 	{
-		unsigned char c = (unsigned char)src[i].Value;
+		unsigned char c = (unsigned char)src[i];
 
 		if (c == '\r')
 		{
-			if (i + 1 < len && (unsigned char)src[i + 1].Value == '\n')
+			if (i + 1 < len && (unsigned char)src[i + 1] == '\n')
 			{
 				// write replacement
 				for (uint32_t k = 0; k < repLen; ++k)
@@ -2021,7 +2021,7 @@ String String::ToHex(Encoding enc) const noexcept
 
 		uint32_t unitCount = 0;
 		for (CodePoint cp : cps)
-			unitCount += (cp.Value <= 0xFFFF) ? 1 : 2;
+			unitCount += (cp <= 0xFFFF) ? 1 : 2;
 
 		uint32_t outLen = UTF16Encoding::ToHexLength(unitCount);
 
@@ -2037,7 +2037,7 @@ String String::ToHex(Encoding enc) const noexcept
 
 		for (CodePoint cp : cps)
 		{
-			uint32_t v = cp.Value;
+			uint32_t v = cp;
 			if (v <= 0xFFFF)
 			{
 				units.Add(static_cast<char16_t>(v));
@@ -2109,7 +2109,7 @@ String String::ToLower(const Locale& locale) const noexcept
 		const Char* src = data();
 
 		for (uint32_t i = 0; i < len; ++i)
-			dst[i] = Char(ASCII::ToLower((unsigned char)src[i].Value));
+			dst[i] = Char(ASCII::ToLower((unsigned char)src[i]));
 
 		String result(block);
 		result._byteOffset = 0;
@@ -2204,7 +2204,7 @@ String String::ToUpper(const Locale& locale) const noexcept
 		const Char* src = data();
 
 		for (uint32_t i = 0; i < len; ++i)
-			dst[i] = Char(ASCII::ToUpper((unsigned char)src[i].Value));
+			dst[i] = Char(ASCII::ToUpper((unsigned char)src[i]));
 
 		String result(block);
 		result._byteOffset = 0;
@@ -2362,7 +2362,7 @@ String String::Trim(const List<Char>& chars) const
 	List<CodePoint> codeSet;
 	codeSet.Reserve(chars.Count());
 	for (uint32_t i = 0; i < chars.Count(); ++i)
-		codeSet.Add((uint32_t)chars[i].Value);
+		codeSet.Add((uint32_t)chars[i]);
 
 	List<CodePoint> cps = DecodeToCodePoints(*this);
 	uint32_t cpCount = cps.Count();
@@ -2442,7 +2442,7 @@ String String::TrimEnd(const List<Char>& chars) const
 
 		bool match = false;
 		for (uint32_t k = 0; k < chars.Count(); ++k)
-			if ((uint32_t)chars[k] == (uint32_t)cp.Value)
+			if ((uint32_t)chars[k] == (uint32_t)cp)
 				match = true;
 
 		if (!match) break;
@@ -2694,7 +2694,7 @@ bool String::is_ascii(const String& s) noexcept
 
 	for (uint32_t i = 0; i < len; ++i)
 	{
-		if ((unsigned char)p[i].Value >= 0x80)
+		if ((unsigned char)p[i] >= 0x80)
 		{
 			// cache negative
 			s.set_string_as_ascii(false);

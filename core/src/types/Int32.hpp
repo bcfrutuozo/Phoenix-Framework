@@ -3,16 +3,30 @@
 #include "meta/ValueType.hpp"
 #include "Object.hpp"
 #include "Boolean.hpp"
+#include "Operators.hpp"
 
 class UInt32;
 class String;
 
 class Int32 final : public Object<Int32>
 {
+
+#define WRAPPER(name) friend class name;
+#include "Wrappers.def"
+#undef WRAPPER
+
+	template<typename>
+	friend struct WrapperAccess;
+
 public:
 
 	using value_type = int32_t;
+
+private:
+
 	value_type Value;
+
+public:
 
 	constexpr Int32() : Value() {};
 
@@ -44,7 +58,12 @@ public:
 	constexpr Int32& operator=(T const& value) noexcept requires(is_promotion_primitive<T>::value) { Value = value; return *this; };
 
 	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	constexpr Int32& operator=(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) { Value = static_cast<value_type>(wrapper.Value); return *this; };
+	constexpr Int32& operator=(T const& other) noexcept requires(is_promotion_wrapper<T>::value)
+	{
+		auto access = Wrapper<T>::Access();
+		Value = static_cast<value_type>(other.Value);
+		return *this;
+	};
 
 	/*
 	 * Implicit operator to T() primitives
@@ -268,73 +287,53 @@ public:
 	 * Operator+ (Addition)
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	friend inline constexpr auto operator+(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value + rhs; return Wrapper(res); }
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr auto operator+(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { auto res = lhs.Value + rhs.Value; return Wrapper(res); }
+	friend inline constexpr auto operator+(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value + rhs; return ToWrapper(res); }
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	friend inline constexpr auto operator+(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs + rhs.Value; return Wrapper(res); }
+	friend inline constexpr auto operator+(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs + rhs.Value; return ToWrapper(res); }
 
 	/*
 	 * Operator- (Subtraction)
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	friend inline constexpr auto operator-(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value - rhs; return Wrapper(res); }
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr auto operator-(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { auto res = lhs.Value - rhs.Value; return Wrapper(res); }
+	friend inline constexpr auto operator-(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value - rhs; return ToWrapper(res); }
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	friend inline constexpr auto operator-(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs - rhs.Value; return Wrapper(res); }
+	friend inline constexpr auto operator-(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs - rhs.Value; return ToWrapper(res); }
 
 	/*
 	* Operator* (Multiplication)
 	*/
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	friend inline constexpr auto operator*(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value * rhs; return Wrapper(res); }
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr auto operator*(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { auto res = lhs.Value * rhs.Value; return Wrapper(res); }
+	friend inline constexpr auto operator*(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value * rhs; return ToWrapper(res); }
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	friend inline constexpr auto operator*(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs * rhs.Value; return Wrapper(res); }
+	friend inline constexpr auto operator*(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs * rhs.Value; return ToWrapper(res); }
 
 	/*
 	* Operator/ (Division)
 	*/
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	friend inline constexpr auto operator/(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value / rhs; return Wrapper(res); }
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr auto operator/(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { auto res = lhs.Value / rhs.Value; return Wrapper(res); }
+	friend inline constexpr auto operator/(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs.Value / rhs; return ToWrapper(res); }
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	friend inline constexpr auto operator/(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs / rhs.Value; return Wrapper(res); }
+	friend inline constexpr auto operator/(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { auto res = lhs / rhs.Value; return ToWrapper(res); }
 
 	/*
 	 * Operator% (Modulo)
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-	friend inline constexpr auto operator%(Int32 const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) { auto res = lhs.Value % other; return Wrapper(res); }
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
-	friend inline constexpr auto operator%(Int32 const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) { auto res = lhs.Value % other.Value; return Wrapper(res); }
+	friend inline constexpr auto operator%(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) { auto res = lhs.Value % rhs; return ToWrapper(res); }
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-	friend inline constexpr auto operator%(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) { auto res = lhs % rhs.Value; return Wrapper(res); }
+	friend inline constexpr auto operator%(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) { auto res = lhs % rhs.Value; return ToWrapper(res); }
 
 	/*
 	 * Operator& (Logical AND)
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-	friend inline constexpr Int32 operator&(Int32 const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
-		return lhs.Value & other;
-	}
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
-	friend inline constexpr Int32 operator&(Int32 const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-		return lhs.Value & other.Value;
+	friend inline constexpr Int32 operator&(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
+		return lhs.Value & rhs;
 	}
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
@@ -347,13 +346,8 @@ public:
 	 * Operator| (Logical OR)
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-	friend inline constexpr Int32 operator|(Int32 const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
-		return lhs.Value | other;
-	}
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
-	friend inline constexpr Int32 operator|(Int32 const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-		return lhs.Value | other.Value;
+	friend inline constexpr Int32 operator|(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
+		return lhs.Value | rhs;
 	}
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
@@ -366,13 +360,8 @@ public:
 	 * Operator^ (Logical XOR)
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-	friend inline constexpr Int32 operator^(Int32 const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
-		return lhs.Value ^ other;
-	}
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
-	friend inline constexpr Int32 operator^(Int32 const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-		return lhs.Value ^ other.Value;
+	friend inline constexpr Int32 operator^(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
+		return lhs.Value ^ rhs;
 	}
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
@@ -385,44 +374,32 @@ public:
 	 * Operator<< (Shift-Left)
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-	friend inline constexpr auto operator<<(Int32 const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
-		using R = decltype(lhs.Value << other);
-		return Wrapper(R(lhs.Value << other));
-	}
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
-	friend inline constexpr auto operator<<(Int32 const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-		using R = decltype(lhs.Value << other.Value);
-		return Wrapper(R(lhs.Value << other.Value));
+	friend inline constexpr auto operator<<(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
+		using R = decltype(lhs.Value << rhs);
+		return ToWrapper(R(lhs.Value << rhs));
 	}
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
 	friend inline constexpr auto operator<<(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value)
 	{
 		using R = decltype(lhs.Value >> rhs);
-		return Wrapper(R(lhs.Value >> rhs));
+		return ToWrapper(R(lhs.Value >> rhs));
 	}
 
 	/*
 	 * Operator>> (Shift-Right)
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
-	friend inline constexpr auto operator>>(Int32 const& lhs, T const& other) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
-		auto res = lhs.Value >> other;
-		return Wrapper(res);
-	}
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value, bool> = true>
-	friend inline constexpr auto operator>>(Int32 const& lhs, T const& other) noexcept requires(is_promotion_wrapper<T>::value&& is_wrapper_integral<T>::value) {
-		using R = decltype(lhs.Value >> other.Value);
-		return Wrapper(R(lhs.Value >> other.Value));
+	friend inline constexpr auto operator>>(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value) {
+		auto res = lhs.Value >> rhs;
+		return ToWrapper(res);
 	}
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value&& is_integral<T>::value, bool> = true>
 	friend inline constexpr auto operator>>(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value&& is_integral<T>::value)
 	{
 		using R = decltype(lhs >> rhs.Value);
-		return Wrapper(R(lhs >> rhs.Value));
+		return ToWrapper(R(lhs >> rhs.Value));
 	}
 
 	/*
@@ -430,9 +407,6 @@ public:
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator==(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value == rhs; }
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator==(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value == rhs.Value; }
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator==(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs == rhs.Value; }
@@ -443,9 +417,6 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator!=(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return !(lhs.Value == rhs); }
 
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator!=(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return !(lhs.Value == rhs.Value); }
-
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator!=(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return !(lhs == rhs.Value); }
 
@@ -454,9 +425,6 @@ public:
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator<(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value < rhs; }
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator<(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value < rhs.Value; }
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator<(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs < rhs.Value; }
@@ -467,9 +435,6 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator<=(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value <= rhs; }
 
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator<=(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value <= rhs.Value; }
-
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator<=(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs <= rhs.Value; }
 
@@ -479,9 +444,6 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value > rhs; }
 
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator>(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value > rhs.Value; }
-
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs > rhs.Value; }
 
@@ -490,9 +452,6 @@ public:
 	 */
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value >= rhs; }
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator>=(Int32 const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) { return lhs.Value >= rhs.Value; }
 
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, Int32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs.Value; }
@@ -508,4 +467,3 @@ public:
 	String ToString() const noexcept;
 };
 
-typedef Int32 i32;

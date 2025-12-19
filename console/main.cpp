@@ -5,25 +5,12 @@
 
 int main(int argc, char* argv[])
 {
-    const char* p = "ABCDEF";
-    const char pp[7] = "ABCEDF";
-    String oooo = p;
-   
+    Char c = 'A';
 
-    String x = "\xF0\x9F\x91\x8D\xF0\x9F\x91\x8D Bruno Corrêa Frutuozo \xF0\x9F\x91\x8D\xF0\x9F\x91\x8D";
-    String y = "UTF8: " + x.ToHex();
-    String w = "UTF16: " + x.ToHex(Encoding::UTF16);
-    String z = "UTF32: " + x.ToHex(Encoding::UTF32);
+    char x = c;
+    bool ok = (c == 'A');
 
-    Console::WriteLine(x);
-    Console::WriteLine(y);
-    Console::WriteLine(w);
-    Console::WriteLine(z);
-
-
-
-    String ooo = 'A';
-    ooo.Contains(u8"ABCDEF");
-
-    Console::WriteLine(ooo == "acb");
+    CodePoint cp = 0x00E1;
+    char32_t u = cp;
+    bool ok2 = (cp == 0x00E1);
 }

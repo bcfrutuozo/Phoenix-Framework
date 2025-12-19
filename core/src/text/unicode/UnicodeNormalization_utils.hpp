@@ -1,8 +1,9 @@
 ﻿#pragma once
 
-#include "../../types/CodePoint.hpp"
-#include "../../types/UInt32.hpp"
-#include "../../collections/List.hpp"
+#include "types/Operators.hpp"
+#include "types/CodePoint.hpp"
+#include "types/UInt32.hpp"
+#include "collections/List.hpp"
 #include "UnicodeNormalization_tables.hpp"
 #include <cstdint>
 #include <stdio.h>
@@ -18,10 +19,10 @@ enum class NormalizationForm
 namespace UnicodeNormalization
 {
     // Hangul constants
-    static constexpr char32_t SBase = 0xAC00;
-    static constexpr char32_t LBase = 0x1100;
-    static constexpr char32_t VBase = 0x1161;
-    static constexpr char32_t TBase = 0x11A7;
+    static constexpr CodePoint SBase = 0xAC00;
+    static constexpr CodePoint LBase = 0x1100;
+    static constexpr CodePoint VBase = 0x1161;
+    static constexpr CodePoint TBase = 0x11A7;
 					 
 	static constexpr UInt32 LCount = 19;
     static constexpr UInt32 VCount = 21;

@@ -10,7 +10,7 @@
 #include "Globals.hpp"
 #include "DivideByZeroTrap.hpp"
 #include "Exceptions.hpp"
-#include "types/Types.hpp"
+#include "Types.hpp"
 #include "interop/Console.hpp"
 
 #include <stdint.h>

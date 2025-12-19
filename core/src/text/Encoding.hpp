@@ -161,7 +161,7 @@ struct UTF8Encoding
 		{
 			auto enc = ::UTF8::encode_utf8(cp);
 			for (uint32_t i = 0; i < enc.Length; ++i)
-				out.Add(enc.Bytes[i].Value);
+				out.Add(enc.Bytes[i]);
 		}
 
 		return out;
@@ -172,7 +172,7 @@ struct UTF8Encoding
 		auto enc = ::UTF8::encode_utf8(cp);
 
 		for (uint32_t i = 0; i < enc.Length; ++i)
-			outBytes[i] = enc.Bytes[i].Value;
+			outBytes[i] = enc.Bytes[i];
 
 		return enc.Length;
 	}
@@ -185,7 +185,7 @@ struct UTF8Encoding
 		auto enc = ::UTF8::encode_utf8(cp);
 
 		for (uint32_t i = 0; i < enc.Length; ++i)
-			out.Add(enc.Bytes[i].Value);
+			out.Add(enc.Bytes[i]);
 
 		return out;
 	}
@@ -196,7 +196,7 @@ struct UTF8Encoding
 		out.EnsureCapacity(byteCount);
 
 		for (uint32_t i = 0; i < byteCount; ++i)
-			out.Add(bytes[i].Value);
+			out.Add(bytes[i]);
 
 		return out;
 	}

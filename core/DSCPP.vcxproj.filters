@@ -69,7 +69,7 @@
     <ClInclude Include="src\interop\Console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\types\Types.hpp">
+    <ClInclude Include="src\types\Operators.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\interop\ConsoleIO.hpp">
@@ -157,9 +157,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\types\String.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\types\Types.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\types\UInt16.hpp">
@@ -267,6 +264,36 @@
     <ClInclude Include="src\globalization\Locale.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\meta\Access.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\meta\Promotion.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\meta\HierarchyTraits.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\meta\WrapperTraits.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\meta\PrimitiveToWrapper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\meta\PromotionPrimitives.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\meta\WrapperValue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\meta\CharTraits.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\system\Types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\meta\WrapperContract.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\types\String.cpp">
@@ -335,5 +362,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="src\types\Wrappers.def">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

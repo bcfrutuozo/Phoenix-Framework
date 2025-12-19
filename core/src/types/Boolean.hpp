@@ -2,17 +2,29 @@
 
 #include "meta/ValueType.hpp"
 #include "Object.hpp"
+#include "Operators.hpp"
 
-class UInt32;
 class String;
 
 class Boolean final : public Object<Boolean>
-{	
+{
+#define WRAPPER(name) friend class name;
+#include "Wrappers.def"
+#undef WRAPPER
+
+	template<typename>
+	friend struct WrapperAccess;
+
 public:
 
 	using value_type = bool;
+
+private:
+
 	value_type Value;
 
+public:
+	
 	constexpr Boolean() noexcept : Value(false) {}
 	constexpr explicit Boolean(bool v) noexcept : Value(v) {}
 
@@ -37,15 +49,18 @@ public:
 
 	// Assignment from promoted primitive
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
-	constexpr Boolean& operator=(T value) noexcept requires(is_promotion_primitive<T>::value) {
+	constexpr Boolean& operator=(T value) noexcept requires(is_promotion_primitive<T>::value) 
+	{
 		Value = static_cast<value_type>(value);
 		return *this;
 	}
 
 	// Assignment from promoted wrapper
 	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	constexpr Boolean& operator=(T const& wrapper) noexcept requires(is_promotion_wrapper<T>::value) {
-		Value = static_cast<value_type>(wrapper.Value);
+	constexpr Boolean& operator=(T const& other) noexcept requires(is_promotion_wrapper<T>::value)
+	{
+		auto access = Wrapper<T>::Access();
+		Value = static_cast<value_type>(other.Value);
 		return *this;
 	}
 
@@ -122,29 +137,13 @@ public:
 	}
 
 	// Compare with promoted wrapper types (assumes those wrappers can convert to bool)
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator==(Boolean const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) {
-		return Boolean(lhs.Value == static_cast<value_type>(rhs.Value));
-	}
+	template<typename L, typename R >
+	friend constexpr Boolean operator==(L const& lhs, R const& rhs) noexcept;
 
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator==(T const& lhs, Boolean const& rhs) noexcept requires(is_promotion_wrapper<T>::value) {
-		return Boolean(static_cast<value_type>(lhs.Value) == rhs.Value);
-	}
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator!=(Boolean const& lhs, T const& rhs) noexcept requires(is_promotion_wrapper<T>::value) {
-		return Boolean(lhs.Value != static_cast<value_type>(rhs));
-	}
-
-	template<typename T, enable_if_t<is_promotion_wrapper<T>::value, bool> = true>
-	friend inline constexpr Boolean operator!=(T const& lhs, Boolean const& rhs) noexcept requires(is_promotion_wrapper<T>::value) {
-		return Boolean(static_cast<value_type>(lhs.Value) != rhs.Value);
-	}
+	template<typename L, typename R>
+	friend constexpr Boolean operator!=(L const& lhs, R const& rhs) noexcept;
 
 	Boolean Equals(const Boolean& other) const noexcept;
-
 	UInt32 GetHashCode() const noexcept;
-
 	String ToString() const noexcept;
 };

@@ -149,7 +149,13 @@
     <ClInclude Include="src\collections\Queue.hpp" />
     <ClInclude Include="src\collections\Stack.hpp" />
     <ClInclude Include="src\globalization\Locale.hpp" />
+    <ClInclude Include="src\meta\Access.hpp" />
     <ClInclude Include="src\meta\BaseDef.hpp" />
+    <ClInclude Include="src\meta\CharTraits.hpp" />
+    <ClInclude Include="src\meta\HierarchyTraits.hpp" />
+    <ClInclude Include="src\meta\PrimitiveToWrapper.hpp" />
+    <ClInclude Include="src\meta\Promotion.hpp" />
+    <ClInclude Include="src\meta\PromotionPrimitives.hpp" />
     <ClInclude Include="src\meta\TypeTraits.hpp" />
     <ClInclude Include="src\meta\ValueType.hpp" />
     <ClInclude Include="src\interop\Console.hpp" />
@@ -159,11 +165,15 @@
     <ClInclude Include="src\io\StreamOperators.hpp" />
     <ClInclude Include="src\io\TextReader.hpp" />
     <ClInclude Include="src\io\TextWriter.hpp" />
+    <ClInclude Include="src\meta\WrapperContract.hpp" />
+    <ClInclude Include="src\meta\WrapperTraits.hpp" />
+    <ClInclude Include="src\meta\WrapperValue.hpp" />
     <ClInclude Include="src\system\DivideByZeroTrap.hpp" />
     <ClInclude Include="src\system\Exceptions.hpp" />
     <ClInclude Include="src\system\Framework.hpp" />
     <ClInclude Include="src\system\Globals.hpp" />
     <ClInclude Include="src\system\Marvin32.hpp" />
+    <ClInclude Include="src\system\Types.hpp" />
     <ClInclude Include="src\text\ASCII.hpp" />
     <ClInclude Include="src\text\Encoding.hpp" />
     <ClInclude Include="src\text\StringBuilder.hpp" />
@@ -187,7 +197,7 @@
     <ClInclude Include="src\types\SByte.hpp" />
     <ClInclude Include="src\types\Single.hpp" />
     <ClInclude Include="src\types\String.hpp" />
-    <ClInclude Include="src\types\Types.hpp" />
+    <ClInclude Include="src\types\Operators.hpp" />
     <ClInclude Include="src\types\UInt16.hpp" />
     <ClInclude Include="src\types\UInt32.hpp" />
     <ClInclude Include="src\types\UInt64.hpp" />
@@ -216,6 +226,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="src\types\Wrappers.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
