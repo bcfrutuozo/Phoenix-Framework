@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "types/Char.hpp"
 #include "types/CodePoint.hpp"
@@ -7,7 +7,7 @@
 #include "ASCII.hpp"
 #include "UTF8.hpp"
 
-static constexpr char HEX[17] = "0123456789ABCDEF";
+static constexpr Char HEX[17] = { '0', '1', '2','3','4','5','6','7','8','9','A','B','C','D','E','F' };
 
 enum class Encoding
 {
@@ -259,13 +259,13 @@ struct UTF16Encoding
 						((u - 0xD800) << 10) +
 						(lo - 0xDC00);
 
-					outCodePoints.Add(CodePoint(cp));
+					outCodePoints.Add(cp);
 					++i;
 					continue;
 				}
 			}
 
-			outCodePoints.Add(CodePoint(u));
+			outCodePoints.Add(u);
 		}
 	}
 

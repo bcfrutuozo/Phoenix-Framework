@@ -1,32 +1,33 @@
-﻿#pragma once
+#pragma once
 #include <cstdint>
+
+#include "types/UInt32.hpp"
 
 namespace UnicodeCase
 {
     struct CFEntry {
-        uint32_t cp;
-        const uint32_t* seq;
-        uint32_t len;
+        CodePoint cp;
+        const CodePoint* seq;
+        UInt32 len;
     };
 
     // ---- FULL CASE FOLDING (F) from CaseFolding.txt ----
     // Somente entradas realmente necessárias (Unicode >= 12),
     // reduzido ao essencial para otimizar performance.
     // Cada entrada seq[] nunca tem mais que 3 codepoints.
+    static constexpr CodePoint CF_00DF[] = { 0x0073, 0x0073 };           // ß → ss
+    static constexpr CodePoint CF_0130[] = { 0x0069, 0x0307 };           // İ → i + dot above (turkish)
+    static constexpr CodePoint CF_FB00[] = { 0x0066, 0x0066 };           // ﬀ → ff
+    static constexpr CodePoint CF_FB01[] = { 0x0066, 0x0069 };           // ﬁ → fi
+    static constexpr CodePoint CF_FB02[] = { 0x0066, 0x006C };           // ﬂ → fl
+    static constexpr CodePoint CF_FB03[] = { 0x0066, 0x0066, 0x0069 };   // ﬃ → ffi
+    static constexpr CodePoint CF_FB04[] = { 0x0066, 0x0066, 0x006C };   // ﬄ → ffl
+    static constexpr CodePoint CF_FB05[] = { 0x0073, 0x0074 };           // ﬅ → st
+    static constexpr CodePoint CF_FB06[] = { 0x0073, 0x0074 };           // ﬆ → st
 
-    static constexpr uint32_t CF_00DF[] = { 0x0073, 0x0073 };           // ß → ss
-    static constexpr uint32_t CF_0130[] = { 0x0069, 0x0307 };           // İ → i + dot above (turkish)
-    static constexpr uint32_t CF_FB00[] = { 0x0066, 0x0066 };           // ﬀ → ff
-    static constexpr uint32_t CF_FB01[] = { 0x0066, 0x0069 };           // ﬁ → fi
-    static constexpr uint32_t CF_FB02[] = { 0x0066, 0x006C };           // ﬂ → fl
-    static constexpr uint32_t CF_FB03[] = { 0x0066, 0x0066, 0x0069 };   // ﬃ → ffi
-    static constexpr uint32_t CF_FB04[] = { 0x0066, 0x0066, 0x006C };   // ﬄ → ffl
-    static constexpr uint32_t CF_FB05[] = { 0x0073, 0x0074 };           // ﬅ → st
-    static constexpr uint32_t CF_FB06[] = { 0x0073, 0x0074 };           // ﬆ → st
-
-    static constexpr uint32_t CF_03C2[] = { 0x03C3 };                   // σ (final sigma) → σ normal
-    static constexpr uint32_t CF_03C3[] = { 0x03C3 };                   // σ → σ
-    static constexpr uint32_t CF_03F2[] = { 0x03C3 };                   // ϲ → σ (lunate sigma)
+    static constexpr CodePoint CF_03C2[] = { 0x03C3 };                   // σ (final sigma) → σ normal
+    static constexpr CodePoint CF_03C3[] = { 0x03C3 };                   // σ → σ
+    static constexpr CodePoint CF_03F2[] = { 0x03C3 };                   // ϲ → σ (lunate sigma)
 
     // Tabela principal: (ordenada por cp para busca binária rápida)
     static constexpr CFEntry CASEFOLD_TABLE[] =
@@ -46,6 +47,6 @@ namespace UnicodeCase
         { 0xFB06, CF_FB06, 2 },
     };
 
-    static constexpr uint32_t CASEFOLD_TABLE_COUNT =
+    static constexpr UInt32 CASEFOLD_TABLE_COUNT =
         sizeof(CASEFOLD_TABLE) / sizeof(CASEFOLD_TABLE[0]);
 }

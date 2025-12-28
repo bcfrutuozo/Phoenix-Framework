@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "types/Object.hpp"
 #include "types/String.hpp"
@@ -19,9 +19,9 @@ public:
 
 	inline constexpr UInt64 GetByteCount() const noexcept { return _locale.GetByteCount(); }
 	
-	inline constexpr Boolean IsTurkish() const noexcept 
+	inline Boolean IsTurkish() const noexcept 
 	{
-		return _locale == "tr" || _locale == "tr-TR";
+		return _locale == "tr" || _locale == "tr-TR" || _locale == "az" || _locale == "az-AZ";
 	}
 
 	inline const char* data() const noexcept { return static_cast<const char*>(_locale); }

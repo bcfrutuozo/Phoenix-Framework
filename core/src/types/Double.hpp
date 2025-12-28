@@ -448,9 +448,10 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, Double const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs.Value; }
 
-	static inline constexpr Double Epsilon() noexcept { return static_cast<value_type>(4.9406564584124654E-324); }
+	static inline constexpr Double Epsilon() noexcept { return static_cast<value_type>(2.2204460492503131E-16); }
 	static inline constexpr Double MaxValue() noexcept { return static_cast<value_type>(1.7976931348623157E+308); }
-	static inline constexpr Double MinValue() noexcept { return static_cast<value_type>(-1.7976931348623157E+308); }
+	static inline constexpr Double Lowest() noexcept { return static_cast<value_type>(-1.7976931348623157E+308); }
+	static inline constexpr Double MinValue() noexcept { return static_cast<value_type>(2.2250738585072014E-308); }
 	static inline constexpr Double Zero() noexcept { return 0.0; }
 	static inline constexpr Double NegativeZero() noexcept { return -0.0; }
 	static inline constexpr Double One() noexcept { return 1.0; }
@@ -470,21 +471,21 @@ public:
 
 private:
 
-	static constexpr float NaN_F64() noexcept
+	static constexpr Double NaN_F64() noexcept
 	{
-		union { unsigned long long u; float f; } u = { 0x7FF8000000000000ULL };
+		union { unsigned long long u; double f; } u = { 0x7FF8000000000000ULL };
 		return u.f; // Quiet NaN IEEE754 (64-bit)
 	}
 
-	static constexpr float PosInf_F64() noexcept
+	static constexpr Double PosInf_F64() noexcept
 	{
-		union { unsigned long long u; float f; } u = { 0x7FF0000000000000ULL };
+		union { unsigned long long u; double f; } u = { 0x7FF0000000000000ULL };
 		return u.f; // +Infinity IEEE754 (64-bit)
 	}
 
-	static constexpr float NegInf_F64() noexcept
+	static constexpr Double NegInf_F64() noexcept
 	{
-		union { unsigned long long u; float f; } u = { 0xFFF0000000000000ull };
+		union { unsigned long long u; double f; } u = { 0xFFF0000000000000ull };
 		return u.f; // -Infinity IEEE754 (64-bit)
 	}
 };

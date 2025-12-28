@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 // ============================================
 //  DSCPP Framework Global Initializer
@@ -21,6 +21,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #include <profileapi.h>
+#include "NetworkRuntime.hpp"
 #endif
 #else
 #include <time.h>
@@ -123,6 +124,10 @@ static void InitFramework()
     //    = divide-by-zero vira exceção
     EnableDivideByZeroTrapGlobal(1 /*enable float traps*/);
     GLOBAL_HASH_SEED = GenerateRandomSeed();
+
+#ifdef _WIN32
+    NetworkRuntime::EnsureInitialized();
+#endif
 
     // 2. (Opcional) Iniciar qualquer outro módulo no futuro:
     //    - Registradores unicode

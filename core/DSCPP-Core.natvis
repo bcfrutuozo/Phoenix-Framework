@@ -60,40 +60,31 @@
 			<!-- ===============================
            Mostrar BYTE ARRAY (UTF-8)
            =============================== -->
-			<Item Name="UTF8 Bytes (Char[])">
-				<ArrayItems>
-					<Size>_byteLength</Size>
-					<ValuePointer>data()</ValuePointer>
-				</ArrayItems>
-			</Item>
+			<ArrayItems>
+				<Size>_byteLength</Size>
+				<ValuePointer>data()</ValuePointer>
+			</ArrayItems>
 
 
 			<!-- ===============================
            Mostrar CODEPOINTS
            (usa seu DecodeToCodePoints)
            =============================== -->
-			<Item Name="CodePoints">
-				<CustomListItems MaxItemsPerView="512">
-					<ListItems>
-						<!-- chama sua função DecodeToCodePoints(s) -->
-						<Size>DecodeToCodePoints(*this)._count</Size>
-						<ValuePointer>DecodeToCodePoints(*this)._data</ValuePointer>
-					</ListItems>
-				</CustomListItems>
-			</Item>
-
+			<ArrayItems>
+				<!-- chama sua função DecodeToCodePoints(s) -->
+				<Size>DecodeToCodePoints(*this)._count</Size>
+				<ValuePointer>DecodeToCodePoints(*this)._data</ValuePointer>
+			</ArrayItems>
 
 			<!-- ===============================
            Mostrar GRAPHEME CLUSTERS
            (via Substring(i,1))
            =============================== -->
-			<Item Name="Graphemes">
-				<IndexListItems>
-					<Size>GetLength()</Size>
-					<!-- Cada grapheme é obtido pela sua função Substring(i,1) -->
-					<ValuePointer>(this->Substring($i,1)).data()</ValuePointer>
-				</IndexListItems>
-			</Item>
+			<ArrayItems>
+				<Size>GetLength()</Size>
+				<!-- Cada grapheme é obtido pela sua função Substring(i,1) -->
+				<ValuePointer>(this->Substring($i,1)).data()</ValuePointer>
+			</ArrayItems>
 
 
 			<!-- Campos internos -->

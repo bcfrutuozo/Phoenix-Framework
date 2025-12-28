@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 // =====================================================
 //  Numeric Wrappers – Full Catch2 Test Suite
@@ -201,8 +201,8 @@ TEST_CASE("Wrappers: signed unsigned interaction")
     Int32 s = -1;
     UInt32 u = 1;
 
-    //auto r = s + u;
-    //REQUIRE((int)r == 0);
+    auto r = s + u;
+    REQUIRE((int)r == 0);
 }
 
 // =====================================================

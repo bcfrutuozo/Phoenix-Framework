@@ -41,5 +41,8 @@
     <ClCompile Include="unit\src\test_types.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="unit\src\test_network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

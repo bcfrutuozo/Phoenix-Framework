@@ -432,9 +432,6 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(Char const& lhs, T const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs.Value >= rhs; }
 
-	template<typename L, typename R>
-	friend constexpr Boolean operator>=(L const& lhs, R const& rhs) noexcept;
-
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, Char const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs.Value; }
 

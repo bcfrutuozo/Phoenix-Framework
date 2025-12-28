@@ -4,10 +4,11 @@
 #pragma once
 
 #include <cstdint>
+#include "types/CodePoint.hpp"
 
 namespace UnicodeCase {
 
-struct MapPair { uint32_t cp; uint32_t mapped; };
+struct MapPair { CodePoint cp; CodePoint mapped; };
 
 static constexpr MapPair UPPER_MAP[1505] = {
     { 0x0061, 0x0041 },
@@ -3008,11 +3009,11 @@ static constexpr MapPair LOWER_MAP[1488] = {
     { 0x1E921, 0x1E943 },
 };
 
-constexpr size_t map_find(const MapPair* arr, size_t n, uint32_t cp) noexcept {
+constexpr UInt64 map_find(const MapPair* arr, size_t n, CodePoint cp) noexcept {
     size_t lo = 0, hi = n;
     while (lo < hi) {
         size_t mid = (lo + hi) >> 1;
-        uint32_t m = arr[mid].cp;
+        CodePoint m = arr[mid].cp;
         if (m == cp) return mid + 1; // found -> index+1
         if (m < cp) lo = mid + 1;
         else hi = mid;
@@ -3020,14 +3021,14 @@ constexpr size_t map_find(const MapPair* arr, size_t n, uint32_t cp) noexcept {
     return 0;
 }
 
-constexpr uint32_t to_upper_simple(uint32_t cp) noexcept {
-    size_t idx = map_find(UPPER_MAP, sizeof(UPPER_MAP)/sizeof(UPPER_MAP[0]), cp);
+constexpr CodePoint to_upper_simple(CodePoint cp) noexcept {
+    UInt64 idx = map_find(UPPER_MAP, sizeof(UPPER_MAP)/sizeof(UPPER_MAP[0]), cp);
     if (idx) return UPPER_MAP[idx-1].mapped;
     return cp;
 }
 
-constexpr uint32_t to_lower_simple(uint32_t cp) noexcept {
-    size_t idx = map_find(LOWER_MAP, sizeof(LOWER_MAP)/sizeof(LOWER_MAP[0]), cp);
+constexpr CodePoint to_lower_simple(CodePoint cp) noexcept {
+    UInt64 idx = map_find(LOWER_MAP, sizeof(LOWER_MAP)/sizeof(LOWER_MAP[0]), cp);
     if (idx) return LOWER_MAP[idx-1].mapped;
     return cp;
 }

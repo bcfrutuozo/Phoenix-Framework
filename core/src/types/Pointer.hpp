@@ -1,0 +1,74 @@
+#pragma once
+
+#include "meta/ValueType.hpp"
+#include "Object.hpp"
+#include "Boolean.hpp"
+#include "Byte.hpp"
+#include "Operators.hpp"
+#include "Int32.hpp"
+#include "UInt64.hpp"
+#include "UInt32.hpp"
+
+class String;
+
+class Pointer final : public Object<Pointer>
+{
+#define WRAPPER(name) friend class name;
+#include "Wrappers.def"
+#undef WRAPPER
+
+	template<typename>
+	friend struct WrapperAccess;
+
+public:
+
+#ifdef _M_X64
+	using value_type = UInt64;
+#else
+	using value_type = UInt32;
+#endif
+
+private:
+
+	value_type _value;
+
+public:
+
+    constexpr Pointer() noexcept : _value(0) {}
+
+    constexpr Pointer(decltype(nullptr)) noexcept : _value(0) {}
+
+    explicit constexpr Pointer(value_type value) noexcept
+        : _value(value) { }
+
+    explicit constexpr Pointer(const void* p) noexcept
+        : _value(static_cast<value_type>(reinterpret_cast<uintptr_t>(p))) {
+    }
+
+    // Implicit to int type (relative to GetValue())
+
+#ifdef _M_X64
+    inline constexpr operator value_type() const noexcept { return _value; }
+    inline constexpr operator uint64_t() const noexcept { return _value; }
+#else
+    using value_type = UInt32;
+    inline constexpr operator uint32_t() const noexcept { return _value; }
+#endif
+    
+
+    inline constexpr Boolean IsNull() const noexcept { return _value == 0; }
+
+    inline constexpr explicit operator bool() const noexcept { return _value != 0; }
+
+    inline constexpr Boolean operator==(const Pointer& other) const noexcept { return _value == other._value; };
+    inline constexpr Boolean operator!=(const Pointer& other) const noexcept { return !(*this == other); }
+
+    template<typename T>
+    inline static constexpr Pointer AddressOf(T& obj) noexcept { return Pointer(static_cast<void*>(&obj)); }
+
+	Boolean Equals(const Pointer& other) const noexcept;
+	UInt32 GetHashCode() const noexcept;
+	String ToString() const noexcept;
+
+    static inline constexpr Int32 Size = sizeof(_value);
+};

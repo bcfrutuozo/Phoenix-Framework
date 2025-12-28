@@ -10,7 +10,6 @@ class String;
 
 class Int64 final : public Object<Int64>
 {
-
 #define WRAPPER(name) friend class name;
 #include "Wrappers.def"
 #undef WRAPPER

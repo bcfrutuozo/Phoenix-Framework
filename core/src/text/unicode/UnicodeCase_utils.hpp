@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <cstdint>
 
@@ -6,12 +6,12 @@
 #include "UnicodeCase_special.hpp"
 #include "UnicodeCase_props.hpp"
 #include "UnicodeCase_folding.hpp"
-#include "../../types/CodePoint.hpp"
-#include "../../collections/List.hpp"
+#include "types/CodePoint.hpp"
+#include "collections/List.hpp"
 
 namespace UnicodeCase
 {
-	static constexpr bool small_binsearch_has(const uint32_t* arr, size_t n, uint32_t cp) noexcept {
+	static constexpr bool small_binsearch_has(const CodePoint* arr, size_t n, CodePoint cp) noexcept {
 		size_t lo = 0, hi = n;
 		while (lo < hi) {
 			size_t mid = (lo + hi) >> 1;

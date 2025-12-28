@@ -8,8 +8,8 @@
 
 // ==============================================================
 //  Object - no virtual and no overhead
-//  - Polimorfismo est·tico via CRTP
-//  - Zero bytes adicionados ‡ classe derivada
+//  - Polimorfismo est√°tico via CRTP
+//  - Zero bytes adicionados √† classe derivada
 // ==============================================================
 
 template <typename T>
@@ -62,7 +62,7 @@ struct Object
 
 // ==============================================================
 //  IEquatable<T>
-//  - Usado para tipos que implementam comparaÁ„o por valor
+//  - Usado para tipos que implementam compara√ß√£o por valor
 // ==============================================================
 
 template <typename T>

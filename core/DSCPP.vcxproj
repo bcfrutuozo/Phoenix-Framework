@@ -153,6 +153,7 @@
     <ClInclude Include="src\meta\BaseDef.hpp" />
     <ClInclude Include="src\meta\CharTraits.hpp" />
     <ClInclude Include="src\meta\HierarchyTraits.hpp" />
+    <ClInclude Include="src\meta\PointerContract.hpp" />
     <ClInclude Include="src\meta\PrimitiveToWrapper.hpp" />
     <ClInclude Include="src\meta\Promotion.hpp" />
     <ClInclude Include="src\meta\PromotionPrimitives.hpp" />
@@ -168,11 +169,22 @@
     <ClInclude Include="src\meta\WrapperContract.hpp" />
     <ClInclude Include="src\meta\WrapperTraits.hpp" />
     <ClInclude Include="src\meta\WrapperValue.hpp" />
+    <ClInclude Include="src\network\Endpoint.hpp" />
+    <ClInclude Include="src\network\IPAddress.hpp" />
+    <ClInclude Include="src\network\NetworkContract.hpp" />
+    <ClInclude Include="src\network\SocketBase.hpp" />
+    <ClInclude Include="src\network\SocketError.hpp" />
+    <ClInclude Include="src\network\SocketHandle.hpp" />
+    <ClInclude Include="src\network\TCPListener.hpp" />
+    <ClInclude Include="src\network\TCPSocket.hpp" />
+    <ClInclude Include="src\network\UDPSocket.hpp" />
     <ClInclude Include="src\system\DivideByZeroTrap.hpp" />
     <ClInclude Include="src\system\Exceptions.hpp" />
     <ClInclude Include="src\system\Framework.hpp" />
     <ClInclude Include="src\system\Globals.hpp" />
     <ClInclude Include="src\system\Marvin32.hpp" />
+    <ClInclude Include="src\system\Memory.hpp" />
+    <ClInclude Include="src\system\NetworkRuntime.hpp" />
     <ClInclude Include="src\system\Types.hpp" />
     <ClInclude Include="src\text\ASCII.hpp" />
     <ClInclude Include="src\text\Encoding.hpp" />
@@ -194,6 +206,7 @@
     <ClInclude Include="src\types\Int64.hpp" />
     <ClInclude Include="src\types\Char.hpp" />
     <ClInclude Include="src\types\Object.hpp" />
+    <ClInclude Include="src\types\Pointer.hpp" />
     <ClInclude Include="src\types\SByte.hpp" />
     <ClInclude Include="src\types\Single.hpp" />
     <ClInclude Include="src\types\String.hpp" />
@@ -206,6 +219,16 @@
     <Natvis Include="DSCPP-Core.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\globalization\Locale.cpp" />
+    <ClCompile Include="src\network\Endpoint.cpp" />
+    <ClCompile Include="src\network\IPAddress.cpp" />
+    <ClCompile Include="src\network\os\SocketOS.hpp" />
+    <ClCompile Include="src\network\os\SocketOS_posix.cpp" />
+    <ClCompile Include="src\network\os\SocketOS_win32.cpp" />
+    <ClCompile Include="src\network\SocketBase.cpp" />
+    <ClCompile Include="src\network\TCPListener.cpp" />
+    <ClCompile Include="src\network\TCPSocket.cpp" />
+    <ClCompile Include="src\network\UDPSocket.cpp" />
     <ClCompile Include="src\text\StringBuilder.cpp" />
     <ClCompile Include="src\text\unicode\UnicodeCase_utils.cpp" />
     <ClCompile Include="src\text\unicode\UnicodeNormalization_utils.cpp" />
@@ -217,6 +240,7 @@
     <ClCompile Include="src\types\Int16.cpp" />
     <ClCompile Include="src\types\Int32.cpp" />
     <ClCompile Include="src\types\Int64.cpp" />
+    <ClCompile Include="src\types\Pointer.cpp" />
     <ClCompile Include="src\types\SByte.cpp" />
     <ClCompile Include="src\types\Single.cpp" />
     <ClCompile Include="src\types\String.cpp" />

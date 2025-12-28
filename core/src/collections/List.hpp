@@ -7,6 +7,7 @@
 
 #include "Array.hpp"
 #include "types/UInt64.hpp"
+#include "types/Int32.hpp"
 
 // This List<T> is a dynamic-array (vector-like) container implemented without std::.
 
@@ -163,9 +164,9 @@ public:
     }
 
     // --- capacity / size ---
-    inline size_type Count() const noexcept { return m_size; }
-    inline size_type Capacity() const noexcept { return m_capacity; }
-    inline Boolean IsEmpty() const noexcept { return m_size == 0; }
+    inline constexpr size_type Count() const noexcept { return m_size; }
+    inline constexpr size_type Capacity() const noexcept { return m_capacity; }
+    inline constexpr Boolean IsEmpty() const noexcept { return m_size == 0; }
 
     // Ensure there is room for at least min_capacity elements
     void EnsureCapacity(size_type min_capacity) {

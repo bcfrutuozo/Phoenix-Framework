@@ -448,9 +448,10 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs.Value; }
 
-	static inline constexpr Single Epsilon() noexcept { return static_cast<value_type>(1.4e-45f); }
+	static inline constexpr Single Epsilon() noexcept { return static_cast<value_type>(1.1920928955078125e-7f); }
 	static inline constexpr Single MaxValue() noexcept { return static_cast<value_type>(3.40282346638528859e+38f); }
-	static inline constexpr Single MinValue() noexcept { return static_cast<value_type>(-3.40282346638528859e+38f); }
+	static inline constexpr Single MinValue() noexcept { return static_cast<value_type>(1.1754943508222875e-38f); }
+	static inline constexpr Single Lowest() noexcept { return static_cast<value_type>(-3.4028234663852886e+38f); }
 	static inline constexpr Single Zero() noexcept { return 0.0f; }
 	static inline constexpr Single NegativeZero() noexcept { return -0.0f; }
 	static inline constexpr Single One() noexcept { return 1.0f; }

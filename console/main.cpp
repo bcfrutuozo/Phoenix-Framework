@@ -5,7 +5,11 @@
 
 int main(int argc, char* argv[])
 {
-    Char c = 'A';
+    str z = "AB👍C👍👍👍👍👍";
+    c8 c = 'A';
+    Int32 zz = 4;
+
+    Pointer aaaa(&z);
 
     char x = c;
     bool ok = (c == 'A');

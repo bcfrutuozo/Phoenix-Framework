@@ -5,9 +5,11 @@
 #include <cstdint>
 #include <cstddef>
 
+#include "types/CodePoint.hpp"
+
 namespace UnicodeCase {
 
-	enum class GBP : uint8_t
+	enum class GBP
 	{
 		Other,
 		CR,
@@ -26,7 +28,7 @@ namespace UnicodeCase {
 		ExtendedPictographic
 	};
 
-	static constexpr uint32_t LETTERS[26369] = {
+	static constexpr CodePoint LETTERS[26369] = {
 		0x0041,
 		0x0042,
 		0x0043,
@@ -26398,7 +26400,7 @@ namespace UnicodeCase {
 		0x33479,
 	};
 
-	static constexpr uint32_t CASED[3038] = {
+	static constexpr CodePoint CASED[3038] = {
 		0x0041,
 		0x0042,
 		0x0043,
@@ -29439,7 +29441,7 @@ namespace UnicodeCase {
 		0x1E943,
 	};
 
-	static constexpr uint32_t SOFT_DOTTED[1] = {
+	static constexpr CodePoint SOFT_DOTTED[1] = {
 		0x0307,
 	};
 
