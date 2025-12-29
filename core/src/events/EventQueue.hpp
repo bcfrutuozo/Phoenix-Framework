@@ -6,7 +6,7 @@
 class EventQueue
 {
 public:
-    static void Push(const Event& e) noexcept;
-    static Boolean Poll(Event& out) noexcept;
+    static void Push(Event* e) noexcept;
+    static Boolean Poll(Event*& out) noexcept;
     static void Clear() noexcept;
 };

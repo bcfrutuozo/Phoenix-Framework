@@ -12,6 +12,7 @@
 #include "Exceptions.hpp"
 #include "Types.hpp"
 #include "interop/Console.hpp"
+#include "platform/ApplicationFactory.hpp"
 
 #include <stdint.h>
 #include <stddef.h>

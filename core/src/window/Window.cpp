@@ -1,5 +1,6 @@
 #include "Window.hpp"
 #include "WindowBackend.hpp"
+#include "render/vulkan/VulkanContext.hpp"
 
 Window::Window(const WindowDesc& desc, EventQueue& queue)
 {
@@ -25,4 +26,14 @@ void Window::PollEvents()
 WindowHandle Window::GetNativeHandle() const noexcept
 {
     return GetWindowBackendHandle(_impl);
+}
+
+void Window::AttachRenderContext(VulkanContext* ctx)
+{
+    _vk = ctx;
+}
+
+VulkanContext* Window::GetRenderContext() const
+{
+    return _vk;
 }

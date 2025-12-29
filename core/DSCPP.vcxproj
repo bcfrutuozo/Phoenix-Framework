@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
@@ -161,10 +161,18 @@
     <ClInclude Include="src\collections\Queue.hpp" />
     <ClInclude Include="src\collections\Stack.hpp" />
     <ClInclude Include="src\events\Event.hpp" />
+    <ClInclude Include="src\events\EventDispatcher.hpp" />
     <ClInclude Include="src\events\EventQueue.hpp" />
-    <ClInclude Include="src\events\EventType.hpp" />
+    <ClInclude Include="src\events\EventCategory.hpp" />
+    <ClInclude Include="src\events\ImeCompositionEvent.hpp" />
+    <ClInclude Include="src\events\KeyboardEvents.hpp" />
+    <ClInclude Include="src\events\MouseEvents.hpp" />
+    <ClInclude Include="src\events\SystemEvents.hpp" />
+    <ClInclude Include="src\events\TextEvents.hpp" />
     <ClInclude Include="src\events\WindowEvents.hpp" />
     <ClInclude Include="src\globalization\Locale.hpp" />
+    <ClInclude Include="src\input\KeyCode.hpp" />
+    <ClInclude Include="src\input\MouseButton.hpp" />
     <ClInclude Include="src\meta\Access.hpp" />
     <ClInclude Include="src\meta\BaseDef.hpp" />
     <ClInclude Include="src\meta\CharTraits.hpp" />
@@ -194,7 +202,12 @@
     <ClInclude Include="src\network\TCPListener.hpp" />
     <ClInclude Include="src\network\TCPSocket.hpp" />
     <ClInclude Include="src\network\UDPSocket.hpp" />
+    <ClInclude Include="src\platform\Application.hpp" />
+    <ClInclude Include="src\platform\ApplicationFactory.hpp" />
+    <ClInclude Include="src\platform\ConsoleApplication.hpp" />
     <ClInclude Include="src\platform\windows\Win32Handles.hpp" />
+    <ClInclude Include="src\platform\windows\Win32KeyMap.hpp" />
+    <ClInclude Include="src\platform\windows\Win32PowerMap.hpp" />
     <ClInclude Include="src\render\vulkan\VulkanContext.hpp" />
     <ClInclude Include="src\render\vulkan\VulkanInstance.hpp" />
     <ClInclude Include="src\render\vulkan\VulkanSurface.hpp" />
@@ -261,6 +274,8 @@
     <ClCompile Include="src\network\UDPSocket.cpp" />
     <ClCompile Include="src\platform\linux\Clock.cpp" />
     <ClCompile Include="src\platform\windows\Clock.cpp" />
+    <ClCompile Include="src\platform\windows\Win32KeyMap.cpp" />
+    <ClCompile Include="src\platform\windows\Win32PowerMap.cpp" />
     <ClCompile Include="src\render\vulkan\VulkanContext.cpp" />
     <ClCompile Include="src\render\vulkan\VulkanInstance.cpp" />
     <ClCompile Include="src\render\vulkan\VulkanSurface.cpp" />
@@ -287,6 +302,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="src\platform\GUIApplication.hpp" />
     <None Include="src\types\Wrappers.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

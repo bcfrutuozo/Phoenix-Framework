@@ -1,28 +1,219 @@
 #pragma once
 
 #include "Event.hpp"
+#include "types/Int32.hpp"
 #include "window/WindowHandle.hpp"
 
-struct WindowResizeEvent : Event
+class WindowResizeEvent final: public Event
 {
+public:
+
     WindowResizeEvent(WindowHandle handle, Int32 w, Int32 h)
         :
-        window(handle),
-        width(w),
-        height(h)
+        Window(handle),
+        Width(w),
+        Height(h)
     { }
 
-    WindowHandle window;
-    Int32 width;
-    Int32 height;
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::Resize);
+    }
+
+    WindowHandle Window;
+    Int32 Width;
+    Int32 Height;
 };
 
-struct WindowCloseEvent : Event
+class WindowCloseEvent final : public Event
 {
+public:
+
     WindowCloseEvent(WindowHandle handle)
         :
-        window(handle)
+        Window(handle)
     {}
 
-    WindowHandle window;
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::Close);
+    }
+
+    WindowHandle Window;
+};
+
+class WindowDestroyEvent final : public Event
+{
+public:
+
+    WindowDestroyEvent(WindowHandle handle)
+        :
+        Window(handle)
+    { }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::Destroy);
+    }
+
+    WindowHandle Window;
+};
+
+class WindowMoveEvent final : public Event
+{
+public:
+
+    WindowMoveEvent(WindowHandle handle, Int32 x, Int32 y)
+        :
+        Window(handle),
+        X(x),
+        Y(y)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::Move);
+    }
+
+    WindowHandle Window;
+    Int32 X;
+    Int32 Y;
+};
+
+class WindowFocusGainedEvent final : public Event
+{
+public:
+
+    WindowFocusGainedEvent(WindowHandle handle)
+        :
+        Window(handle)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::FocusGained);
+    }
+
+    WindowHandle Window;
+};
+
+class WindowFocusLostEvent final : public Event
+{
+public:
+
+    WindowFocusLostEvent(WindowHandle handle)
+        :
+        Window(handle)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::FocusLost);
+    }
+
+    WindowHandle Window;
+};
+
+class WindowShowEvent final : public Event
+{
+public:
+
+    WindowShowEvent(WindowHandle handle)
+        :
+        Window(handle)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::Show);
+    }
+
+    WindowHandle Window;
+};
+
+class WindowHideEvent final : public Event
+{
+public:
+
+    WindowHideEvent(WindowHandle handle)
+        :
+        Window(handle)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::Hide);
+    }
+
+    WindowHandle Window;
+};
+
+class WindowDPIChangedEvent final : public Event
+{
+public:
+
+    WindowDPIChangedEvent(WindowHandle handle, UInt32 dpi)
+        :
+        Window(handle),
+        DPI(dpi)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::DPIChanged);
+    }
+
+    WindowHandle Window;
+    UInt32 DPI;
 };

@@ -5,6 +5,7 @@
 #include "events/EventQueue.hpp"
 
 struct WindowBackend;
+class VulkanContext;
 
 class Window
 {
@@ -20,7 +21,11 @@ public:
     void PollEvents();
     WindowHandle GetNativeHandle() const noexcept;
 
+    void AttachRenderContext(VulkanContext* ctx);
+    VulkanContext* GetRenderContext() const;
+
 private:
     
+    VulkanContext* _vk;
     WindowBackend* _impl;
 };

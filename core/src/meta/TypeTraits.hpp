@@ -188,3 +188,23 @@ template<typename T>
 struct is_move_constructible
     : bool_constant<__is_constructible(T, T&&)> {
 };
+
+// ------------------------------------------------------------
+// is_enum
+// ------------------------------------------------------------
+template<typename T>
+struct is_enum
+{
+private:
+    template<typename U>
+    static false_type test(...);
+
+    template<typename U>
+    static auto test(int) -> decltype(
+        static_cast<int>(static_cast<U>(0)),
+        true_type{}
+        );
+
+public:
+    static constexpr bool value = decltype(test<T>(0))::value;
+};

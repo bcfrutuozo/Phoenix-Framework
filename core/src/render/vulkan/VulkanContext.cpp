@@ -71,56 +71,93 @@ void VulkanContext::RenderFrame()
 {
     uint32_t imageIndex = 0;
 
-    // 1️⃣ Espera uma imagem do swapchain ficar disponível
     VkResult res = vkAcquireNextImageKHR(
         _device,
         _swapchain,
         UINT64_MAX,
-        _imageAvailable,   // sinaliza quando imagem estiver pronta
+        _imageAvailable,
         VK_NULL_HANDLE,
         &imageIndex
     );
 
-    if (res == VK_ERROR_OUT_OF_DATE_KHR)
-        return; // Recreate swap chain
+    // 🔁 Resize necessário
+    if (res == VK_ERROR_OUT_OF_DATE_KHR || _framebufferResized)
+    {
+        _framebufferResized = false;
+        RecreateSwapchain();
+        return;
+    }
 
-    // 2️⃣ Diz em qual estágio do pipeline a GPU deve esperar
+    if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
+        return;
+
     VkPipelineStageFlags waitStage =
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
-    // 3️⃣ Submete o command buffer para a GPU
     VkSubmitInfo submit{};
     submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
     submit.waitSemaphoreCount = 1;
     submit.pWaitSemaphores = &_imageAvailable;
     submit.pWaitDstStageMask = &waitStage;
-
     submit.commandBufferCount = 1;
     submit.pCommandBuffers = &_commandBuffers[imageIndex];
-
     submit.signalSemaphoreCount = 1;
     submit.pSignalSemaphores = &_renderFinished;
 
-    vkQueueSubmit(
-        _graphicsQueue,
-        1,
-        &submit,
-        VK_NULL_HANDLE
-    );
+    vkQueueSubmit(_graphicsQueue, 1, &submit, VK_NULL_HANDLE);
 
-    // 4️⃣ Apresenta a imagem na tela (só depois do render)
     VkPresentInfoKHR present{};
     present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
     present.waitSemaphoreCount = 1;
     present.pWaitSemaphores = &_renderFinished;
-
     present.swapchainCount = 1;
     present.pSwapchains = &_swapchain;
     present.pImageIndices = &imageIndex;
 
-    vkQueuePresentKHR(_presentQueue, &present);
+    VkResult pres = vkQueuePresentKHR(_presentQueue, &present);
+
+    if (pres == VK_ERROR_OUT_OF_DATE_KHR || pres == VK_SUBOPTIMAL_KHR)
+    {
+        _framebufferResized = false;
+        RecreateSwapchain();
+    }
+}
+
+void VulkanContext::OnResize(uint32_t w, uint32_t h)
+{
+    if (w == 0 || h == 0)
+        return; // janela minimizada
+
+    _width = w;
+    _height = h;
+    _framebufferResized = true;
+}
+
+void VulkanContext::RecreateSwapchain()
+{
+    if (_width == 0 || _height == 0)
+        return;
+
+    vkDeviceWaitIdle(_device);
+
+    // cleanup dependente do swapchain
+    for (uint32_t i = 0; i < _framebuffers.Count(); ++i)
+        vkDestroyFramebuffer(_device, _framebuffers[i], nullptr);
+
+    for (uint32_t i = 0; i < _imageViews.Count(); ++i)
+        vkDestroyImageView(_device, _imageViews[i], nullptr);
+
+    vkDestroySwapchainKHR(_device, _swapchain, nullptr);
+
+    _framebuffers.Clear();
+    _imageViews.Clear();
+    _swapchainImages.Clear();
+
+    createSwapchain();
+    createImageViews();
+    createFramebuffers();
+
+    recordCommandBuffers();
 }
 
 void VulkanContext::pickPhysicalDevice()
@@ -180,11 +217,8 @@ void VulkanContext::createDevice()
         _physical, &dci, nullptr, &_device);
     assert(r == VK_SUCCESS);
 
-    vkGetDeviceQueue(
-        _device, graphicsIndex, 0, &_graphicsQueue);
-
-    vkGetDeviceQueue(
-        _device, graphicsIndex, 0, &_presentQueue);
+    vkGetDeviceQueue(_device, graphicsIndex, 0, &_graphicsQueue);
+    vkGetDeviceQueue(_device, graphicsIndex, 0, &_presentQueue);
 
     _graphicsQueueIndex = graphicsIndex;
     _presentQueueIndex = graphicsIndex;
@@ -193,21 +227,60 @@ void VulkanContext::createDevice()
 void VulkanContext::createSwapchain()
 {
     VkSurfaceCapabilitiesKHR caps{};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physical, _surface, &caps);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+        _physical,
+        _surface,
+        &caps
+    );
 
-    VkExtent2D vkExtent{};
-    vkExtent.width = caps.currentExtent.width;
-    vkExtent.height = caps.currentExtent.height;
-    _extent.width = vkExtent.width;
-    _extent.height = vkExtent.height;
+    // ------------------------------------------------------------
+    // Escolha correta do extent (OBRIGATÓRIO no Vulkan)
+    // ------------------------------------------------------------
+    VkExtent2D extent{};
 
+    if (caps.currentExtent.width != UINT32_MAX)
+    {
+        // O driver já define o tamanho (caso comum no Win32)
+        extent = caps.currentExtent;
+    }
+    else
+    {
+        // Usar tamanho vindo do resize da janela
+        extent.width = _width;
+        extent.height = _height;
+
+        // Clamp dentro dos limites permitidos
+        if (extent.width < caps.minImageExtent.width)
+            extent.width = caps.minImageExtent.width;
+        if (extent.width > caps.maxImageExtent.width)
+            extent.width = caps.maxImageExtent.width;
+
+        if (extent.height < caps.minImageExtent.height)
+            extent.height = caps.minImageExtent.height;
+        if (extent.height > caps.maxImageExtent.height)
+            extent.height = caps.maxImageExtent.height;
+    }
+
+    // Salva o extent final usado
+    _extent = Extent2D{ extent.width, extent.height };
+
+    // ------------------------------------------------------------
+    // Número de imagens (double/triple buffering)
+    // ------------------------------------------------------------
+    uint32_t imageCount = caps.minImageCount + 1;
+    if (caps.maxImageCount > 0 && imageCount > caps.maxImageCount)
+        imageCount = caps.maxImageCount;
+
+    // ------------------------------------------------------------
+    // Criação do swapchain
+    // ------------------------------------------------------------
     VkSwapchainCreateInfoKHR sci{};
     sci.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     sci.surface = _surface;
-    sci.minImageCount = caps.minImageCount + 1;
+    sci.minImageCount = imageCount;
     sci.imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
     sci.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    sci.imageExtent = caps.currentExtent;
+    sci.imageExtent = extent;
     sci.imageArrayLayers = 1;
     sci.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     sci.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -215,15 +288,35 @@ void VulkanContext::createSwapchain()
     sci.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     sci.presentMode = VK_PRESENT_MODE_FIFO_KHR;
     sci.clipped = VK_TRUE;
+    sci.oldSwapchain = VK_NULL_HANDLE;
 
-    vkCreateSwapchainKHR(_device, &sci, nullptr, &_swapchain);
+    VkResult res = vkCreateSwapchainKHR(
+        _device,
+        &sci,
+        nullptr,
+        &_swapchain
+    );
+    assert(res == VK_SUCCESS);
 
-    uint32_t imageCount = 0;
-    vkGetSwapchainImagesKHR(_device, _swapchain, &imageCount, nullptr);
-
-    _swapchainImages.Resize(imageCount);
+    // ------------------------------------------------------------
+    // Recupera imagens do swapchain
+    // ------------------------------------------------------------
+    uint32_t actualCount = 0;
     vkGetSwapchainImagesKHR(
-        _device, _swapchain, &imageCount, _swapchainImages.Data());
+        _device,
+        _swapchain,
+        &actualCount,
+        nullptr
+    );
+
+    _swapchainImages.Resize(actualCount);
+
+    vkGetSwapchainImagesKHR(
+        _device,
+        _swapchain,
+        &actualCount,
+        _swapchainImages.Data()
+    );
 }
 
 void VulkanContext::createRenderPass()

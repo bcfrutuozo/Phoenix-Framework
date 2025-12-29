@@ -46,6 +46,9 @@ public:
 
     void RenderFrame();
 
+    void OnResize(uint32_t width, uint32_t height);
+    void RecreateSwapchain();
+
 private:
 
     // --------------------------------------------------------
@@ -103,4 +106,8 @@ private:
     // --------------------------------------------------------
     uint32_t _graphicsQueueIndex = 0;
     uint32_t _presentQueueIndex = 0;
+
+    uint32_t _width = 0;
+    uint32_t _height = 0;
+    bool _framebufferResized = false;
 };

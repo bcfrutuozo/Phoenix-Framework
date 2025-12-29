@@ -7,75 +7,20 @@
 
 int main(int argc, char* argv[])
 {
-    WindowDesc aa;
-    aa.height = 800;
-    aa.width = 800;
-    aa.title = "Teste";
-    aa.resizable = true;
+    AppKind kind = AppKind::Windowed;
+    GUIApplication* app = CreateGUIApplication(kind);
+    EventQueue qu;
+    qu.Clear();
+    Window* w = new Window({ "ABC", 800, 600 }, qu);
+    VulkanContext* cx = new VulkanContext(*w);
+    w->AttachRenderContext(cx);
 
-    EventQueue queue;
-    queue.Clear();
+    Window* w2 = new Window({ "Teste", 1000, 1000 }, qu);
+    w2->AttachRenderContext(cx);
 
-    EventQueue queue2;
-    queue2.Clear();
-
-    Window window(aa, queue);
-    window.Show();
-
-    WindowDesc ab;
-    ab.height = 500;
-    ab.width = 500;
-    ab.title = "Teste 2";
-    ab.resizable = false;
-
-    VulkanContext vk(window);
-
-    Window win2(ab, queue2);
-    win2.Show();
-
-    // 5) Loop mínimo
-    bool running = true;
-
-    while (running)
-    {
-        // bombeia mensagens do SO
-        window.PollEvents();
-        vk.RenderFrame();
-
-        // consome eventos da engine
-        Event ev;
-        while (queue.Poll(ev))
-        {
-            switch (ev.type)
-            {
-            case EventType::WindowCloseRequested:
-            {
-                auto& we = static_cast<Event&>(ev);
-
-                if (we.type == EventType::WindowCloseRequested)
-                {
-                    running = false;
-                }
-                break;
-            }
-            default:
-                break;
-            }
-        }
-
-        // aqui entraria render / update
-    }
-
-    str z = "AB👍C👍👍👍👍👍";
-    c8 c = 'A';
-    Int32 zz = 4;
-
-    Pointer aaaa(&z);
-
-    char x = c;
-    bool ok = (c == 'A');
-
-    CodePoint cp = 0x00E1;
-    char32_t u = cp;
-    bool ok2 = (cp == 0x00E1);
+    app->Attach(w);
+    app->Attach(w2);
+    app->Run();
+    delete app;
+    return 0;
 }
