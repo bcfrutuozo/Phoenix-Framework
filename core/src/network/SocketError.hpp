@@ -1,8 +1,6 @@
 #pragma once
 
-#include "meta/BaseDef.hpp"
-#include "meta/TypeTraits.hpp"
-#include "types/Byte.hpp"
+#include <cstdint>
 
 enum class SocketError : uint8_t
 {

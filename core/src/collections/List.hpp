@@ -180,6 +180,18 @@ public:
         reserve_internal(newCapacity);
     }
 
+    void Resize(size_type newSize)
+    {
+        if (newSize > m_capacity)
+            grow_to_at_least(newSize);
+
+        // value-initialize novos elementos
+        for (size_type i = m_size; i < newSize; ++i)
+            m_data[i] = value_type();
+
+        m_size = newSize;
+    }
+
     // Reduce capacity to size
     void ShrinkToFit() {
         if (m_capacity == m_size) return;

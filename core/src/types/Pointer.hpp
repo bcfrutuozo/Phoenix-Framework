@@ -47,13 +47,18 @@ public:
 
     // Implicit to int type (relative to GetValue())
 
-#ifdef _M_X64
     inline constexpr operator value_type() const noexcept { return _value; }
+
+#ifdef _M_X64
     inline constexpr operator uint64_t() const noexcept { return _value; }
 #else
-    using value_type = UInt32;
     inline constexpr operator uint32_t() const noexcept { return _value; }
 #endif
+
+    inline void* Get() const noexcept
+    {
+        return reinterpret_cast<void*>(static_cast<uintptr_t>(_value));
+    }
     
 
     inline constexpr Boolean IsNull() const noexcept { return _value == 0; }

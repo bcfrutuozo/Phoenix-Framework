@@ -4,6 +4,8 @@
 #include "collections/Array.hpp"
 #include "types/Byte.hpp"
 
+class String;
+
 class IPAddress
 {
 public:
@@ -20,6 +22,11 @@ public:
     static IPAddress LoopbackV6() noexcept;
     static IPAddress AnyV4() noexcept;
     static IPAddress AnyV6() noexcept;
+
+    static IPAddress FromIPv4(Byte a, Byte b, Byte c, Byte d) noexcept;
+    static IPAddress FromIPv6(const Byte bytes[16]) noexcept;
+
+    static Boolean TryParse(const String& text, IPAddress& out) noexcept;
 
     inline constexpr Family GetFamily() const noexcept { return _family; }
     inline constexpr const Byte* GetBytes() const noexcept { return _bytes; }

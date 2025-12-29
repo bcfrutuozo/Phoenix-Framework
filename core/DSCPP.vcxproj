@@ -75,10 +75,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)build\bin\$(Configuration)\</OutDir>
+    <ExcludePath>$(ExcludePath)</ExcludePath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)build\bin\$(Configuration)\</OutDir>
+    <ExcludePath>$(ExcludePath)</ExcludePath>
+    <IncludePath>$(VULKAN_SDK)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VULKAN_SDK)\Lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ExcludePath>$(ExcludePath)</ExcludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ExcludePath>$(ExcludePath)</ExcludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -118,7 +130,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExceptionHandling>Async</ExceptionHandling>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(ProjectDir)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\;C:\VulkanSDK\1.4.335.0\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -135,7 +147,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src\;C:\VulkanSDK\1.4.335.0\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -148,6 +160,10 @@
     <ClInclude Include="src\collections\List.hpp" />
     <ClInclude Include="src\collections\Queue.hpp" />
     <ClInclude Include="src\collections\Stack.hpp" />
+    <ClInclude Include="src\events\Event.hpp" />
+    <ClInclude Include="src\events\EventQueue.hpp" />
+    <ClInclude Include="src\events\EventType.hpp" />
+    <ClInclude Include="src\events\WindowEvents.hpp" />
     <ClInclude Include="src\globalization\Locale.hpp" />
     <ClInclude Include="src\meta\Access.hpp" />
     <ClInclude Include="src\meta\BaseDef.hpp" />
@@ -178,6 +194,11 @@
     <ClInclude Include="src\network\TCPListener.hpp" />
     <ClInclude Include="src\network\TCPSocket.hpp" />
     <ClInclude Include="src\network\UDPSocket.hpp" />
+    <ClInclude Include="src\platform\windows\Win32Handles.hpp" />
+    <ClInclude Include="src\render\vulkan\VulkanContext.hpp" />
+    <ClInclude Include="src\render\vulkan\VulkanInstance.hpp" />
+    <ClInclude Include="src\render\vulkan\VulkanSurface.hpp" />
+    <ClInclude Include="src\render\vulkan\VulkanTypes.hpp" />
     <ClInclude Include="src\system\DivideByZeroTrap.hpp" />
     <ClInclude Include="src\system\Exceptions.hpp" />
     <ClInclude Include="src\system\Framework.hpp" />
@@ -197,6 +218,10 @@
     <ClInclude Include="src\text\unicode\UnicodeNormalization_tables.hpp" />
     <ClInclude Include="src\text\unicode\UnicodeNormalization_utils.hpp" />
     <ClInclude Include="src\text\UTF8.hpp" />
+    <ClInclude Include="src\time\Clock.hpp" />
+    <ClInclude Include="src\time\FrameTimer.hpp" />
+    <ClInclude Include="src\time\TimePoint.hpp" />
+    <ClInclude Include="src\time\TimeSpan.hpp" />
     <ClInclude Include="src\types\Boolean.hpp" />
     <ClInclude Include="src\types\Byte.hpp" />
     <ClInclude Include="src\types\CodePoint.hpp" />
@@ -214,11 +239,16 @@
     <ClInclude Include="src\types\UInt16.hpp" />
     <ClInclude Include="src\types\UInt32.hpp" />
     <ClInclude Include="src\types\UInt64.hpp" />
+    <ClInclude Include="src\window\Window.hpp" />
+    <ClInclude Include="src\window\WindowBackend.hpp" />
+    <ClInclude Include="src\window\WindowDescriptor.hpp" />
+    <ClInclude Include="src\window\WindowHandle.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="DSCPP-Core.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\events\EventQueue.cpp" />
     <ClCompile Include="src\globalization\Locale.cpp" />
     <ClCompile Include="src\network\Endpoint.cpp" />
     <ClCompile Include="src\network\IPAddress.cpp" />
@@ -229,6 +259,11 @@
     <ClCompile Include="src\network\TCPListener.cpp" />
     <ClCompile Include="src\network\TCPSocket.cpp" />
     <ClCompile Include="src\network\UDPSocket.cpp" />
+    <ClCompile Include="src\platform\linux\Clock.cpp" />
+    <ClCompile Include="src\platform\windows\Clock.cpp" />
+    <ClCompile Include="src\render\vulkan\VulkanContext.cpp" />
+    <ClCompile Include="src\render\vulkan\VulkanInstance.cpp" />
+    <ClCompile Include="src\render\vulkan\VulkanSurface.cpp" />
     <ClCompile Include="src\text\StringBuilder.cpp" />
     <ClCompile Include="src\text\unicode\UnicodeCase_utils.cpp" />
     <ClCompile Include="src\text\unicode\UnicodeNormalization_utils.cpp" />
@@ -247,6 +282,8 @@
     <ClCompile Include="src\types\UInt16.cpp" />
     <ClCompile Include="src\types\UInt32.cpp" />
     <ClCompile Include="src\types\UInt64.cpp" />
+    <ClCompile Include="src\window\Window.cpp" />
+    <ClCompile Include="src\platform\windows\WindowBackend.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

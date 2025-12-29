@@ -1,4 +1,4 @@
-﻿#include "String.hpp"
+#include "String.hpp"
 
 #include "system/Globals.hpp"
 #include "system/Marvin32.hpp"
@@ -587,6 +587,55 @@ Boolean String::Compare(const String& a, const String& b, const Locale& locale) 
 	for (uint32_t i = 0; i < A.Count(); ++i)
 		if (A[i] != B[i]) return false;
 	return true;
+}
+
+Array<wchar_t> String::ToWideCharArray() const noexcept
+{
+	List<wchar_t> out;
+
+	if (IsEmpty())
+	{
+		out.Add(L'\0');
+		return out.ToArray();
+	}
+
+	// 1) UTF-8 → CodePoints
+	List<CodePoint> cps;
+	UTF8::Decode(data(), _byteLength, cps);
+
+	// worst case: cada codepoint vira 2 wchar_t (surrogate pair)
+	out.EnsureCapacity(cps.Count() * 2 + 1);
+
+	// 2) CodePoint → UTF-16
+	for (uint32_t i = 0; i < cps.Count(); ++i)
+	{
+		uint32_t cp = static_cast<uint32_t>(cps[i]);
+
+		// Basic Multilingual Plane
+		if (cp <= 0xFFFF)
+		{
+			// UTF-16 surrogate range is invalid as scalar
+			if (cp >= 0xD800 && cp <= 0xDFFF)
+				cp = 0xFFFD;
+
+			out.Add(static_cast<wchar_t>(cp));
+		}
+		else
+		{
+			// Supplementary plane → surrogate pair
+			cp -= 0x10000;
+
+			wchar_t high = static_cast<wchar_t>(0xD800 + (cp >> 10));
+			wchar_t low = static_cast<wchar_t>(0xDC00 + (cp & 0x3FF));
+
+			out.Add(high);
+			out.Add(low);
+		}
+	}
+
+	// 3) Null terminator
+	out.Add(L'\0');
+	return out.ToArray();
 }
 
 Boolean String::Equals(const String& other) const noexcept

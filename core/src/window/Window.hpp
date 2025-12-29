@@ -1,0 +1,26 @@
+#pragma once
+
+#include "WindowDescriptor.hpp"
+#include "WindowHandle.hpp"
+#include "events/EventQueue.hpp"
+
+struct WindowBackend;
+
+class Window
+{
+public:
+
+    explicit Window(const WindowDesc& desc, EventQueue& queue);
+    ~Window();
+
+    Window(const Window&) = delete;
+    Window& operator=(const Window&) = delete;
+
+    void Show();
+    void PollEvents();
+    WindowHandle GetNativeHandle() const noexcept;
+
+private:
+    
+    WindowBackend* _impl;
+};

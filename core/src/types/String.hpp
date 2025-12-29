@@ -429,6 +429,8 @@ public:
 
 	static const String& WhiteSpace() { static const String whiteSpaceInstance(" "); return whiteSpaceInstance; }
 
+	Array<wchar_t> ToWideCharArray() const noexcept;
+
 	Boolean Equals(const String& other) const noexcept;
 	UInt32 GetHashCode() const noexcept;
 	String ToString() const noexcept;
@@ -619,5 +621,3 @@ public:
 	const String* _str;
 	bool          _owns;
 };
-
-typedef String string;

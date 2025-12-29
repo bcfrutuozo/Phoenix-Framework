@@ -1,8 +1,6 @@
 <Solution>
   <Configurations>
-    <Platform Name="Any CPU" />
     <Platform Name="x64" />
-    <Platform Name="x86" />
   </Configurations>
   <Project Path="console/DSCPP-Console.vcxproj" Id="4229181f-23f6-4c58-9444-d9aa15bd9180" />
   <Project Path="core/DSCPP.vcxproj" Id="7e78e29d-0696-414a-b36d-6d833c2b0c3d" />
