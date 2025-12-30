@@ -5,6 +5,16 @@
 #include <cassert>
 #include <string>
 
+void ChangeWindowSize(uint32_t w, uint32_t h)
+{
+    printf("Resize: %u x %u\n", w, h);
+}
+
+void WindowClosed()
+{
+    printf("Window closed\n");
+}
+
 int main(int argc, char* argv[])
 {
     AppKind kind = AppKind::Windowed;
@@ -12,6 +22,7 @@ int main(int argc, char* argv[])
     EventQueue qu;
     qu.Clear();
     Window* w = new Window({ "ABC", 800, 600 }, qu);
+    w->OnResize = ChangeWindowSize;
     VulkanContext* cx = new VulkanContext(*w);
     w->AttachRenderContext(cx);
 

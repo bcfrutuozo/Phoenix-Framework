@@ -49,6 +49,16 @@ public:
     void OnResize(uint32_t width, uint32_t height);
     void RecreateSwapchain();
 
+    Boolean IsRenderable() const noexcept
+    {
+        return _windowAlive && _surfaceValid && _extent.width > 0 && _extent.height > 0;
+    }
+
+    void OnWindowDestroyed() noexcept
+    {
+        _windowAlive = false;
+    }
+
 private:
 
     // --------------------------------------------------------
@@ -109,5 +119,7 @@ private:
 
     uint32_t _width = 0;
     uint32_t _height = 0;
-    bool _framebufferResized = false;
+    Boolean _framebufferResized = false;
+    Boolean _surfaceValid = true;
+    Boolean _windowAlive = true;
 };

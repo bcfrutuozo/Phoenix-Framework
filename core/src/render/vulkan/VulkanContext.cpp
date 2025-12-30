@@ -290,6 +290,9 @@ void VulkanContext::createSwapchain()
     sci.clipped = VK_TRUE;
     sci.oldSwapchain = VK_NULL_HANDLE;
 
+    if (!_windowAlive || !_surfaceValid)
+        return;
+
     VkResult res = vkCreateSwapchainKHR(
         _device,
         &sci,
@@ -297,6 +300,19 @@ void VulkanContext::createSwapchain()
         &_swapchain
     );
     assert(res == VK_SUCCESS);
+
+    if (res == VK_ERROR_SURFACE_LOST_KHR ||
+        res == VK_ERROR_NATIVE_WINDOW_IN_USE_KHR)
+    {
+        _surfaceValid = false;
+        return;
+    }
+
+    if (res != VK_SUCCESS)
+    {
+        // loga erro, mas NÃO crasha
+        return;
+    }
 
     // ------------------------------------------------------------
     // Recupera imagens do swapchain

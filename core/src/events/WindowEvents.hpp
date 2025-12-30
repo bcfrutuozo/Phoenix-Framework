@@ -30,6 +30,52 @@ public:
     Int32 Height;
 };
 
+class WindowMinimizeEvent final : public Event
+{
+public:
+
+    WindowMinimizeEvent(WindowHandle handle)
+        :
+        Window(handle)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::Minimize);
+    }
+
+    WindowHandle Window;
+};
+
+class WindowMaximizeEvent final : public Event
+{
+public:
+
+    WindowMaximizeEvent(WindowHandle handle)
+        :
+        Window(handle)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Window;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(WindowEventType::Maximize);
+    }
+
+    WindowHandle Window;
+};
+
 class WindowCloseEvent final : public Event
 {
 public:

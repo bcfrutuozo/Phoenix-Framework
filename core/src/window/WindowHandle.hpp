@@ -4,12 +4,12 @@
 
 struct WindowNativeHandle
 {
-    Pointer value;
+    Pointer value = nullptr;
 };
 
 struct DisplayNativeHandle
 {
-    Pointer value;
+    Pointer value = nullptr;
 };
 
 struct WindowHandle

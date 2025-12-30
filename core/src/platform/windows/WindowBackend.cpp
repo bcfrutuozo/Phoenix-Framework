@@ -61,10 +61,50 @@ static LRESULT CALLBACK Win32WndProc(
 	{
 		// -------------------- Window --------------------
 
-	case WM_SIZE:
-		backend->queue->Push(new WindowResizeEvent(handle, LOWORD(lp), HIWORD(lp)));
-		return 0;
+	case WM_NCDESTROY:
+	{
+		auto* backend = reinterpret_cast<WindowBackend*>(
+			GetWindowLongPtr(hwnd, GWLP_USERDATA)
+			);
 
+		if (backend)
+		{
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+			delete backend;
+		}
+
+		return 0;
+	}
+	case WM_SIZE:
+	{
+		uint32_t width = LOWORD(lp);
+		uint32_t height = HIWORD(lp);
+
+		// Resize sempre acontece
+		backend->queue->Push(new WindowResizeEvent(
+			handle,
+			width,
+			height
+		));
+
+		// Estados especiais
+		switch (wp)
+		{
+		case SIZE_MINIMIZED:
+			backend->queue->Push(new WindowMinimizeEvent(handle));
+			break;
+
+		case SIZE_MAXIMIZED:
+			backend->queue->Push(new WindowMaximizeEvent(handle));
+			break;
+
+		case SIZE_RESTORED:
+			// opcional: WindowRestoreEvent, se quiser
+			break;
+		}
+
+		return 0;
+	}
 	case WM_MOVE:
 		backend->queue->Push(new WindowMoveEvent(handle, (int)(short)LOWORD(lp), (int)(short)HIWORD(lp)));
 		return 0;
@@ -256,7 +296,20 @@ static LRESULT CALLBACK Win32WndProc(
 	case WM_ENDSESSION:
 		backend->queue->Push(new SystemShutdownEvent());
 		return 0;
+	case WM_CLOSE:
+	{
+		backend->queue->Push(new WindowCloseEvent(handle));
 
+		// IMPORTANTE:
+		// NÃO chame DestroyWindow aqui automaticamente
+		// Deixe a engine decidir
+		return 0;
+	}
+	case WM_DESTROY:
+	{
+		backend->queue->Push(new WindowDestroyEvent(handle));
+		return 0;
+	}
 	case WM_POWERBROADCAST:
 		switch (TranslatePowerEvent(wp))
 		{
@@ -342,7 +395,7 @@ void DestroyWindowBackend(WindowBackend* backend)
 		return;
 
 	DestroyWindow(backend->hwnd);
-	delete backend;
+	//delete backend;
 }
 
 void ShowWindowBackend(WindowBackend* backend)

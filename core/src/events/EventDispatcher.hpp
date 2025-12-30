@@ -17,7 +17,7 @@ public:
         if (_event.Category() != category)
             return false;
 
-        if (_event.SubType() != static_cast<uint32_t>(type))
+        if (_event.TypeId() != static_cast<uint32_t>(type))
             return false;
 
         fn(static_cast<const T&>(_event));
