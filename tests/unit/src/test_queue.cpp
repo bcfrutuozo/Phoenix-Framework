@@ -2,10 +2,10 @@
 
 #include "catch_amalgamated.hpp"
 
-#include "collections/Queue.hpp"
-#include "collections/Array.hpp"
-#include "types/String.hpp"
-#include "types/UInt64.hpp"
+#include "System/Collections/Queue.hpp"
+#include "System/Collections/Array.hpp"
+#include "System/Types/String.hpp"
+#include "System/Types/UInt64.hpp"
 
 // Struct customizada para testes
 struct Custom {
@@ -109,8 +109,8 @@ TEST_CASE("Queue<int> - Contains / Clear / Peek", "[Queue][operations]") {
 TEST_CASE("Queue<int> - EnsureCapacity", "[Queue][capacity]") {
     Queue<int> q;
     q.EnsureCapacity(50);
-    REQUIRE(q.GetLength() == 0);     // n„o altera o tamanho
-    // n„o temos getter para capacity, mas podemos testar expandindo:
+    REQUIRE(q.GetLength() == 0);     // n√£o altera o tamanho
+    // n√£o temos getter para capacity, mas podemos testar expandindo:
     for (int i = 0; i < 50; i++)
         q.Enqueue(i);
 

@@ -1,11 +1,14 @@
-#include "system/Framework.hpp"
-#include "window/Window.hpp"
-#include "render/vulkan/VulkanContext.hpp"
+#include "System/Framework.hpp"
+#include "GUI/Window/Window.hpp"
+#include "GUI/Window/Label.hpp"
+#include "GUI/Rendering/Vulkan/VulkanContext.hpp"
+#include "GUI/Events/MouseEvents.hpp"
+
 
 #include <cassert>
 #include <string>
 
-void ChangeWindowSize(uint32_t w, uint32_t h)
+void ChangeWindowSize(u32 w, u32 h)
 {
     printf("Resize: %u x %u\n", w, h);
 }
@@ -15,18 +18,29 @@ void WindowClosed()
     printf("Window closed\n");
 }
 
+void TesteLabel(MouseButton b)
+{
+    if (b == MouseButton::Left)
+        printf("Cliquei LEFT!");
+    else
+        printf("Cliquei outro!");
+}
+
 int main(int argc, char* argv[])
 {
     AppKind kind = AppKind::Windowed;
     GUIApplication* app = CreateGUIApplication(kind);
-    EventQueue qu;
-    qu.Clear();
-    Window* w = new Window({ "ABC", 800, 600 }, qu);
+    Window* w = new Window({"ABC", 800, 600 });
+    
     w->OnResize = ChangeWindowSize;
     VulkanContext* cx = new VulkanContext(*w);
     w->AttachRenderContext(cx);
 
-    Window* w2 = new Window({ "Teste", 1000, 1000 }, qu);
+    Window* w2 = new Window({ "Teste", 1000, 1000 });
+    Label* l = new Label("Teste Label: ", 50, 50);
+    //l->OnMouseDown = TesteLabel;
+    w2->AddControl(l);
+
     w2->AttachRenderContext(cx);
 
     app->Attach(w);

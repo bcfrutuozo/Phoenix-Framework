@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{9b07618e-b7f0-4ec3-a9ba-10054b18a750}</ProjectGuid>
+    <RootNamespace>System</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)build\bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <PublicIncludeDirectories>$(SolutionDir);$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)build\bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <PublicIncludeDirectories>$(SolutionDir);$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/utf-8</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/utf-8</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Collections\Array.hpp" />
+    <ClInclude Include="Collections\List.hpp" />
+    <ClInclude Include="Collections\Queue.hpp" />
+    <ClInclude Include="Collections\Stack.hpp" />
+    <ClInclude Include="DivideByZeroTrap.hpp" />
+    <ClInclude Include="Events\Event.hpp" />
+    <ClInclude Include="Events\EventCategory.hpp" />
+    <ClInclude Include="Events\EventDispatcher.hpp" />
+    <ClInclude Include="Events\EventQueue.hpp" />
+    <ClInclude Include="Events\SystemEvents.hpp" />
+    <ClInclude Include="Exceptions.hpp" />
+    <ClInclude Include="Framework.hpp" />
+    <ClInclude Include="Globalization\Locale.hpp" />
+    <ClInclude Include="Globals.hpp" />
+    <ClInclude Include="Input\KeyCode.hpp" />
+    <ClInclude Include="Input\MouseButton.hpp" />
+    <ClInclude Include="Console\Console.hpp" />
+    <ClInclude Include="Console\ConsoleIO.hpp" />
+    <ClInclude Include="IO\OSStream.hpp" />
+    <ClInclude Include="IO\Stream.hpp" />
+    <ClInclude Include="IO\StreamOperators.hpp" />
+    <ClInclude Include="IO\TextReader.hpp" />
+    <ClInclude Include="IO\TextWriter.hpp" />
+    <ClInclude Include="Marvin32.hpp" />
+    <ClInclude Include="Memory.hpp" />
+    <ClInclude Include="Meta\Access.hpp" />
+    <ClInclude Include="Meta\BaseDef.hpp" />
+    <ClInclude Include="Meta\CharTraits.hpp" />
+    <ClInclude Include="Meta\HierarchyTraits.hpp" />
+    <ClInclude Include="Meta\PointerContract.hpp" />
+    <ClInclude Include="Meta\PrimitiveToWrapper.hpp" />
+    <ClInclude Include="Meta\Promotion.hpp" />
+    <ClInclude Include="Meta\PromotionPrimitives.hpp" />
+    <ClInclude Include="Meta\TypeTraits.hpp" />
+    <ClInclude Include="Meta\ValueType.hpp" />
+    <ClInclude Include="Meta\WrapperContract.hpp" />
+    <ClInclude Include="Meta\WrapperTraits.hpp" />
+    <ClInclude Include="Meta\WrapperValue.hpp" />
+    <ClInclude Include="NetworkRuntime.hpp" />
+    <ClInclude Include="Network\Endpoint.hpp" />
+    <ClInclude Include="Network\IPAddress.hpp" />
+    <ClInclude Include="Network\NetworkContract.hpp" />
+    <ClInclude Include="Network\os\SocketOS.hpp" />
+    <ClInclude Include="Network\SocketBase.hpp" />
+    <ClInclude Include="Network\SocketError.hpp" />
+    <ClInclude Include="Network\SocketHandle.hpp" />
+    <ClInclude Include="Network\TCPListener.hpp" />
+    <ClInclude Include="Network\TCPSocket.hpp" />
+    <ClInclude Include="Network\UDPSocket.hpp" />
+    <ClInclude Include="String.hpp" />
+    <ClInclude Include="Text\ASCII.hpp" />
+    <ClInclude Include="Text\Encoding.hpp" />
+    <ClInclude Include="Text\StringBuilder.hpp" />
+    <ClInclude Include="Text\unicode\UnicodeCase_folding.hpp" />
+    <ClInclude Include="Text\unicode\UnicodeCase_generated.hpp" />
+    <ClInclude Include="Text\unicode\UnicodeCase_props.hpp" />
+    <ClInclude Include="Text\unicode\UnicodeCase_special.hpp" />
+    <ClInclude Include="Text\unicode\UnicodeCase_utils.hpp" />
+    <ClInclude Include="Text\unicode\UnicodeNormalization_tables.hpp" />
+    <ClInclude Include="Text\unicode\UnicodeNormalization_utils.hpp" />
+    <ClInclude Include="Text\UTF8.hpp" />
+    <ClInclude Include="Time\Clock.hpp" />
+    <ClInclude Include="Time\FrameTimer.hpp" />
+    <ClInclude Include="Time\TimePoint.hpp" />
+    <ClInclude Include="Time\TimeSpan.hpp" />
+    <ClInclude Include="Types.hpp" />
+    <ClInclude Include="Types\Boolean.hpp" />
+    <ClInclude Include="Types\Byte.hpp" />
+    <ClInclude Include="Types\Char.hpp" />
+    <ClInclude Include="Types\CodePoint.hpp" />
+    <ClInclude Include="Types\Double.hpp" />
+    <ClInclude Include="Types\Int16.hpp" />
+    <ClInclude Include="Types\Int32.hpp" />
+    <ClInclude Include="Types\Int64.hpp" />
+    <ClInclude Include="Types\Object.hpp" />
+    <ClInclude Include="Types\Operators.hpp" />
+    <ClInclude Include="Types\Pointer.hpp" />
+    <ClInclude Include="Types\SByte.hpp" />
+    <ClInclude Include="Types\Single.hpp" />
+    <ClInclude Include="Types\String.hpp" />
+    <ClInclude Include="Types\UInt16.hpp" />
+    <ClInclude Include="Types\UInt32.hpp" />
+    <ClInclude Include="Types\UInt64.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Events\EventQueue.cpp" />
+    <ClCompile Include="Globalization\Locale.cpp" />
+    <ClCompile Include="IO\OSStream.cpp" />
+    <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="Network\Endpoint.cpp" />
+    <ClCompile Include="Network\IPAddress.cpp" />
+    <ClCompile Include="Network\os\SocketOS_posix.cpp" />
+    <ClCompile Include="Network\os\SocketOS_win32.cpp" />
+    <ClCompile Include="Network\SocketBase.cpp" />
+    <ClCompile Include="Network\TCPListener.cpp" />
+    <ClCompile Include="Network\TCPSocket.cpp" />
+    <ClCompile Include="Network\UDPSocket.cpp" />
+    <ClCompile Include="Text\StringBuilder.cpp" />
+    <ClCompile Include="Text\unicode\UnicodeCase_utils.cpp" />
+    <ClCompile Include="Text\unicode\UnicodeNormalization_utils.cpp" />
+    <ClCompile Include="Types\Boolean.cpp" />
+    <ClCompile Include="Types\Byte.cpp" />
+    <ClCompile Include="Types\Char.cpp" />
+    <ClCompile Include="Types\CodePoint.cpp" />
+    <ClCompile Include="Types\Double.cpp" />
+    <ClCompile Include="Types\Int16.cpp" />
+    <ClCompile Include="Types\Int32.cpp" />
+    <ClCompile Include="Types\Int64.cpp" />
+    <ClCompile Include="Types\Pointer.cpp" />
+    <ClCompile Include="Types\SByte.cpp" />
+    <ClCompile Include="Types\Single.cpp" />
+    <ClCompile Include="Types\String.cpp" />
+    <ClCompile Include="Types\UInt16.cpp" />
+    <ClCompile Include="Types\UInt32.cpp" />
+    <ClCompile Include="Types\UInt64.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Types\Wrappers.def" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

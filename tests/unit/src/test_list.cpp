@@ -2,10 +2,10 @@
 
 #include "catch_amalgamated.hpp"
 
-#include "collections/List.hpp"
-#include "collections/Array.hpp"
-#include "types/String.hpp"
-#include "types/UInt64.hpp"
+#include "System/Collections/List.hpp"
+#include "System/Collections/Array.hpp"
+#include "System/Types/String.hpp"
+#include "System/Types/UInt64.hpp"
 
 struct Custom {
     int a;
@@ -22,7 +22,7 @@ struct Custom {
     }
 };
 
-TEST_CASE("List<int> — basic operations", "[List][int]") {
+TEST_CASE("List<int> â€” basic operations", "[List][int]") {
 
     SECTION("Default constructor and Add") {
         List<int> lst;
@@ -190,7 +190,7 @@ TEST_CASE("List<UInt64>", "[List][UInt64]") {
     REQUIRE(lst.Contains(UInt64(20)));
     REQUIRE(lst.IndexOf(UInt64(30)) == 2);
 
-    // Testa indexer com conversão implícita
+    // Testa indexer com conversÃ£o implÃ­cita
     UInt64 idx(1);
     REQUIRE(lst[idx] == UInt64(20));
 }

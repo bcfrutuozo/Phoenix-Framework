@@ -2,9 +2,9 @@
 
 #include "catch_amalgamated.hpp"
 
-#include "collections/Array.hpp"
-#include "types/UInt64.hpp"
-#include "types/String.hpp"
+#include "System/Collections/Array.hpp"
+#include "System/Types/UInt64.hpp"
+#include "System/Types/String.hpp"
 
 TEST_CASE("Array<int> basics", "[Array][int]") {
 

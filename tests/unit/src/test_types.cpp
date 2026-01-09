@@ -6,7 +6,7 @@
 
 #include "catch_amalgamated.hpp"
 
-#include "system/Types.hpp"
+#include "System/Types.hpp"
 
 // =====================================================
 // 1. Construction from primitives

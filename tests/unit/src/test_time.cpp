@@ -1,9 +1,9 @@
 #include "catch_amalgamated.hpp"
 
-#include "time/TimeSpan.hpp"
-#include "time/TimePoint.hpp"
-#include "time/Clock.hpp"
-#include "time/FrameTimer.hpp"
+#include "System/Time/TimeSpan.hpp"
+#include "System/Time/TimePoint.hpp"
+#include "System/Time/Clock.hpp"
+#include "System/Time/FrameTimer.hpp"
 
 // ------------------------------------------------------------
 // TimeSpan

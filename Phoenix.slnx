@@ -4,6 +4,9 @@
   </Configurations>
   <Project Path="console/DSCPP-Console.vcxproj" Id="4229181f-23f6-4c58-9444-d9aa15bd9180" />
   <Project Path="core/DSCPP.vcxproj" Id="7e78e29d-0696-414a-b36d-6d833c2b0c3d" />
+  <Project Path="GUI/GUI.vcxproj" Id="9e38c72a-3bff-4ca3-9a19-9200099a8fbf" />
+  <Project Path="Platform/Platform.vcxproj" Id="3b9f6753-3979-4ee1-8565-a84c3df21b9c" />
+  <Project Path="System/System.vcxproj" Id="9b07618e-b7f0-4ec3-a9ba-10054b18a750" />
   <Project Path="tests/DSCPP-Tests.vcxproj" Id="a2fcf0a0-f383-4bf8-8f67-05d143795ec2" />
   <Project Path="ucd-downloader/ucd-downloader.pyproj" Type="888888a0-9f3d-457c-b088-3a5042f75d52" Id="b21166e9-eaa0-403f-b9d5-c79f8c771882">
     <Platform Project="AnyCPU" />

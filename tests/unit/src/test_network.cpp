@@ -3,19 +3,19 @@
 // ------------------------------------------------------------
 // Network headers
 // ------------------------------------------------------------
-#include "network/IPAddress.hpp"
-#include "network/Endpoint.hpp"
-#include "network/SocketHandle.hpp"
-#include "network/SocketBase.hpp"
-#include "network/TcpSocket.hpp"
-#include "network/TcpListener.hpp"
-#include "network/UdpSocket.hpp"
+#include "System/Network/IPAddress.hpp"
+#include "System/Network/Endpoint.hpp"
+#include "System/Network/SocketHandle.hpp"
+#include "System/Network/SocketBase.hpp"
+#include "System/Network/TcpSocket.hpp"
+#include "System/Network/TcpListener.hpp"
+#include "System/Network/UdpSocket.hpp"
 
 // ------------------------------------------------------------
 // Primitive types
 // ------------------------------------------------------------
-#include "types/UInt16.hpp"
-#include "types/Byte.hpp"
+#include "System/Types/UInt16.hpp"
+#include "System/Types/Byte.hpp"
 
 // ============================================================
 // IPAddress

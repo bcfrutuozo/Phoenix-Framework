@@ -2,10 +2,10 @@
 
 #include "catch_amalgamated.hpp"
 
-#include "collections/Stack.hpp"
-#include "collections/Array.hpp"
-#include "types/String.hpp"
-#include "types/UInt64.hpp"
+#include "System/Collections/Stack.hpp"
+#include "System/Collections/Array.hpp"
+#include "System/Types/String.hpp"
+#include "System/Types/UInt64.hpp"
 
 // ------------------------------------------------------------
 // Struct custom para testar compatibilidade

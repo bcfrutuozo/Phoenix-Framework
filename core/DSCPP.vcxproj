@@ -2,14 +2,6 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -28,19 +20,6 @@
     <ProjectName>core</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -58,12 +37,6 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -86,40 +59,6 @@
     <IncludePath>$(VULKAN_SDK)\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VULKAN_SDK)\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ExcludePath>$(ExcludePath)</ExcludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ExcludePath>$(ExcludePath)</ExcludePath>
-  </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -132,6 +71,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <AdditionalIncludeDirectories>$(ProjectDir)src\;C:\VulkanSDK\1.4.335.0\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8</AdditionalOptions>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,6 +89,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)src\;C:\VulkanSDK\1.4.335.0\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8</AdditionalOptions>
+      <ScanSourceForModuleDependencies>true</ScanSourceForModuleDependencies>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -156,165 +97,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\collections\Array.hpp" />
-    <ClInclude Include="src\collections\List.hpp" />
-    <ClInclude Include="src\collections\Queue.hpp" />
-    <ClInclude Include="src\collections\Stack.hpp" />
-    <ClInclude Include="src\events\Event.hpp" />
-    <ClInclude Include="src\events\EventDispatcher.hpp" />
-    <ClInclude Include="src\events\EventQueue.hpp" />
-    <ClInclude Include="src\events\EventCategory.hpp" />
-    <ClInclude Include="src\events\ImeCompositionEvent.hpp" />
-    <ClInclude Include="src\events\KeyboardEvents.hpp" />
-    <ClInclude Include="src\events\MouseEvents.hpp" />
-    <ClInclude Include="src\events\SystemEvents.hpp" />
-    <ClInclude Include="src\events\TextEvents.hpp" />
-    <ClInclude Include="src\events\WindowEvents.hpp" />
-    <ClInclude Include="src\globalization\Locale.hpp" />
-    <ClInclude Include="src\input\KeyCode.hpp" />
-    <ClInclude Include="src\input\MouseButton.hpp" />
-    <ClInclude Include="src\meta\Access.hpp" />
-    <ClInclude Include="src\meta\BaseDef.hpp" />
-    <ClInclude Include="src\meta\CharTraits.hpp" />
-    <ClInclude Include="src\meta\HierarchyTraits.hpp" />
-    <ClInclude Include="src\meta\PointerContract.hpp" />
-    <ClInclude Include="src\meta\PrimitiveToWrapper.hpp" />
-    <ClInclude Include="src\meta\Promotion.hpp" />
-    <ClInclude Include="src\meta\PromotionPrimitives.hpp" />
-    <ClInclude Include="src\meta\TypeTraits.hpp" />
-    <ClInclude Include="src\meta\ValueType.hpp" />
-    <ClInclude Include="src\interop\Console.hpp" />
-    <ClInclude Include="src\interop\ConsoleIO.hpp" />
-    <ClInclude Include="src\io\OSStream.hpp" />
-    <ClInclude Include="src\io\Stream.hpp" />
-    <ClInclude Include="src\io\StreamOperators.hpp" />
-    <ClInclude Include="src\io\TextReader.hpp" />
-    <ClInclude Include="src\io\TextWriter.hpp" />
-    <ClInclude Include="src\meta\WrapperContract.hpp" />
-    <ClInclude Include="src\meta\WrapperTraits.hpp" />
-    <ClInclude Include="src\meta\WrapperValue.hpp" />
-    <ClInclude Include="src\network\Endpoint.hpp" />
-    <ClInclude Include="src\network\IPAddress.hpp" />
-    <ClInclude Include="src\network\NetworkContract.hpp" />
-    <ClInclude Include="src\network\SocketBase.hpp" />
-    <ClInclude Include="src\network\SocketError.hpp" />
-    <ClInclude Include="src\network\SocketHandle.hpp" />
-    <ClInclude Include="src\network\TCPListener.hpp" />
-    <ClInclude Include="src\network\TCPSocket.hpp" />
-    <ClInclude Include="src\network\UDPSocket.hpp" />
-    <ClInclude Include="src\platform\Application.hpp" />
-    <ClInclude Include="src\platform\ApplicationFactory.hpp" />
-    <ClInclude Include="src\platform\ConsoleApplication.hpp" />
-    <ClInclude Include="src\platform\windows\Win32Handles.hpp" />
-    <ClInclude Include="src\platform\windows\Win32KeyMap.hpp" />
-    <ClInclude Include="src\platform\windows\Win32PowerMap.hpp" />
-    <ClInclude Include="src\render\vulkan\VulkanContext.hpp" />
-    <ClInclude Include="src\render\vulkan\VulkanInstance.hpp" />
-    <ClInclude Include="src\render\vulkan\VulkanSurface.hpp" />
-    <ClInclude Include="src\render\vulkan\VulkanTypes.hpp" />
-    <ClInclude Include="src\system\DivideByZeroTrap.hpp" />
-    <ClInclude Include="src\system\Exceptions.hpp" />
-    <ClInclude Include="src\system\Framework.hpp" />
-    <ClInclude Include="src\system\Globals.hpp" />
-    <ClInclude Include="src\system\Marvin32.hpp" />
-    <ClInclude Include="src\system\Memory.hpp" />
-    <ClInclude Include="src\system\NetworkRuntime.hpp" />
-    <ClInclude Include="src\system\Types.hpp" />
-    <ClInclude Include="src\text\ASCII.hpp" />
-    <ClInclude Include="src\text\Encoding.hpp" />
-    <ClInclude Include="src\text\StringBuilder.hpp" />
-    <ClInclude Include="src\text\unicode\UnicodeCase_folding.hpp" />
-    <ClInclude Include="src\text\unicode\UnicodeCase_generated.hpp" />
-    <ClInclude Include="src\text\unicode\UnicodeCase_props.hpp" />
-    <ClInclude Include="src\text\unicode\UnicodeCase_special.hpp" />
-    <ClInclude Include="src\text\unicode\UnicodeCase_utils.hpp" />
-    <ClInclude Include="src\text\unicode\UnicodeNormalization_tables.hpp" />
-    <ClInclude Include="src\text\unicode\UnicodeNormalization_utils.hpp" />
-    <ClInclude Include="src\text\UTF8.hpp" />
-    <ClInclude Include="src\time\Clock.hpp" />
-    <ClInclude Include="src\time\FrameTimer.hpp" />
-    <ClInclude Include="src\time\TimePoint.hpp" />
-    <ClInclude Include="src\time\TimeSpan.hpp" />
-    <ClInclude Include="src\types\Boolean.hpp" />
-    <ClInclude Include="src\types\Byte.hpp" />
-    <ClInclude Include="src\types\CodePoint.hpp" />
-    <ClInclude Include="src\types\Double.hpp" />
-    <ClInclude Include="src\types\Int16.hpp" />
-    <ClInclude Include="src\types\Int32.hpp" />
-    <ClInclude Include="src\types\Int64.hpp" />
-    <ClInclude Include="src\types\Char.hpp" />
-    <ClInclude Include="src\types\Object.hpp" />
-    <ClInclude Include="src\types\Pointer.hpp" />
-    <ClInclude Include="src\types\SByte.hpp" />
-    <ClInclude Include="src\types\Single.hpp" />
-    <ClInclude Include="src\types\String.hpp" />
-    <ClInclude Include="src\types\Operators.hpp" />
-    <ClInclude Include="src\types\UInt16.hpp" />
-    <ClInclude Include="src\types\UInt32.hpp" />
-    <ClInclude Include="src\types\UInt64.hpp" />
-    <ClInclude Include="src\window\Window.hpp" />
-    <ClInclude Include="src\window\WindowBackend.hpp" />
-    <ClInclude Include="src\window\WindowDescriptor.hpp" />
-    <ClInclude Include="src\window\WindowHandle.hpp" />
-  </ItemGroup>
-  <ItemGroup>
     <Natvis Include="DSCPP-Core.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\events\EventQueue.cpp" />
-    <ClCompile Include="src\globalization\Locale.cpp" />
-    <ClCompile Include="src\network\Endpoint.cpp" />
-    <ClCompile Include="src\network\IPAddress.cpp" />
-    <ClCompile Include="src\network\os\SocketOS.hpp" />
-    <ClCompile Include="src\network\os\SocketOS_posix.cpp" />
-    <ClCompile Include="src\network\os\SocketOS_win32.cpp" />
-    <ClCompile Include="src\network\SocketBase.cpp" />
-    <ClCompile Include="src\network\TCPListener.cpp" />
-    <ClCompile Include="src\network\TCPSocket.cpp" />
-    <ClCompile Include="src\network\UDPSocket.cpp" />
-    <ClCompile Include="src\platform\linux\Clock.cpp" />
-    <ClCompile Include="src\platform\windows\Clock.cpp" />
-    <ClCompile Include="src\platform\windows\Win32KeyMap.cpp" />
-    <ClCompile Include="src\platform\windows\Win32PowerMap.cpp" />
-    <ClCompile Include="src\render\vulkan\VulkanContext.cpp" />
-    <ClCompile Include="src\render\vulkan\VulkanInstance.cpp" />
-    <ClCompile Include="src\render\vulkan\VulkanSurface.cpp" />
-    <ClCompile Include="src\text\StringBuilder.cpp" />
-    <ClCompile Include="src\text\unicode\UnicodeCase_utils.cpp" />
-    <ClCompile Include="src\text\unicode\UnicodeNormalization_utils.cpp" />
-    <ClCompile Include="src\types\Boolean.cpp" />
-    <ClCompile Include="src\types\Byte.cpp" />
-    <ClCompile Include="src\types\Char.cpp" />
-    <ClCompile Include="src\types\CodePoint.cpp" />
-    <ClCompile Include="src\types\Double.cpp" />
-    <ClCompile Include="src\types\Int16.cpp" />
-    <ClCompile Include="src\types\Int32.cpp" />
-    <ClCompile Include="src\types\Int64.cpp" />
-    <ClCompile Include="src\types\Pointer.cpp" />
-    <ClCompile Include="src\types\SByte.cpp" />
-    <ClCompile Include="src\types\Single.cpp" />
-    <ClCompile Include="src\types\String.cpp" />
-    <ClCompile Include="src\types\UInt16.cpp" />
-    <ClCompile Include="src\types\UInt32.cpp" />
-    <ClCompile Include="src\types\UInt64.cpp" />
-    <ClCompile Include="src\window\Window.cpp" />
-    <ClCompile Include="src\platform\windows\WindowBackend.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="cpp.hint" />
-    <None Include="src\platform\GUIApplication.hpp" />
-    <None Include="src\types\Wrappers.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
 </Project>

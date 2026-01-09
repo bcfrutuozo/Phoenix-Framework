@@ -1,12 +1,12 @@
 #pragma once
 
 #include "catch_amalgamated.hpp"
-#include "types/String.hpp"
-#include "globalization/Locale.hpp"
-#include "text/unicode/UnicodeCase_utils.hpp"
-#include "text/unicode/UnicodeNormalization_utils.hpp"
-#include "collections/List.hpp"
-#include "system/Framework.hpp"
+#include "System/Types/String.hpp"
+#include "System/Globalization/Locale.hpp"
+#include "System/Text/unicode/UnicodeCase_utils.hpp"
+#include "System/Text/unicode/UnicodeNormalization_utils.hpp"
+#include "System/Collections/List.hpp"
+#include "System/Framework.hpp"
 
 static List<Char> Chars(std::initializer_list<Char> list)
 {
