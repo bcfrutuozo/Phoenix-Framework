@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System/Events/Event.hpp"
+#include "Events/Event.hpp"
 #include "System/Input/KeyCode.hpp"
 #include "System/Types.hpp"
 #include "GUI/Window/WindowHandle.hpp"

@@ -11,6 +11,9 @@
 #include "Meta/ValueType.hpp"   // facade
 #include "Meta/Access.hpp"
 
+// Object base
+#include "System/Types/Object.hpp"
+
 // --- Fundamental Wrappers
 #include "Types/Boolean.hpp"
 #include "Types/Byte.hpp"

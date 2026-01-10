@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System/Events/Event.hpp"
+#include "Events/Event.hpp"
 #include "System/Types.hpp"
 #include "System/String.hpp"
 #include "GUI/Window/WindowHandle.hpp"

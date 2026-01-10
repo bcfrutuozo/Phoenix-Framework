@@ -2,7 +2,7 @@
 
 #include "System/Types.hpp"
 #include "System/String.hpp"
-#include "GUI/Events/MouseEvents.hpp"
+#include "Events/Categories/MouseEvents.hpp"
 
 class Window;
 struct ControlBackend;

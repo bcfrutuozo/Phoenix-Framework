@@ -1,8 +1,8 @@
 #include "Window.hpp"
 #include "WindowBackend.hpp"
 #include "GUI/Rendering/Vulkan/VulkanContext.hpp"
-#include "System/Events/EventDispatcher.hpp"
-#include "GUI/Events/UIEvents.hpp"
+#include "Events/EventDispatcher.hpp"
+#include "Events/Categories/UIEvents.hpp"
 #include "GUI/Core/Control.hpp"
 
 Window::Window(const WindowDesc& desc)

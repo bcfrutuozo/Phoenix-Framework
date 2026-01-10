@@ -2,7 +2,7 @@
 
 #include "WindowDescriptor.hpp"
 #include "WindowHandle.hpp"
-#include "System/Events/EventQueue.hpp"
+#include "Events/EventQueue.hpp"
 
 struct WindowBackend;
 class VulkanContext;

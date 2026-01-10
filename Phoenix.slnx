@@ -3,7 +3,7 @@
     <Platform Name="x64" />
   </Configurations>
   <Project Path="console/DSCPP-Console.vcxproj" Id="4229181f-23f6-4c58-9444-d9aa15bd9180" />
-  <Project Path="core/DSCPP.vcxproj" Id="7e78e29d-0696-414a-b36d-6d833c2b0c3d" />
+  <Project Path="Events/Events.vcxproj" Id="8314f707-a655-4601-a701-aec30dcf994b" />
   <Project Path="GUI/GUI.vcxproj" Id="9e38c72a-3bff-4ca3-9a19-9200099a8fbf" />
   <Project Path="Platform/Platform.vcxproj" Id="3b9f6753-3979-4ee1-8565-a84c3df21b9c" />
   <Project Path="System/System.vcxproj" Id="9b07618e-b7f0-4ec3-a9ba-10054b18a750" />

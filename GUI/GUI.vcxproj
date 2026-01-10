@@ -102,9 +102,6 @@
   <ItemGroup>
     <ClInclude Include="Core\Control.hpp" />
     <ClInclude Include="Core\ControlBackend.hpp" />
-    <ClInclude Include="Events\KeyboardEvents.hpp" />
-    <ClInclude Include="Events\MouseEvents.hpp" />
-    <ClInclude Include="Events\TextEvents.hpp" />
     <ClInclude Include="Rendering\Vulkan\VulkanContext.hpp" />
     <ClInclude Include="Rendering\Vulkan\VulkanInstance.hpp" />
     <ClInclude Include="Rendering\Vulkan\VulkanSurface.hpp" />
@@ -113,7 +110,6 @@
     <ClInclude Include="Window\Window.hpp" />
     <ClInclude Include="Window\WindowBackend.hpp" />
     <ClInclude Include="Window\WindowDescriptor.hpp" />
-    <ClInclude Include="Events\UIEvents.hpp" />
     <ClInclude Include="Window\WindowHandle.hpp" />
   </ItemGroup>
   <ItemGroup>

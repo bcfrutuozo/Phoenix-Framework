@@ -1,7 +1,7 @@
 #pragma once
 
-#include "System/Events/Event.hpp"
-#include "System/Events/EventQueue.hpp"
+#include "Events/Event.hpp"
+#include "Events/EventQueue.hpp"
 
 class Application
 {

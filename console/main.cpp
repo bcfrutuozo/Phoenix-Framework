@@ -2,7 +2,7 @@
 #include "GUI/Window/Window.hpp"
 #include "GUI/Window/Label.hpp"
 #include "GUI/Rendering/Vulkan/VulkanContext.hpp"
-#include "GUI/Events/MouseEvents.hpp"
+#include "Events/Categories/MouseEvents.hpp"
 
 
 #include <cassert>

@@ -100,18 +100,26 @@
     <ClInclude Include="ApplicationFactory.hpp" />
     <ClInclude Include="ConsoleApplication.hpp" />
     <ClInclude Include="GUIApplication.hpp" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="windows\WIn32Message.hpp" />
     <ClInclude Include="windows\Win32WndProc.hpp" />
     <ClInclude Include="windows\Win32KeyMap.hpp" />
     <ClInclude Include="windows\Win32ObjectHeader.hpp" />
     <ClInclude Include="windows\Win32PowerMap.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Events\Events.vcxproj">
+      <Project>{8314f707-a655-4601-a701-aec30dcf994b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\GUI\GUI.vcxproj">
       <Project>{9e38c72a-3bff-4ca3-9a19-9200099a8fbf}</Project>
     </ProjectReference>
     <ProjectReference Include="..\System\System.vcxproj">
       <Project>{9b07618e-b7f0-4ec3-a9ba-10054b18a750}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Platform.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

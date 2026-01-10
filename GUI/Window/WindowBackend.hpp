@@ -2,9 +2,9 @@
 
 #include "WindowHandle.hpp"
 #include "GUI/Window/WindowDescriptor.hpp"
-#include "System/Events/EventQueue.hpp"
 
 struct WindowBackend;
+class EventQueue;
 
 WindowBackend* CreateWindowBackend(Window*, const WindowDesc& desc);
 

@@ -4,9 +4,9 @@
 
 #include "GUI/Window/Window.hpp"
 #include "GUI/Window/WindowBackend.hpp"
-#include "GUI/Events/UIEvents.hpp"
+#include "Events/Categories/UIEvents.hpp"
 #include "GUI/Window/WindowHandle.hpp"
-#include "System/Events/EventDispatcher.hpp"
+#include "Events/EventDispatcher.hpp"
 
 #include "GUI/Rendering/Vulkan/VulkanContext.hpp"
 

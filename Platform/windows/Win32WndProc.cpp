@@ -1,15 +1,20 @@
 #include "Win32WndProc.hpp"
 #include "Win32ObjectHeader.hpp"
+#include "Events/EventQueue.hpp"
 #include "GUI/Core/ControlBackend.hpp"
 #include "GUI/Window/WindowBackend.hpp"
-#include "GUI/Events/KeyboardEvents.hpp"
-#include "GUI/Events/UIEvents.hpp"
-#include "GUI/Events/MouseEvents.hpp"
-#include "GUI/Events/TextEvents.hpp"
-#include "System/Events/SystemEvents.hpp"
+#include "Events/Categories/KeyboardEvents.hpp"
+#include "Events/Categories/UIEvents.hpp"
+#include "Events/Categories/MouseEvents.hpp"
+#include "Events/Categories/TextEvents.hpp"
+#include "Events/Categories/SystemEvents.hpp"
 #include "Win32KeyMap.hpp"
 #include "Win32PowerMap.hpp"
 #include "System/Console/Console.hpp"
+
+#ifdef _DEBUG
+#include "WIn32Message.hpp"
+#endif
 
 #define WIN32_LEAN_AND_MEAN
 #define _WIN32_WINNT 0x0601
@@ -20,8 +25,10 @@
 
 #pragma comment(lib, "comctl32.lib")
 
+#ifndef _DEBUG
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
+#endif
 
 #include <imm.h>
 #pragma comment(lib, "imm32.lib")
@@ -35,7 +42,7 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 	if (header->Kind == Win32ObjectKind::Window)
 	{
 		auto* backend = static_cast<WindowBackend*>(header);
-		Window* window= backend->owner;
+		Window* window = backend->owner;
 
 		// 🔑 HANDLE CORRETO
 		UIHandle handle = UIHandle::FromWindow(window);
@@ -322,14 +329,10 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 		case WM_PAINT:
 			OutputDebugStringA("WM_PAINT\n");
 			break;
-			case WM_CREATE:
-				return true;
+		case WM_CREATE:
+			return true;
 		case WM_MOUSEMOVE:
-			backend->queue->Push(
-				new MouseMoveEvent(handle,
-					GET_X_LPARAM(lp),
-					GET_Y_LPARAM(lp))
-			);
+			backend->queue->Push(new MouseMoveEvent(handle, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
 			return true;
 
 		case WM_LBUTTONDOWN:
@@ -343,9 +346,7 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 			return true;
 
 		case WM_KILLFOCUS:
-			//backend->queue->Push(
-			//	new FocusLeaveEvent(handle)
-			//);
+			backend->queue->Push(new UIFocusLostEvent(handle));
 			return true;
 		}
 	}
@@ -358,7 +359,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	auto* header = reinterpret_cast<Win32ObjectHeader*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 #ifdef _DEBUG
-	Console::WriteLine(String::Concat("Handle: ", Pointer(hwnd).ToString(), " | Message: ", u64(msg).ToString()));
+	Console::WriteLine(String::Concat("Handle: ", Pointer(hwnd).ToString(), " | Message: ", Message(msg, wp, lp).ToString()));
 #endif
 
 	// 🔑 SPECIAL CASE BECAUSE WM_NCCREATE RETURNS 1 WHEN SUCCESS INSTEAD OF 0
@@ -386,7 +387,7 @@ LRESULT CALLBACK Win32SubclassProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UI
 	auto* header = reinterpret_cast<Win32ObjectHeader*>(dwRefData);
 
 #ifdef _DEBUG
-	Console::WriteLine(String::Concat("Handle: ", Pointer(hwnd).ToString(), " | Message: ", u64(msg).ToString()));
+	Console::WriteLine(String::Concat("Handle: ", Pointer(hwnd).ToString(), " | Message: ", Message(msg, wp, lp).ToString()));
 #endif
 
 	if (HandleWin32Message(hwnd, msg, wp, lp, header))

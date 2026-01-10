@@ -95,11 +95,6 @@
     <ClInclude Include="Collections\Queue.hpp" />
     <ClInclude Include="Collections\Stack.hpp" />
     <ClInclude Include="DivideByZeroTrap.hpp" />
-    <ClInclude Include="Events\Event.hpp" />
-    <ClInclude Include="Events\EventCategory.hpp" />
-    <ClInclude Include="Events\EventDispatcher.hpp" />
-    <ClInclude Include="Events\EventQueue.hpp" />
-    <ClInclude Include="Events\SystemEvents.hpp" />
     <ClInclude Include="Exceptions.hpp" />
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="Globalization\Locale.hpp" />
@@ -175,7 +170,6 @@
     <ClInclude Include="Types\UInt64.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Events\EventQueue.cpp" />
     <ClCompile Include="Globalization\Locale.cpp" />
     <ClCompile Include="IO\OSStream.cpp" />
     <ClCompile Include="Memory.cpp" />
@@ -208,6 +202,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Types\Wrappers.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="DSCPP-Core.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

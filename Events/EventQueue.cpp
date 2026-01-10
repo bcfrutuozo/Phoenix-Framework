@@ -1,5 +1,4 @@
-#include "System/Events/EventQueue.hpp"
-
+#include "EventQueue.hpp"
 
 // ------------------------------------------------------------
 // Configuration

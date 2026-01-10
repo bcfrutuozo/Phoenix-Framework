@@ -1,11 +1,11 @@
 #include "Control.hpp"
 #include "GUI/Window/Window.hpp"
 #include "GUI/Core/ControlBackend.hpp"
-#include "System/Events/EventDispatcher.hpp"
-#include "GUI/Events/MouseEvents.hpp"
-#include "GUI/Events/UIEvents.hpp"
+#include "Events/EventDispatcher.hpp"
+#include "Events/Categories/MouseEvents.hpp"
+#include "Events/Categories/UIEvents.hpp"
 #include "System/Types.hpp"
-#include "System/Events/EventQueue.hpp"
+#include "Events/EventQueue.hpp"
 
 Control::~Control()
 {

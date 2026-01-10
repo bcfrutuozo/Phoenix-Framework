@@ -1,6 +1,6 @@
 #include "GUI/Core/ControlBackend.hpp"
 #include "Win32ObjectHeader.hpp"
-#include "System/Events/EventQueue.hpp"
+#include "Events/EventQueue.hpp"
 
 void DestroyControlBackend(ControlBackend* backend)
 {

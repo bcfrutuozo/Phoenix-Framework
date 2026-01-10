@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System/Events/EventCategory.hpp"
+#include "Events/EventCategory.hpp"
 
 #include <cstdint>
 

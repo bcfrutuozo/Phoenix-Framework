@@ -1,11 +1,13 @@
 #pragma once
 
 #include "System/Types.hpp"
-#include "System/Events/EventQueue.hpp"
-#include "GUI/Core/Control.hpp"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+class Control;
+class EventQueue;
+class Window;
 
 enum class Win32ObjectKind : uint8_t
 {

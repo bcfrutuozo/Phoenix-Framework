@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Event.hpp"
+#include "Events/Event.hpp"
 #include "System/Types.hpp"
 
 class SystemQuitEvent final : public Event
