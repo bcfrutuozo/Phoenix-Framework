@@ -7,9 +7,9 @@
 
 #include "GUI/Window/Window.hpp"
 
-VkSurfaceKHR VulkanSurface::Create(VkInstance instance, const Window& window) noexcept
+VkSurfaceKHR VulkanSurface::Create(VkInstance instance, Window* window) noexcept
 {
-    auto native = window.GetSurfaceHandle();
+    auto native = window->GetSurfaceHandle();
 
     VkWin32SurfaceCreateInfoKHR info{};
     info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
@@ -27,7 +27,6 @@ VkSurfaceKHR VulkanSurface::Create(VkInstance instance, const Window& window) no
     VkInstanceCreateInfo ci{};
     ci.enabledExtensionCount = 2;
     ci.ppEnabledExtensionNames = extensions;
-
 
     VkResult r = vkCreateWin32SurfaceKHR(
         instance,

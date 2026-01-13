@@ -1,7 +1,11 @@
 #pragma once
 
+#include "System/Framework.hpp"
 #include "Events/Event.hpp"
 #include "Events/EventQueue.hpp"
+#include "System/Types.hpp"
+#include "GUI/System/MessageBox.hpp"
+
 
 class Application
 {
@@ -14,8 +18,15 @@ public:
 
         while (!_exitRequested)
         {
-            PumpEvents();
-            Tick();
+            try
+            {
+                PumpEvents();
+                Tick();
+            }
+            catch (const Exception& e)
+            {
+                MessageBox::Show("Error", e.Message(), MessageBoxButtons::OK, MessageBoxIcon::Error);
+            }
         }
 
         OnShutdown();
@@ -28,7 +39,10 @@ public:
 
 protected:
 
-    Application() = default;
+    Application()
+    {
+        InitFramework();
+    }
 
     // lifecycle hooks
     virtual void OnInit() {}
@@ -54,5 +68,5 @@ protected:
     EventQueue _events;
 
 private:
-    bool _exitRequested = false;
+    Boolean _exitRequested = false;
 };

@@ -3,15 +3,15 @@
 #include "Events/Event.hpp"
 #include "System/Types.hpp"
 #include "System/String.hpp"
-#include "GUI/Window/WindowHandle.hpp"
+#include "GUI/Core/UIHandle.hpp"
 
 class TextInputEvent final : public Event
 {
 public:
 
-    TextInputEvent(UIHandle handle, CodePoint cp)
+    TextInputEvent(UIHandle target, CodePoint cp)
         :
-        Window(handle),
+        Target(target),
         Codepoint(cp)
     {
     }
@@ -26,7 +26,7 @@ public:
         return static_cast<uint32_t>(TextEventType::Input);
     }
 
-    UIHandle Window;
+    UIHandle Target;
     CodePoint Codepoint;
 };
 
@@ -42,12 +42,12 @@ class ImeCompositionEvent final : public Event
 {
 public:
     ImeCompositionEvent(
-        UIHandle window,
+        UIHandle target,
         ImeCompositionType type,
         const String& text,
         UInt32 cursor
     )
-        : Window(window)
+        : Target(target)
         , Type(type)
         , Text(text)
         , Cursor(cursor)
@@ -70,7 +70,7 @@ public:
     }
 
 public:
-    UIHandle Window;
+    UIHandle Target;
     ImeCompositionType Type;
 
     String Text;   // UTF-8 nativo da engine

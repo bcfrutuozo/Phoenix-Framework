@@ -10,6 +10,7 @@
 #include "UInt32.hpp"
 #include "UInt64.hpp"
 #include "System/Collections/List.hpp"
+#include "System/Meta/Forward.hpp"
 
 enum class StringSplitOptions : uint8_t
 {
@@ -85,7 +86,7 @@ public:
 	static String Concat(Args&&... args)
 	{
 		// materializa StringArg para cada argumento
-		StringArg packed[] = { StringArg(std::forward<Args>(args))... };
+		StringArg packed[] = { StringArg(Forward<Args>(args))... };
 
 		uint32_t totalBytes = 0;
 		for (const auto& a : packed)

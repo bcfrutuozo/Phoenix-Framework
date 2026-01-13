@@ -1,8 +1,9 @@
 #pragma once
+
 #include "Stream.hpp"
 #include "System/Types.hpp"
 
-#include <cstring>
+#include "System/String.hpp"
 
 class TextWriter {
     Stream* base;

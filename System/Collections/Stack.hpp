@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stddef.h>
-
 #include "Array.hpp"
 #include "System/Types.hpp"
 
@@ -157,15 +155,9 @@ public:
     }
 
     static Stack From(const Array<T>& array) {
-        return From(array.begin(), array.GetLength());
-    }
-
-    static Stack From(std::initializer_list<T> list) {
-        Stack s(list.size());
-        s.Size = list.size();
+        Stack s(array.GetLength());
         size_type i = 0;
-        for (auto& v : list)
-            s.Data[i++] = v;
+        for (auto& v : array) s.Data[i++] = v;
         return s;
     }
 

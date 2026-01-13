@@ -5,7 +5,7 @@
 class TimeSpan
 {
 public:
-    using rep = Int64; // nanoseconds
+    using rep = i64; // nanoseconds
 
 private:
     rep _ns;

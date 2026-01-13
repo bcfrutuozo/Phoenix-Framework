@@ -13,6 +13,6 @@ class VulkanSurface
 public:
     static VkSurfaceKHR Create(
         VkInstance instance,
-        const Window& window
+        Window* window
     ) noexcept;
 };

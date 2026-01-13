@@ -1,16 +1,9 @@
-#include "System/Framework.hpp"
-#include "GUI/Window/Window.hpp"
-#include "GUI/Window/Label.hpp"
-#include "GUI/Rendering/Vulkan/VulkanContext.hpp"
-#include "Events/Categories/MouseEvents.hpp"
+#include "Platform/Phoenix.hpp"
 
-
-#include <cassert>
-#include <string>
-
-void ChangeWindowSize(u32 w, u32 h)
+void ChangeWindowSize(Window* window, u32 w, u32 h)
 {
     printf("Resize: %u x %u\n", w, h);
+    Console::WriteLine(window->GetText());
 }
 
 void WindowClosed()
@@ -28,23 +21,19 @@ void TesteLabel(MouseButton b)
 
 int main(int argc, char* argv[])
 {
-    AppKind kind = AppKind::Windowed;
-    GUIApplication* app = CreateGUIApplication(kind);
-    Window* w = new Window({"ABC", 800, 600 });
-    
+    GUIApplication* app = CreateGUIApplication();
+    Window* w = new Window("ABC", 800, 600);
     w->OnResize = ChangeWindowSize;
-    VulkanContext* cx = new VulkanContext(*w);
+    VulkanContext* cx = new VulkanContext(w);
     w->AttachRenderContext(cx);
-
-    Window* w2 = new Window({ "Teste", 1000, 1000 });
+    Window* w2 = new Window( "Teste", 1000, 1000 );
     Label* l = new Label("Teste Label: ", 50, 50);
-    //l->OnMouseDown = TesteLabel;
+    l->OnMouseDown = TesteLabel;
+    app->Attach(w2);
     w2->AddControl(l);
 
-    w2->AttachRenderContext(cx);
-
     app->Attach(w);
-    app->Attach(w2);
+
     app->Run();
     delete app;
     return 0;

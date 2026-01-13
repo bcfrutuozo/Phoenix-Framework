@@ -2,14 +2,27 @@
 #include "WindowBackend.hpp"
 #include "GUI/Rendering/Vulkan/VulkanContext.hpp"
 #include "Events/EventDispatcher.hpp"
-#include "Events/Categories/UIEvents.hpp"
+#include "Events/GUI/UIEvents.hpp"
+#include "Events/Input/MouseEvents.hpp"
+#include "Events/Input/KeyboardEvents.hpp"
+#include "Events/GUI/BehavioralEvents.hpp"
 #include "GUI/Core/Control.hpp"
+#include "System/Globals.hpp"
 
-Window::Window(const WindowDesc& desc)
+Window::Window(const String& title, i32 width, i32 height, Boolean isResizable)
 	:
-	_controls(16)
+	Window(title, width, height, (Phoenix::ScreenWidth / 2) - (width /2), (Phoenix::ScreenHeight / 2) - (height / 2), isResizable)
 {
-	_impl = CreateWindowBackend(this, desc);
+
+}
+
+Window::Window(const String& title, i32 width, i32 height, i32 x, i32 y, Boolean isResizable)
+{
+	_desc = new WindowDescriptor();
+	_desc->Title = title; 
+	_desc->Size = Size(width, height);
+	_desc->Resizable = isResizable;
+	_desc->Location = Point(x, y);
 }
 
 Window::~Window()
@@ -23,6 +36,8 @@ Window::~Window()
 		}
 	}
 
+	delete _desc;
+	_desc = nullptr;
 	_impl = nullptr;
 }
 
@@ -54,11 +69,6 @@ void Window::PollEvents()
 	PollWindowBackendEvents(_impl);
 }
 
-UIHandle Window::GetNativeHandle() const noexcept
-{
-	return GetWindowBackendHandle(_impl);
-}
-
 SurfaceHandle Window::GetSurfaceHandle() const noexcept
 {
 	return GetWindowSurfaceHandle(_impl);
@@ -74,6 +84,19 @@ VulkanContext* Window::GetRenderContext() const
 	return _vk;
 }
 
+void Window::Initialize(InitializationContext ctx)
+{
+	_impl = CreateWindowBackend(this, _desc);
+	if (_vk) _vk->Initialize();
+	AttachEventQueue(_impl, ctx.queue);
+	for (const auto& c : _controls)
+	{
+		Control::InitializationContext cCtx;
+		cCtx.WindowBackend = _impl;
+		c->Initialize(cCtx);
+	}
+}
+
 void Window::Dispatch(Event& e)
 {
 	dispatch_to_controls(e);
@@ -83,12 +106,12 @@ void Window::Dispatch(Event& e)
 	// ------------------------------------------------------------
 	// Close / destroy
 	// ------------------------------------------------------------
-	d.Dispatch<UICloseEvent>(
+	d.Dispatch<CloseEvent>(
 		EventCategory::UI,
 		UIEventType::Close,
-		[&](const UICloseEvent& ev)
+		[&](CloseEvent& ev)
 		{
-			if (ev.Handle != GetNativeHandle())
+			if (ev.Handle != UIHandle::FromWindow(this))
 				return;
 
 			// 🔔 Notifica o usuário
@@ -98,16 +121,16 @@ void Window::Dispatch(Event& e)
 			// 🔑 DECISÃO LOCAL:
 			// Por padrão, fecha a janela
 			// (política simples e previsível)
-			//Close(); // chama DestroyWindow(hwnd)
+			ev.Handled = true;
 		}
 	);
 
-	d.Dispatch<UIDestroyEvent>(
+	d.Dispatch<DestroyEvent>(
 		EventCategory::UI,
 		UIEventType::Destroy,
-		[&](const UIDestroyEvent& ev)
+		[&](DestroyEvent& ev)
 		{
-			if (ev.Handle != GetNativeHandle())
+			if (ev.Handle != UIHandle::FromWindow(this))
 				return;
 
 			_backendDestroyed = true;
@@ -125,20 +148,20 @@ void Window::Dispatch(Event& e)
 	// ------------------------------------------------------------
 	// Resize / move
 	// ------------------------------------------------------------
-	d.Dispatch<UIResizeEvent>(
+	d.Dispatch<ResizeEvent>(
 		EventCategory::UI, UIEventType::Resize,
-		[&](const UIResizeEvent& ev)
+		[&](ResizeEvent& ev)
 		{
-			if (ev.Handle == GetNativeHandle() && OnResize)
-				OnResize(ev.Width, ev.Height);
+			if (ev.Handle == UIHandle::FromWindow(this) && OnResize)
+				OnResize(this, ev.Width, ev.Height);
 		}
 	);
 
-	d.Dispatch<UIMoveEvent>(
+	d.Dispatch<MoveEvent>(
 		EventCategory::UI, UIEventType::Move,
-		[&](const UIMoveEvent& ev)
+		[&](MoveEvent& ev)
 		{
-			if (ev.Handle == GetNativeHandle() && OnMove)
+			if (ev.Handle == UIHandle::FromWindow(this) && OnMove)
 				OnMove(ev.X, ev.Y);
 		}
 	);
@@ -146,20 +169,20 @@ void Window::Dispatch(Event& e)
 	// ------------------------------------------------------------
 	// Min / max
 	// ------------------------------------------------------------
-	d.Dispatch<UIMinimizeEvent>(
+	d.Dispatch<MinimizeEvent>(
 		EventCategory::UI, UIEventType::Minimize,
-		[&](const UIMinimizeEvent& ev)
+		[&](MinimizeEvent& ev)
 		{
-			if (ev.Handle == GetNativeHandle() && OnMinimize)
+			if (ev.Handle == UIHandle::FromWindow(this) && OnMinimize)
 				OnMinimize();
 		}
 	);
 
-	d.Dispatch<UIMaximizeEvent>(
+	d.Dispatch<MaximizeEvent>(
 		EventCategory::UI, UIEventType::Maximize,
-		[&](const UIMaximizeEvent& ev)
+		[&](MaximizeEvent& ev)
 		{
-			if (ev.Handle == GetNativeHandle() && OnMaximize)
+			if (ev.Handle == UIHandle::FromWindow(this) && OnMaximize)
 				OnMaximize();
 		}
 	);
@@ -167,38 +190,47 @@ void Window::Dispatch(Event& e)
 	// ------------------------------------------------------------
 	// Visibility / focus
 	// ------------------------------------------------------------
-	d.Dispatch<UIShowEvent>(
-		EventCategory::UI, UIEventType::Show,
-		[&](const UIShowEvent& ev)
+	d.Dispatch<RestoreEvent>(
+		EventCategory::UI, UIEventType::Restore,
+		[&](RestoreEvent& ev)
 		{
-			if (ev.Handle == GetNativeHandle() && OnShow)
+			if (ev.Handle == UIHandle::FromWindow(this) && OnRestore)
+				OnRestore();
+		}
+	);
+
+	d.Dispatch<ShowEvent>(
+		EventCategory::UI, UIEventType::Show,
+		[&](ShowEvent& ev)
+		{
+			if (ev.Handle == UIHandle::FromWindow(this) && OnShow)
 				OnShow();
 		}
 	);
 
-	d.Dispatch<UIHideEvent>(
+	d.Dispatch<HideEvent>(
 		EventCategory::UI, UIEventType::Hide,
-		[&](const UIHideEvent& ev)
+		[&](HideEvent& ev)
 		{
-			if (ev.Handle == GetNativeHandle() && OnHide)
+			if (ev.Handle == UIHandle::FromWindow(this) && OnHide)
 				OnHide();
 		}
 	);
 
-	d.Dispatch<UIFocusGainedEvent>(
+	d.Dispatch<FocusGainedEvent>(
 		EventCategory::UI, UIEventType::FocusGained,
-		[&](const UIFocusGainedEvent& ev)
+		[&](FocusGainedEvent& ev)
 		{
-			if (ev.Handle == GetNativeHandle() && OnFocusGained)
+			if (ev.Handle == UIHandle::FromWindow(this) && OnFocusGained)
 				OnFocusGained();
 		}
 	);
 
-	d.Dispatch<UIFocusLostEvent>(
+	d.Dispatch<FocusLostEvent>(
 		EventCategory::UI, UIEventType::FocusLost,
-		[&](const UIFocusLostEvent& ev)
+		[&](FocusLostEvent& ev)
 		{
-			if (ev.Handle == GetNativeHandle() && OnFocusLost)
+			if (ev.Handle == UIHandle::FromWindow(this) && OnFocusLost)
 				OnFocusLost();
 		}
 	);
@@ -206,12 +238,12 @@ void Window::Dispatch(Event& e)
 	// ------------------------------------------------------------
 	// DPI
 	// ------------------------------------------------------------
-	d.Dispatch<UIDPIChangedEvent>(
+	d.Dispatch<DPIChangedEvent>(
 		EventCategory::UI, UIEventType::DPIChanged,
-		[&](const UIDPIChangedEvent& ev)
+		[&](DPIChangedEvent& ev)
 		{
-			if (ev.Handle == GetNativeHandle() && OnDpiChanged)
-				OnDpiChanged(ev.DPI);
+			if (ev.Handle == UIHandle::FromWindow(this) && OnDPIChanged)
+				OnDPIChanged(ev.DPI);
 		}
 	);
 }
@@ -222,11 +254,38 @@ void Window::AddControl(Control* control)
 	_controls.Add(control);
 }
 
-void Window::attach_event_queue(EventQueue* queue)
+void Window::SetText(const String& text) const
 {
-	AttachEventQueue(_impl, queue);
-	for (const auto& c : _controls)
-		c->AttachEventQueue(queue);
+	_desc->Title = text;
+	return SetWindowTitle(_impl, _desc);
+}
+
+void Window::SetSize(i32 width, i32 height) const
+{
+	_desc->Size = Size(width, height);
+	return SetWindowSize(_impl, _desc);
+}
+
+void Window::SetLocation(i32 x, i32 y) const
+{
+	_desc->Location = Point(x, y);
+	return SetWindowLocation(_impl, _desc);
+}
+
+void Window::EnableResize()
+{
+	if (IsResizable()) return;
+	
+	_desc->Resizable = true;
+	return SetWindowResize(_impl, _desc);
+}
+
+void Window::DisableResize()
+{
+	if (!IsResizable()) return;
+
+	_desc->Resizable = false;
+	return SetWindowResize(_impl, _desc);
 }
 
 void Window::dispatch_to_controls(Event& e)
@@ -236,12 +295,20 @@ void Window::dispatch_to_controls(Event& e)
 		const UIHandle* target = nullptr;
 
 		if (e.Is(EventCategory::Mouse))
-			target = &e.As<MouseButtonDownEvent>().Handle; // ou ButtonDown/Up
-		//else if (e.Is(EventCategory::Keyboard))
-		//    target = &e.As<KeyDownEvent>().Handle;
-		//else if (e.Is(EventCategory::Text))
-		//    target = &e.As<TextInputEvent>().Handle;
-
+		{
+			target = &e.As<MouseButtonDownEvent>().Target; // ou ButtonDown/Up
+			if (target == nullptr) target = &e.As<MouseButtonUpEvent>().Target; // ou ButtonDown/Up
+		}
+		else if (e.Is(EventCategory::Keyboard))
+		{
+			target = &e.As<KeyDownEvent>().Target;
+			if (target == nullptr) target = &e.As<KeyUpEvent>().Target;
+		}
+		else if (e.Is(EventCategory::Text))
+		{
+			target = &e.As<TextInputEvent>().Target;
+			if (target == nullptr) target = &e.As<ImeCompositionEvent>().Target;
+		}
 		if (target && target->IsControl())
 		{
 			if (Control* c = target->AsControl())

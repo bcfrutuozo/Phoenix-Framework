@@ -12,7 +12,7 @@ public:
     virtual ~Event() = default;
 
     virtual EventCategory Category() const noexcept = 0;
-    virtual UInt32 TypeId() const noexcept = 0;
+    virtual u32 TypeId() const noexcept = 0;
 
     Boolean Is(EventCategory cat) const noexcept
     {
@@ -20,10 +20,17 @@ public:
     }
 
     template<typename TEnum>
-    TEnum Type() const noexcept
+        requires(is_enum_v<TEnum>)
+    constexpr TEnum Type() const noexcept
     {
-        static_assert(is_enum<TEnum>::value, "TEnum must be an enum");
-        return static_cast<TEnum>(static_cast<uint32_t>(TypeId()));
+        using U = underlying_type_t<TEnum>;
+
+        static_assert(sizeof(typename decltype(TypeId())::value_type) >= sizeof(U),
+            "TypeId wrapper too small for this enum");
+
+        return static_cast<TEnum>(
+            static_cast<U>(TypeId())
+            );
     }
 
     template<typename T>

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stddef.h>
-
 #include "Array.hpp"
 #include "System/Types.hpp"
 

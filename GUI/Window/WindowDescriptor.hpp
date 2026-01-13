@@ -1,15 +1,16 @@
 #pragma once
 
-#include "System/Types/Boolean.hpp"
-#include "System/Types/Int32.hpp"
+#include "System/Types.hpp"
 #include "System/String.hpp"
+#include "GUI/Drawing/Point.hpp"
+#include "GUI/Drawing/Size.hpp"
 
-struct WindowDescriptor
+struct WindowDescriptor : public Object<WindowDescriptor>
 {
-	String title;
-	Int32 width;
-	Int32 height;
-	Boolean resizable = true;
+    String Title;
+    Size Size;
+    Boolean Resizable = true;
+    Point Location;
 };
 
 using WindowDesc = WindowDescriptor;

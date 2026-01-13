@@ -1,8 +1,5 @@
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
-
 #include "System/Meta/TypeTraits.hpp"
 #include "System/Globals.hpp"
 
@@ -40,7 +37,7 @@ struct Object
 		uint64_t hash = addr ^ (addr >> 16);
 
 		// aplicar seed randomica global (opcional, igual .NET Core)
-		hash ^= GLOBAL_HASH_SEED;
+		hash ^= Phoenix::GLOBAL_HASH_SEED;
 
 		// mistura leve
 		hash *= 0x85ebca6b;

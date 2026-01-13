@@ -9,8 +9,8 @@
 namespace StreamOperators {
 
     template <typename T>
-    inline std::enable_if_t<
-        std::is_base_of_v<Object<T>, T>,
+    inline enable_if_t<
+        is_base_of_v<Object<T>, T>,
         TextWriter&
     >
         operator<<(TextWriter& w, const T& obj) noexcept

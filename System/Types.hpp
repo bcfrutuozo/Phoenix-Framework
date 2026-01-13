@@ -5,11 +5,15 @@
 // ============================
 
 // --- Meta (required for wrappers)
-#include "Meta/BaseDef.hpp"
-#include "Meta/TypeTraits.hpp"
-#include "Meta/HierarchyTraits.hpp"
-#include "Meta/ValueType.hpp"   // facade
-#include "Meta/Access.hpp"
+#include "System/Meta/Access.hpp"
+#include "System/Meta/WrapperTraits.hpp"
+#include "System/Meta/WrapperValue.hpp"
+#include "System/Meta/CharTraits.hpp"
+#include "System/Meta/PrimitiveToWrapper.hpp"
+#include "System/Meta/PromotionPrimitives.hpp"
+#include "System/Meta/Promotion.hpp"
+#include "System/Meta/HierarchyTraits.hpp"
+#include "System/Meta/TypeTraits.hpp"
 
 // Object base
 #include "System/Types/Object.hpp"
@@ -72,8 +76,16 @@ using uint32 = UInt32;
 using u64 = UInt64;
 using uint64 = UInt64;
 
-#include "Types/Pointer.hpp"
+template<typename W, typename E>
+    requires(is_enum_v<E> && is_promotion_wrapper_v<W>)
+constexpr W FromEnum(E e) noexcept
+{
+    using U = underlying_type_t<E>;
+    static_assert(sizeof(U) <= sizeof(typename W::value_type));
+    return W(static_cast<U>(e));
+}
 
+#include "Types/Pointer.hpp"
 #include "Meta/PointerContract.hpp"
 
 static_assert(sizeof(Pointer) == sizeof(void*));

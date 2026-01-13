@@ -317,7 +317,7 @@ UInt32 String::GetHashCode() const noexcept
 	return Marvin32::Compute(
 		reinterpret_cast<const uint8_t*>(data()),
 		_byteLength,
-		GLOBAL_HASH_SEED
+		Phoenix::GLOBAL_HASH_SEED
 	);
 
 	return 0;

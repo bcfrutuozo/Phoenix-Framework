@@ -11,14 +11,19 @@
 #include <cassert>
 
 
-VulkanContext::VulkanContext(const Window& window)
+VulkanContext::VulkanContext(Window* window)
 {
     List<const char*> lst;
     lst.Add(VK_KHR_SURFACE_EXTENSION_NAME);
     lst.Add(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 
     _instance = CreateVulkanInstance(lst);
-    _surface = VulkanSurface::Create(_instance, window);
+    _window = window;
+}
+
+void VulkanContext::Initialize()
+{
+    _surface = VulkanSurface::Create(_instance, _window);
 
     pickPhysicalDevice();
     createDevice();
@@ -124,7 +129,7 @@ void VulkanContext::RenderFrame()
     }
 }
 
-void VulkanContext::OnResize(uint32_t w, uint32_t h)
+void VulkanContext::OnResize(u32 w, u32 h)
 {
     if (w == 0 || h == 0)
         return; // janela minimizada

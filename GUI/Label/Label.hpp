@@ -14,6 +14,7 @@ public:
     String ToString() const noexcept;
 
     void AttachTo(Window* window) override;
+    void Initialize(InitializationContext ctx) override;
 
 protected:
 

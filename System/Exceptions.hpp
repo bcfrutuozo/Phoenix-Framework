@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/Types/String.hpp"
+#include "System/Types.hpp"
 
 class Exception
 {
@@ -187,3 +188,42 @@ public:
 		: IOException(String("File not found: ") + file) {
 	}
 };
+
+#ifdef _WIN32
+
+// ================================================
+// SystemException
+// ================================================
+class SystemException : public Exception
+{
+public:
+	explicit SystemException() noexcept
+		: Exception("SystemException") {
+	}
+
+	explicit SystemException(const String& message) noexcept
+		: Exception(message) {
+	}
+
+	explicit SystemException(i32 HRESULT) noexcept;
+};
+
+// ================================================
+// Win32Exception
+// ================================================
+class Win32Exception : public SystemException
+{
+public:
+
+	explicit Win32Exception() noexcept
+		: SystemException("Win32Exception") {
+	}
+
+	explicit Win32Exception(i32 HRESULT) noexcept
+		: SystemException(HRESULT)
+	{
+
+	}
+};
+
+#endif

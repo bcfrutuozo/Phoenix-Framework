@@ -2,13 +2,13 @@
 
 #include "Events/Event.hpp"
 #include "System/Types.hpp"
-#include "GUI/Window/WindowHandle.hpp"
+#include "GUI/Core/UIHandle.hpp"
 
-class UIResizeEvent final: public Event
+class ResizeEvent final: public Event
 {
 public:
 
-    UIResizeEvent(UIHandle handle, Int32 w, Int32 h)
+    ResizeEvent(UIHandle handle, Int32 w, Int32 h)
         :
         Handle(handle),
         Width(w),
@@ -30,11 +30,11 @@ public:
     Int32 Height;
 };
 
-class UIMinimizeEvent final : public Event
+class MinimizeEvent final : public Event
 {
 public:
 
-    UIMinimizeEvent(UIHandle handle)
+    MinimizeEvent(UIHandle handle)
         :
         Handle(handle)
     {
@@ -53,11 +53,11 @@ public:
     UIHandle Handle;
 };
 
-class UIMaximizeEvent final : public Event
+class MaximizeEvent final : public Event
 {
 public:
 
-    UIMaximizeEvent(UIHandle handle)
+    MaximizeEvent(UIHandle handle)
         :
         Handle(handle)
     {
@@ -76,11 +76,34 @@ public:
     UIHandle Handle;
 };
 
-class UICloseEvent final : public Event
+class RestoreEvent final : public Event
 {
 public:
 
-    UICloseEvent(UIHandle handle)
+    RestoreEvent(UIHandle handle)
+        :
+        Handle(handle)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::UI;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(UIEventType::Restore);
+    }
+
+    UIHandle Handle;
+};
+
+class CloseEvent final : public Event
+{
+public:
+
+    CloseEvent(UIHandle handle)
         :
         Handle(handle)
     {}
@@ -98,11 +121,11 @@ public:
     UIHandle Handle;
 };
 
-class UIDestroyEvent final : public Event
+class DestroyEvent final : public Event
 {
 public:
 
-    UIDestroyEvent(UIHandle handle)
+    DestroyEvent(UIHandle handle)
         :
         Handle(handle)
     { }
@@ -120,11 +143,11 @@ public:
     UIHandle Handle;
 };
 
-class UIMoveEvent final : public Event
+class MoveEvent final : public Event
 {
 public:
 
-    UIMoveEvent(UIHandle handle, Int32 x, Int32 y)
+    MoveEvent(UIHandle handle, Int32 x, Int32 y)
         :
         Handle(handle),
         X(x),
@@ -147,11 +170,11 @@ public:
     Int32 Y;
 };
 
-class UIFocusGainedEvent final : public Event
+class FocusGainedEvent final : public Event
 {
 public:
 
-    UIFocusGainedEvent(UIHandle handle)
+    FocusGainedEvent(UIHandle handle)
         :
         Handle(handle)
     {
@@ -170,11 +193,11 @@ public:
     UIHandle Handle;
 };
 
-class UIFocusLostEvent final : public Event
+class FocusLostEvent final : public Event
 {
 public:
 
-    UIFocusLostEvent(UIHandle handle)
+    FocusLostEvent(UIHandle handle)
         :
         Handle(handle)
     {
@@ -193,11 +216,11 @@ public:
     UIHandle Handle;
 };
 
-class UIShowEvent final : public Event
+class ShowEvent final : public Event
 {
 public:
 
-    UIShowEvent(UIHandle handle)
+    ShowEvent(UIHandle handle)
         :
         Handle(handle)
     {
@@ -216,11 +239,11 @@ public:
     UIHandle Handle;
 };
 
-class UIHideEvent final : public Event
+class HideEvent final : public Event
 {
 public:
 
-    UIHideEvent(UIHandle handle)
+    HideEvent(UIHandle handle)
         :
         Handle(handle)
     {
@@ -239,11 +262,11 @@ public:
     UIHandle Handle;
 };
 
-class UIDPIChangedEvent final : public Event
+class DPIChangedEvent final : public Event
 {
 public:
 
-    UIDPIChangedEvent(UIHandle handle, UInt32 dpi)
+    DPIChangedEvent(UIHandle handle, UInt32 dpi)
         :
         Handle(handle),
         DPI(dpi)

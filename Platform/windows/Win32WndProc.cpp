@@ -3,11 +3,11 @@
 #include "Events/EventQueue.hpp"
 #include "GUI/Core/ControlBackend.hpp"
 #include "GUI/Window/WindowBackend.hpp"
-#include "Events/Categories/KeyboardEvents.hpp"
-#include "Events/Categories/UIEvents.hpp"
-#include "Events/Categories/MouseEvents.hpp"
-#include "Events/Categories/TextEvents.hpp"
-#include "Events/Categories/SystemEvents.hpp"
+#include "Events/Input/KeyboardEvents.hpp"
+#include "Events/GUI/UIEvents.hpp"
+#include "Events/Input/MouseEvents.hpp"
+#include "Events/GUI/BehavioralEvents.hpp"
+#include "Events/OS/SystemEvents.hpp"
 #include "Win32KeyMap.hpp"
 #include "Win32PowerMap.hpp"
 #include "System/Console/Console.hpp"
@@ -45,10 +45,19 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 		Window* window = backend->owner;
 
 		// 🔑 HANDLE CORRETO
-		UIHandle handle = UIHandle::FromWindow(window);
+		UIHandle owner = UIHandle::FromWindow(window);
 
 		switch (msg)
 		{
+		case WM_NCCREATE:
+		case WM_NCCALCSIZE:
+		case WM_NCPAINT:
+		case WM_NCHITTEST:
+		case WM_NCACTIVATE:
+			return false;
+		case WM_CREATE:
+			return true;
+
 			// -------------------- Window --------------------
 		case WM_NCDESTROY:
 		{
@@ -70,106 +79,103 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 			uint32_t height = HIWORD(lp);
 
 			// Resize sempre acontece
-			backend->queue->Push(new UIResizeEvent(
-				handle,
-				width,
-				height
-			));
+			backend->queue->Push(new ResizeEvent(owner, width, height));
 
 			// Estados especiais
 			switch (wp)
 			{
 			case SIZE_MINIMIZED:
-				backend->queue->Push(new UIMinimizeEvent(handle));
+				backend->queue->Push(new MinimizeEvent(owner));
 				break;
 
 			case SIZE_MAXIMIZED:
-				backend->queue->Push(new UIMaximizeEvent(handle));
+				backend->queue->Push(new MaximizeEvent(owner));
 				break;
 
 			case SIZE_RESTORED:
-				// opcional: WindowRestoreEvent, se quiser
+				backend->queue->Push(new RestoreEvent(owner));
 				break;
 			}
 
 			return true;
 		}
 		case WM_MOVE:
-			backend->queue->Push(new UIMoveEvent(handle, (int)(short)LOWORD(lp), (int)(short)HIWORD(lp)));
-			return true;
+			backend->queue->Push(new MoveEvent(owner, (int)(short)LOWORD(lp), (int)(short)HIWORD(lp)));
+			break;
 
 		case WM_SETFOCUS:
-			backend->queue->Push(new UIFocusGainedEvent(handle));
-			return true;
+			backend->queue->Push(new FocusGainedEvent(owner));
+			break;
 
 		case WM_KILLFOCUS:
-			backend->queue->Push(new UIFocusLostEvent(handle));
-			return true;
+			backend->queue->Push(new FocusLostEvent(owner));
+			break;
 
 		case WM_SHOWWINDOW:
+		{
 			if (wp)
-				backend->queue->Push(new UIShowEvent(handle));
+				backend->queue->Push(new ShowEvent(owner));
 			else
-				backend->queue->Push(new UIHideEvent(handle));
-			return true;
-
+				backend->queue->Push(new HideEvent(owner));
+			return DefWindowProc(static_cast<HWND>(owner.Handle.Get()), msg, wp, lp);;
+		}
 		case WM_DPICHANGED:
-			backend->queue->Push(new UIDPIChangedEvent(handle, HIWORD(wp)));
-			return true;
+			backend->queue->Push(new DPIChangedEvent(owner, HIWORD(wp)));
+			break;
 
 			// -------------------- Mouse --------------------
 
 		case WM_MOUSEMOVE:
-			backend->queue->Push(new MouseMoveEvent(handle, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
+			backend->queue->Push(new MouseMoveEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
 			return true;
 
 		case WM_LBUTTONDOWN:
-			backend->queue->Push(new MouseButtonDownEvent(handle, MouseButton::Left));
+			backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Left));
 			return true;
 
 		case WM_LBUTTONUP:
-			backend->queue->Push(new MouseButtonUpEvent(handle, MouseButton::Left));
+			backend->queue->Push(new MouseButtonUpEvent(owner, MouseButton::Left));
 			return true;
 
 		case WM_RBUTTONDOWN:
-			backend->queue->Push(new MouseButtonDownEvent(handle, MouseButton::Right));
+			backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Right));
 			return true;
 
 		case WM_RBUTTONUP:
-			backend->queue->Push(new MouseButtonUpEvent(handle, MouseButton::Right));
+			backend->queue->Push(new MouseButtonUpEvent(owner, MouseButton::Right));
 			return true;
 
 		case WM_MOUSEWHEEL:
-			backend->queue->Push(new MouseScrollEvent(handle, 0.0f, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA));
+			backend->queue->Push(new MouseScrollEvent(owner, 0.0f, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA));
 			return true;
 
 		case WM_MOUSEHWHEEL:
-			backend->queue->Push(new MouseScrollEvent(handle, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA, 0.0f));
+			backend->queue->Push(new MouseScrollEvent(owner, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA, 0.0f));
 			return true;
 
 			// -------------------- Keyboard --------------------
 
 		case WM_KEYDOWN:
 		case WM_SYSKEYDOWN:
-			backend->queue->Push(new KeyDownEvent(handle, TranslateKey((uint32_t)wp, (uint32_t)lp), (lp & (1 << 30)) != 0));
+			backend->queue->Push(new KeyDownEvent(owner, TranslateKey((uint32_t)wp, (uint32_t)lp), (lp & (1 << 30)) != 0));
 			return true;
 
 		case WM_KEYUP:
 		case WM_SYSKEYUP:
-			backend->queue->Push(new KeyUpEvent(handle, TranslateKey((uint32_t)wp, (uint32_t)lp)));
+			backend->queue->Push(new KeyUpEvent(owner, TranslateKey((uint32_t)wp, (uint32_t)lp)));
 			return true;
 
 			// -------------------- Text / IME --------------------
 
 		case WM_CHAR:
-			backend->queue->Push(new TextInputEvent(handle, static_cast<uint32_t>(wp)));
+			backend->queue->Push(new TextInputEvent(owner, static_cast<uint32_t>(wp)));
 			return true;
 
 			// IME reservado (implementar depois)
 		case WM_IME_STARTCOMPOSITION:
 		{
 			backend->queue->Push(new ImeCompositionEvent(
-				handle,
+				owner,
 				ImeCompositionType::Start,
 				String::Empty(),
 				0
@@ -218,7 +224,7 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 					);
 
 					backend->queue->Push(new ImeCompositionEvent(
-						handle,
+						owner,
 						ImeCompositionType::Update,
 						text,
 						static_cast<UInt32>((uint32_t)cursor)
@@ -255,7 +261,7 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 					String text(buffer.Data(), len);
 
 					backend->queue->Push(new ImeCompositionEvent(
-						handle,
+						owner,
 						ImeCompositionType::Commit,
 						text,
 						text.GetByteCount() // ou ByteCount, conforme sua API
@@ -269,7 +275,7 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 		case WM_IME_ENDCOMPOSITION:
 		{
 			backend->queue->Push(new ImeCompositionEvent(
-				handle,
+				owner,
 				ImeCompositionType::End,
 				String::Empty(),
 				0
@@ -280,14 +286,14 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 
 		case WM_QUIT:
 			backend->queue->Push(new SystemQuitEvent());
-			return true;
+			break;
 
 		case WM_ENDSESSION:
 			backend->queue->Push(new SystemShutdownEvent());
 			return true;
 		case WM_CLOSE:
 		{
-			backend->queue->Push(new UICloseEvent(handle));
+			backend->queue->Push(new CloseEvent(owner));
 
 			// IMPORTANTE:
 			// NÃO chame DestroyWindow aqui automaticamente
@@ -296,8 +302,8 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 		}
 		case WM_DESTROY:
 		{
-			backend->queue->Push(new UIDestroyEvent(handle));
-			return true;
+			backend->queue->Push(new DestroyEvent(owner));
+			return false;
 		}
 		case WM_POWERBROADCAST:
 			switch (TranslatePowerEvent(wp))
@@ -321,7 +327,7 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 		Control* control = backend->owner;
 
 		// 🔑 HANDLE CORRETO
-		UIHandle handle = UIHandle::FromControl(control);
+		UIHandle owner = UIHandle::FromControl(control);
 
 		// eventos de controle
 		switch (msg)
@@ -330,31 +336,28 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 			OutputDebugStringA("WM_PAINT\n");
 			break;
 		case WM_CREATE:
-			return true;
+			break;
 		case WM_MOUSEMOVE:
-			backend->queue->Push(new MouseMoveEvent(handle, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
-			return true;
-
+			backend->queue->Push(new MouseMoveEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
+			break;
 		case WM_LBUTTONDOWN:
-			backend->queue->Push(
-				new MouseButtonDownEvent(handle, MouseButton::Left)
-			);
+			backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Left));
 			return true;
 
 		case WM_SETFOCUS:
-			backend->queue->Push(new UIFocusGainedEvent(handle));
-			return true;
+			backend->queue->Push(new FocusGainedEvent(owner));
+			break;
 
 		case WM_KILLFOCUS:
-			backend->queue->Push(new UIFocusLostEvent(handle));
-			return true;
+			backend->queue->Push(new FocusLostEvent(owner));
+			break;;
 		}
 	}
 
 	return false;
 }
 
-LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+LRESULT CALLBACK Phoenix_Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	auto* header = reinterpret_cast<Win32ObjectHeader*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
@@ -372,8 +375,6 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 		auto* backend = static_cast<WindowBackend*>(h);
 		backend->hwnd = hwnd;
-
-		return 1; // 🔥 OBRIGATÓRIO
 	}
 
 	if (HandleWin32Message(hwnd, msg, wp, lp, header))
@@ -382,7 +383,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	return DefWindowProc(hwnd, msg, wp, lp);
 }
 
-LRESULT CALLBACK Win32SubclassProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR dubclass, DWORD_PTR dwRefData)
+LRESULT CALLBACK Phoenix_Win32SubclassProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR dubclass, DWORD_PTR dwRefData)
 {
 	auto* header = reinterpret_cast<Win32ObjectHeader*>(dwRefData);
 

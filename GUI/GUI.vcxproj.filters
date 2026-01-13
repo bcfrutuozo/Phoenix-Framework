@@ -27,10 +27,13 @@
     <ClCompile Include="Rendering\Vulkan\VulkanSurface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Window\Label.cpp">
+    <ClCompile Include="Label\Label.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Control.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="System\MessageBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,7 +47,7 @@
     <ClInclude Include="Window\WindowDescriptor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window\WindowHandle.hpp">
+    <ClInclude Include="Core\UIHandle.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Rendering\Vulkan\VulkanContext.hpp">
@@ -56,16 +59,31 @@
     <ClInclude Include="Rendering\Vulkan\VulkanSurface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window\Label.hpp">
+    <ClInclude Include="Label\Label.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window\LabelBackend.hpp">
+    <ClInclude Include="Label\LabelBackend.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Control.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\ControlBackend.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawing\Point.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawing\Size.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="System\MessageBox.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="System\MessageBoxBackend.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="System\MessageBoxDescriptor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

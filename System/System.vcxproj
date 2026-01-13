@@ -63,6 +63,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -81,6 +82,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,6 +115,7 @@
     <ClInclude Include="Meta\Access.hpp" />
     <ClInclude Include="Meta\BaseDef.hpp" />
     <ClInclude Include="Meta\CharTraits.hpp" />
+    <ClInclude Include="Meta\Forward.hpp" />
     <ClInclude Include="Meta\HierarchyTraits.hpp" />
     <ClInclude Include="Meta\PointerContract.hpp" />
     <ClInclude Include="Meta\PrimitiveToWrapper.hpp" />
@@ -170,7 +173,12 @@
     <ClInclude Include="Types\UInt64.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Console\ConsoleIO.cpp" />
+    <ClCompile Include="DivideByZeroTrap.cpp" />
+    <ClCompile Include="Exceptions.cpp" />
+    <ClCompile Include="Framework.cpp" />
     <ClCompile Include="Globalization\Locale.cpp" />
+    <ClCompile Include="Globals.cpp" />
     <ClCompile Include="IO\OSStream.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Network\Endpoint.cpp" />

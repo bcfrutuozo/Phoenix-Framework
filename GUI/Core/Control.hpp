@@ -2,9 +2,10 @@
 
 #include "System/Types.hpp"
 #include "System/String.hpp"
-#include "Events/Categories/MouseEvents.hpp"
+#include "Events/Input/MouseEvents.hpp"
 
 class Window;
+struct WindowBackend;
 struct ControlBackend;
 class EventQueue;
 
@@ -12,23 +13,27 @@ class Control : public Object<Control>
 {
 public:
 
+    struct InitializationContext
+    {
+        WindowBackend* WindowBackend;
+    };
+
     virtual ~Control();
 
     virtual void AttachTo(Window* window) = 0;
-    void AttachEventQueue(EventQueue* queue);
     void SetEnabled(Boolean enabled);
     void Show();
     void Update();
+    virtual void Initialize(InitializationContext ctx) = 0;
 
     virtual void OnEvent(Event& e);
-    inline constexpr String& GetText() { return _text; }
-    inline constexpr i32 GetX() { return _x; }
-    inline constexpr i32 GetY() { return _y; }
-    Window* GetParent();
-
+    inline String GetText() const noexcept { return _text; }
+    inline constexpr i32 GetX() const noexcept { return _x; }
+    inline constexpr i32 GetY() const noexcept { return _y; }
 
     void (*OnFocusGained)() = nullptr;
     void (*OnMouseDown)(MouseButton) = nullptr;
+    void (*OnMouseUp)(MouseButton) = nullptr;
 
 protected:
 
@@ -38,7 +43,7 @@ protected:
     virtual void OnAttach() = 0;
 
     ControlBackend* _impl = nullptr;
-    Window* _parent = nullptr;
+    WindowBackend* _parentBackend = nullptr;
 
     String _text;
     i32 _x;

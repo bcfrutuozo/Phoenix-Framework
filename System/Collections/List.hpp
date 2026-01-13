@@ -1,10 +1,5 @@
 #pragma once
 
-// Minimal C headers only
-#include <new>      // placement new if needed
-#include <stddef.h> // size_t
-#include <stdint.h> // uint*_t
-
 #include "Array.hpp"
 #include "System/Types.hpp"
 

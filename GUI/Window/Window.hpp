@@ -1,23 +1,32 @@
 #pragma once
 
 #include "WindowDescriptor.hpp"
-#include "WindowHandle.hpp"
+#include "GUI/Core/UIHandle.hpp"
 #include "Events/EventQueue.hpp"
+#include "GUI/Drawing/Point.hpp"
+#include "GUI/Drawing/Size.hpp"
 
 struct WindowBackend;
+struct ControlBackend;
 class VulkanContext;
 class Control;
 
 using ResizeFn = void(*)(u32, u32);
 using CloseFn = void(*)();
 
-class Window
+class Window : public Object<Window>
 {
-    friend class GUIApplication;
-
 public:
 
-    explicit Window(const WindowDesc& desc);
+    friend class MessageBox;
+
+    struct InitializationContext
+    {
+        EventQueue* queue;
+    };
+
+    explicit Window(const String& title, i32 width, i32 height, Boolean isResizable = true);
+    explicit Window(const String& title, i32 width, i32 height, i32 x, i32 y, Boolean isResizable = true);
     ~Window();
 
     Window(const Window&) = delete;
@@ -27,14 +36,28 @@ public:
     void Close();
     void Update();
     void PollEvents();
-    UIHandle GetNativeHandle() const noexcept;
+
     SurfaceHandle GetSurfaceHandle() const noexcept;
 
     void AttachRenderContext(VulkanContext* ctx);
     VulkanContext* GetRenderContext() const;
 
+    void Initialize(InitializationContext ctx);
+
     void Dispatch(Event& e);
     void AddControl(Control* c);
+
+    void SetText(const String& text) const;
+    void SetSize(i32 width, i32 height) const;
+    void SetLocation(i32 x, i32 y) const;
+
+    inline String GetText() const noexcept { return _desc->Title; }
+    inline constexpr Size GetSize() const noexcept { return _desc->Size; }
+    inline constexpr Point GetLocation() const noexcept { return _desc->Location; }
+
+    inline constexpr Boolean IsResizable() const noexcept { return _desc->Resizable; }
+    void EnableResize();
+    void DisableResize();
 
     // ------------------------------------------------------------
     // Lifecycle
@@ -45,6 +68,7 @@ public:
     // ------------------------------------------------------------
     // Visibility / focus
     // ------------------------------------------------------------
+    void (*OnRestore)() = nullptr;
     void (*OnShow)() = nullptr;
     void (*OnHide)() = nullptr;
     void (*OnFocusGained)() = nullptr;
@@ -53,7 +77,7 @@ public:
     // ------------------------------------------------------------
     // Geometry
     // ------------------------------------------------------------
-    void (*OnResize)(u32 width, u32 height) = nullptr;
+    void (*OnResize)(Window* window, u32 width, u32 height) = nullptr;
     void (*OnMove)(i32 x, i32 y) = nullptr;
     void (*OnMinimize)() = nullptr;
     void (*OnMaximize)() = nullptr;
@@ -61,7 +85,7 @@ public:
     // ------------------------------------------------------------
     // DPI
     // ------------------------------------------------------------
-    void (*OnDpiChanged)(u32 dpi) = nullptr;
+    void (*OnDPIChanged)(u32 dpi) = nullptr;
 
     // ------------------------------------------------------------
     // Mouse enter / leave (window boundary)
@@ -71,11 +95,13 @@ public:
 
 private:
 
-    void attach_event_queue(EventQueue* queue);
+    explicit Window() noexcept;
+
     void dispatch_to_controls(Event& e);
     
     VulkanContext* _vk = nullptr;
+    WindowDescriptor* _desc;
     WindowBackend* _impl = nullptr;
     Boolean _backendDestroyed = false;
-    List<Control*> _controls;
+    List<Control*> _controls = List<Control*>(16);
 };

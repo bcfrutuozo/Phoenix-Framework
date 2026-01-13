@@ -1,4 +1,4 @@
-#include "GUI/Window/LabelBackend.hpp"
+#include "GUI/Label/LabelBackend.hpp"
 #include "Win32ObjectHeader.hpp"
 #include "Win32WndProc.hpp"
 
@@ -8,17 +8,18 @@
 
 #pragma comment(lib, "comctl32.lib")
 
-ControlBackend* CreateLabelBackend(Control* control, UIHandle parent, const String& text, u32 x, u32 y)
+ControlBackend* CreateLabelBackend(Control* control, WindowBackend* parent, const String& text, u32 x, u32 y)
 {
-	HWND parentHwnd = (HWND)parent.Handle.Get();
+	HWND parentHwnd = parent->hwnd;
 
 	auto* backend = new LabelBackend{};
 	backend->owner = control;
+	backend->queue = parent->queue;
 
 	backend->hwnd = CreateWindowExW(
 		0,
 		L"STATIC",
-		text.ToWideCharArray().begin(),
+		text.ToWideCharArray().GetData(),
 		WS_CHILD | WS_VISIBLE | SS_NOTIFY,
 		x,
 		y,
@@ -45,7 +46,7 @@ ControlBackend* CreateLabelBackend(Control* control, UIHandle parent, const Stri
 	// Subclass
 	SetWindowSubclass(
 		backend->hwnd,
-		Win32SubclassProc,
+		Phoenix_Win32SubclassProc,
 		0,
 		reinterpret_cast<DWORD_PTR>(backend)
 	);

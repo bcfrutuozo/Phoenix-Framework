@@ -27,19 +27,19 @@
     <ClInclude Include="EventQueue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Categories\SystemEvents.hpp">
+    <ClInclude Include="OS\SystemEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Categories\KeyboardEvents.hpp">
+    <ClInclude Include="Input\KeyboardEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Categories\MouseEvents.hpp">
+    <ClInclude Include="Input\MouseEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Categories\TextEvents.hpp">
+    <ClInclude Include="GUI\BehavioralEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Categories\UIEvents.hpp">
+    <ClInclude Include="GUI\UIEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,7 +7,7 @@ class EventDispatcher
 {
 public:
 
-    explicit EventDispatcher(const Event& e) noexcept
+    explicit EventDispatcher(Event& e) noexcept
         : _event(e)
     { }
 
@@ -17,13 +17,13 @@ public:
         if (_event.Category() != category)
             return false;
 
-        if (_event.TypeId() != static_cast<uint32_t>(type))
+        if (_event.TypeId() != FromEnum<u32>(type))
             return false;
 
-        fn(static_cast<const T&>(_event));
+        fn(static_cast<T&>(_event));
         return true;
     }
     
 private:
-    const Event& _event;
+    Event& _event;
 };

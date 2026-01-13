@@ -35,7 +35,7 @@ struct UIHandle
         return {};
     }
 
-    static UIHandle FromWindow(Window* w)
+    static UIHandle FromWindow(const Window* w)
     {
         UIHandle h;
         h.Type = Type::Window;
@@ -43,7 +43,7 @@ struct UIHandle
         return h;
     }
 
-    static UIHandle FromControl(Control* c)
+    static UIHandle FromControl(const Control* c)
     {
         UIHandle h;
         h.Type = Type::Control;

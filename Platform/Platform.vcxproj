@@ -62,6 +62,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)System\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -78,6 +80,8 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)System\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -87,6 +91,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="linux\Clock.cpp" />
+    <ClCompile Include="windows\MessageBoxBackend.cpp" />
     <ClCompile Include="windows\Win32WndProc.cpp" />
     <ClCompile Include="windows\Clock.cpp" />
     <ClCompile Include="windows\ControlBackend.cpp" />
@@ -100,8 +105,10 @@
     <ClInclude Include="ApplicationFactory.hpp" />
     <ClInclude Include="ConsoleApplication.hpp" />
     <ClInclude Include="GUIApplication.hpp" />
+    <ClInclude Include="Phoenix.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="windows\WIn32Message.hpp" />
+    <ClInclude Include="windows\Win32Types.hpp" />
     <ClInclude Include="windows\Win32WndProc.hpp" />
     <ClInclude Include="windows\Win32KeyMap.hpp" />
     <ClInclude Include="windows\Win32ObjectHeader.hpp" />

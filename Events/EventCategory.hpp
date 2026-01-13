@@ -21,6 +21,7 @@ enum class UIEventType : uint8_t
     Destroy,
     Resize,
     Move,
+    Restore,
     Minimize,
     Maximize,
     FocusGained,

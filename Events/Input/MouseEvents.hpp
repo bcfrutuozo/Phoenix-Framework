@@ -3,15 +3,15 @@
 #include "Events/Event.hpp"
 #include "System/Types.hpp"
 #include "System/Input/MouseButton.hpp"
-#include "GUI/Window/WindowHandle.hpp"
+#include "GUI/Core/UIHandle.hpp"
 
 class MouseMoveEvent final : public Event
 {
 public:
 
-    MouseMoveEvent(UIHandle handle, Int32 x, Int32 y)
+    MouseMoveEvent(UIHandle target, Int32 x, Int32 y)
         :
-        Handle(handle),
+        Target(target),
         X(x),
         Y(y)
     {
@@ -27,7 +27,7 @@ public:
         return static_cast<uint32_t>(MouseEventType::Move);
     }
 
-    UIHandle Handle;
+    UIHandle Target;
     Int32 X;
     Int32 Y;
 };
@@ -36,9 +36,9 @@ class MouseButtonDownEvent final : public Event
 {
 public:
 
-    MouseButtonDownEvent(UIHandle handle, MouseButton button)
+    MouseButtonDownEvent(UIHandle target, MouseButton button)
         :
-        Handle(handle),
+        Target(target),
         Button(button)
     {
     }
@@ -53,7 +53,7 @@ public:
         return static_cast<uint32_t>(MouseEventType::ButtonDown);
     }
 
-    UIHandle Handle;
+    UIHandle Target;
     MouseButton Button;
 };
 
@@ -61,9 +61,9 @@ class MouseButtonUpEvent final : public Event
 {
 public:
 
-    MouseButtonUpEvent(UIHandle handle, MouseButton button)
+    MouseButtonUpEvent(UIHandle target, MouseButton button)
         :
-        Handle(handle),
+        Target(target),
         Button(button)
     {
     }
@@ -78,7 +78,7 @@ public:
         return static_cast<uint32_t>(MouseEventType::ButtonUp);
     }
 
-    UIHandle Handle;
+    UIHandle Target;
     MouseButton Button;
 };
 
@@ -86,9 +86,9 @@ class MouseScrollEvent final : public Event
 {
 public:
 
-    MouseScrollEvent(UIHandle handle, Single xoffset, Single yoffset)
+    MouseScrollEvent(UIHandle target, Single xoffset, Single yoffset)
         :
-        Handle(handle),
+        Target(target),
         XOffset(xoffset),
         YOffset(yoffset)
     {
@@ -104,7 +104,7 @@ public:
         return static_cast<uint32_t>(MouseEventType::Scroll);
     }
 
-    UIHandle Handle;
+    UIHandle Target;
     Single XOffset;
     Single YOffset;
 };

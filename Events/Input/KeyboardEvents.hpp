@@ -3,15 +3,15 @@
 #include "Events/Event.hpp"
 #include "System/Input/KeyCode.hpp"
 #include "System/Types.hpp"
-#include "GUI/Window/WindowHandle.hpp"
+#include "GUI/Core/UIHandle.hpp"
 
 class KeyDownEvent final : public Event
 {
 public:
 
-    KeyDownEvent(UIHandle handle, KeyCode key, Boolean repeat)
+    KeyDownEvent(UIHandle target, KeyCode key, Boolean repeat)
         :
-        Handle(handle),
+        Target(target),
         Key(key),
         Repeat(repeat)
     {
@@ -27,7 +27,7 @@ public:
         return static_cast<uint32_t>(KeyEventType::Down);
     }
 
-    UIHandle Handle;
+    UIHandle Target;
     KeyCode Key;
     Boolean Repeat;
 };
@@ -36,9 +36,9 @@ class KeyUpEvent final : public Event
 {
 public:
 
-    KeyUpEvent(UIHandle handle, KeyCode key)
+    KeyUpEvent(UIHandle target, KeyCode key)
         :
-        Handle(handle),
+        Target(target),
         Key(key)
     {
     }
@@ -53,6 +53,6 @@ public:
         return static_cast<uint32_t>(KeyEventType::Up);
     }
 
-    UIHandle Handle;
+    UIHandle Target;
     KeyCode Key;
 };

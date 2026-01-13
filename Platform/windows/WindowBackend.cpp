@@ -1,16 +1,10 @@
 #include "GUI/Window/WindowBackend.hpp"
 #include "Events/EventQueue.hpp"
-#include "GUI/Core/Control.hpp"
-#include "Events/Categories/UIEvents.hpp"
-#include "Events/Categories/MouseEvents.hpp"
-#include "Events/Categories/KeyboardEvents.hpp"
-#include "Events/Categories/TextEvents.hpp"
-#include "Events/Categories/SystemEvents.hpp"
 #include "System/String.hpp"
-#include "System/Collections/List.hpp"
 #include "Win32ObjectHeader.hpp"
-#include "GUI/Core/ControlBackend.hpp"
 #include "Win32WndProc.hpp"
+#include "GUI/Window/Window.hpp"
+#include "System/Exceptions.hpp"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -37,7 +31,7 @@ static void RegisterWindowClass()
 
 	WNDCLASSW wc{};
 	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = Win32WindowProc;
+	wc.lpfnWndProc = Phoenix_Win32WindowProc;
 	wc.hInstance = GetModuleHandle(nullptr);
 	wc.lpszClassName = kWindowClassName;
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -46,42 +40,39 @@ static void RegisterWindowClass()
 	registered = true;
 }
 
-UIHandle GetWindowBackendHandle(WindowBackend* backend)
-{
-	UIHandle h{};
-	h.Handle = Pointer(backend->hwnd);
-	h.Type = UIHandle::Type::Window;
-	return h;
-}
-
 SurfaceHandle GetWindowSurfaceHandle(WindowBackend* backend)
 {
 	SurfaceHandle h{ Pointer(backend->hwnd), Pointer(GetModuleHandle(nullptr)) };
 	return h;
 }
 
+EventQueue* GetEventQueue(WindowBackend* backend)
+{
+	return backend->queue;
+}
+
 // ===============================
 // Backend API (usada por Window.cpp)
 // ===============================
-WindowBackend* CreateWindowBackend(Window* window, const WindowDesc& desc)
+WindowBackend* CreateWindowBackend(Window* window, const WindowDesc* desc)
 {
 	RegisterWindowClass();
 
 	auto* backend = new WindowBackend{};
 
 	DWORD style = WS_OVERLAPPEDWINDOW;
-	if (!desc.resizable)
-		style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
+	if (!desc->Resizable)
+		style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX | WS_EX_APPWINDOW);
 
 	backend->hwnd = CreateWindowExW(
 		0,
 		kWindowClassName,
-		desc.title.ToWideCharArray().begin(),
+		desc->Title.ToWideCharArray().GetData(),
 		style,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		desc.width,
-		desc.height,
+		desc->Location.GetX(),
+		desc->Location.GetY(),
+		desc->Size.GetWidth(),
+		desc->Size.GetHeight(),
 		nullptr,
 		nullptr,
 		GetModuleHandle(nullptr),
@@ -103,7 +94,11 @@ void DestroyWindowBackend(WindowBackend* backend)
 	if (!backend)
 		return;
 
-	DestroyWindow(backend->hwnd);
+	auto ret = DestroyWindow(backend->hwnd);
+	if (ret == 0)
+	{
+		throw Win32Exception((uint32_t)GetLastError());
+	}
 }
 
 void ShowWindowBackend(WindowBackend* backend)
@@ -113,7 +108,11 @@ void ShowWindowBackend(WindowBackend* backend)
 
 void UpdateWindowBackend(WindowBackend* backend)
 {
-	UpdateWindow(backend->hwnd);
+	auto ret = UpdateWindow(backend->hwnd);
+	if (ret == 0)
+	{
+		throw Win32Exception((uint32_t)GetLastError());
+	}
 }
 
 void PollWindowBackendEvents(WindowBackend* backend)
@@ -123,5 +122,76 @@ void PollWindowBackendEvents(WindowBackend* backend)
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
+	}
+}
+
+String GetWindowTitle(WindowBackend* backend)
+{
+	wchar_t buf[256];
+	int n = GetWindowTextW(backend->hwnd, buf, 256);
+	return String(buf, n);
+}
+
+void SetWindowTitle(WindowBackend* backend, const WindowDesc* desc)
+{
+	auto ret = SetWindowTextW(backend->hwnd, desc->Title.ToWideCharArray().GetData());
+	if (ret == 0)
+	{
+		throw Win32Exception((uint32_t)GetLastError());
+	}
+}
+
+void SetWindowSize(WindowBackend* backend, const WindowDesc* desc)
+{
+	auto ret = SetWindowPos(
+		backend->hwnd,
+		nullptr,   // não altera z-order
+		0,
+		0,
+		desc->Size.GetWidth(),
+		desc->Size.GetHeight(),
+		SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	if (ret == 0)
+	{
+		throw Win32Exception((uint32_t)GetLastError());
+	}
+}
+
+void SetWindowLocation(WindowBackend* backend, const WindowDesc* desc)
+{
+	auto ret = SetWindowPos(
+		backend->hwnd,
+		nullptr,   // não altera z-order
+		desc->Location.GetX(),
+		desc->Location.GetY(),
+		0,
+		0,
+		SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
+	);
+
+	if (ret == 0)
+	{
+		throw Win32Exception((uint32_t)GetLastError());
+	}
+}
+
+void SetWindowResize(WindowBackend* backend, const WindowDesc* desc)
+{
+	LONG_PTR style = GetWindowLongPtr(backend->hwnd, GWL_STYLE);
+
+	if (desc->Resizable)
+		style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
+	else
+		style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
+
+	SetWindowLongPtr(backend->hwnd, GWL_STYLE, style);
+
+	auto ret = SetWindowPos(backend->hwnd, nullptr, 0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+
+	if (ret == 0)
+	{
+		throw Win32Exception((uint32_t)GetLastError());
 	}
 }

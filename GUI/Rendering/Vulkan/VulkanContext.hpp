@@ -42,13 +42,14 @@ struct Extent2D
 class VulkanContext
 {
 public:
-    VulkanContext(const Window& window);
+    VulkanContext(Window* window);
     ~VulkanContext();
 
     void RenderFrame();
 
-    void OnResize(uint32_t width, uint32_t height);
+    void OnResize(u32 width, u32 height);
     void RecreateSwapchain();
+    void Initialize();
 
     Boolean IsRenderable() const noexcept
     {
@@ -123,4 +124,5 @@ private:
     Boolean _framebufferResized = false;
     Boolean _surfaceValid = true;
     Boolean _windowAlive = true;
+    Window* _window;
 };

@@ -2,8 +2,8 @@
 #include "GUI/Window/Window.hpp"
 #include "GUI/Core/ControlBackend.hpp"
 #include "Events/EventDispatcher.hpp"
-#include "Events/Categories/MouseEvents.hpp"
-#include "Events/Categories/UIEvents.hpp"
+#include "Events/Input/MouseEvents.hpp"
+#include "Events/GUI/UIEvents.hpp"
 #include "System/Types.hpp"
 #include "Events/EventQueue.hpp"
 
@@ -45,7 +45,7 @@ void Control::OnEvent(Event& e)
         MouseEventType::ButtonDown,
         [&](const MouseButtonDownEvent& ev)
         {
-            if (ev.Handle.AsControl() != this)
+            if (ev.Target.AsControl() != this)
                 return;
 
             if(OnMouseDown) OnMouseDown(ev.Button);
@@ -53,14 +53,18 @@ void Control::OnEvent(Event& e)
             e.Handled = true;
         }
     );
-}
 
-void Control::AttachEventQueue(EventQueue* queue)
-{
-    AttachEventQueueToControlBackend(_impl, queue);
-}
+    d.Dispatch<MouseButtonUpEvent>(
+        EventCategory::Mouse,
+        MouseEventType::ButtonUp,
+        [&](const MouseButtonUpEvent& ev)
+        {
+            if (ev.Target.AsControl() != this)
+                return;
 
-Window* Control::GetParent()
-{
-    return _parent;
+            if (OnMouseUp) OnMouseUp(ev.Button);
+            // comportamento
+            e.Handled = true;
+        }
+    );
 }

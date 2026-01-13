@@ -1,10 +1,5 @@
 #pragma once
 
-// Minimal C headers only
-#include <new>      // placement new
-#include <stddef.h> // size_t
-#include <stdint.h> // uint32_t etc (optional)
-
 #include "System/Types.hpp"
 
 // Simple Array<T> with .NET-like semantics (fixed-length array).
@@ -146,6 +141,9 @@ public:
     inline size_type GetLength() const noexcept { return m_size; }
     inline Boolean IsEmpty() const noexcept { return m_size == 0; }
 
+    inline constexpr pointer GetData() noexcept { return m_data; }
+    inline constexpr const_pointer GetData() const noexcept { return m_data; }
+
     inline reference operator[](size_type idx) {
         // We throw plain C-string on error (no std::out_of_range)
         if (idx >= m_size) throw "index out of range";
@@ -178,12 +176,12 @@ public:
     }
 
     // Iterators (raw pointer)
-    inline iterator begin() noexcept { return m_data; }
-    inline iterator end() noexcept { return m_data ? m_data + m_size : nullptr; }
-    inline const_iterator begin() const noexcept { return m_data; }
-    inline const_iterator end() const noexcept { return m_data ? m_data + m_size : nullptr; }
-    inline const_iterator cbegin() const noexcept { return m_data; }
-    inline const_iterator cend() const noexcept { return m_data ? m_data + m_size : nullptr; }
+    inline constexpr iterator begin() noexcept { return m_data; }
+    inline constexpr iterator end() noexcept { return m_data ? m_data + m_size : nullptr; }
+    inline constexpr const_iterator begin() const noexcept { return m_data; }
+    inline constexpr const_iterator end() const noexcept { return m_data ? m_data + m_size : nullptr; }
+    inline constexpr const_iterator cbegin() const noexcept { return m_data; }
+    inline constexpr const_iterator cend() const noexcept { return m_data ? m_data + m_size : nullptr; }
 
     // Simple reverse iterator type (lightweight)
     class reverse_iterator {

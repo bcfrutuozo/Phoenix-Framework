@@ -4,18 +4,12 @@
 #include "ConsoleApplication.hpp"
 #include "GUIApplication.hpp"
 
-enum class AppKind
-{
-    Console,
-    Windowed
-};
-
-inline ConsoleApplication* CreateConsoleApplication(AppKind kind)
+inline ConsoleApplication* CreateConsoleApplication()
 {
     return new ConsoleApplication();
 }
 
-inline GUIApplication* CreateGUIApplication(AppKind kind)
+inline GUIApplication* CreateGUIApplication()
 {
     return new GUIApplication();
 }

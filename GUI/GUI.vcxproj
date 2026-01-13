@@ -63,6 +63,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -82,6 +83,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -96,21 +98,27 @@
     <ClCompile Include="Rendering\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanInstance.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanSurface.cpp" />
-    <ClCompile Include="Window\Label.cpp" />
+    <ClCompile Include="Label\Label.cpp" />
+    <ClCompile Include="System\MessageBox.cpp" />
     <ClCompile Include="Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Control.hpp" />
     <ClInclude Include="Core\ControlBackend.hpp" />
+    <ClInclude Include="Drawing\Point.hpp" />
+    <ClInclude Include="Drawing\Size.hpp" />
     <ClInclude Include="Rendering\Vulkan\VulkanContext.hpp" />
     <ClInclude Include="Rendering\Vulkan\VulkanInstance.hpp" />
     <ClInclude Include="Rendering\Vulkan\VulkanSurface.hpp" />
-    <ClInclude Include="Window\Label.hpp" />
-    <ClInclude Include="Window\LabelBackend.hpp" />
+    <ClInclude Include="Label\Label.hpp" />
+    <ClInclude Include="Label\LabelBackend.hpp" />
+    <ClInclude Include="System\MessageBox.hpp" />
+    <ClInclude Include="System\MessageBoxBackend.hpp" />
+    <ClInclude Include="System\MessageBoxDescriptor.hpp" />
     <ClInclude Include="Window\Window.hpp" />
     <ClInclude Include="Window\WindowBackend.hpp" />
     <ClInclude Include="Window\WindowDescriptor.hpp" />
-    <ClInclude Include="Window\WindowHandle.hpp" />
+    <ClInclude Include="Core\UIHandle.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\System\System.vcxproj">

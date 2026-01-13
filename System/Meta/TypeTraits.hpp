@@ -189,6 +189,20 @@ struct is_move_constructible
     : bool_constant<__is_constructible(T, T&&)> {
 };
 
+// Underlying
+// ---------------------------------------------
+//  underlying_type
+// ---------------------------------------------
+template<typename E>
+struct underlying_type
+{
+    static_assert(__is_enum(E), "underlying_type requires enum type");
+    using type = __underlying_type(E);
+};
+
+template<typename E>
+using underlying_type_t = typename underlying_type<E>::type;
+
 // ------------------------------------------------------------
 // is_enum
 // ------------------------------------------------------------
@@ -208,3 +222,6 @@ private:
 public:
     static constexpr bool value = decltype(test<T>(0))::value;
 };
+
+template<typename T>
+inline constexpr bool is_enum_v = is_enum<T>::value;

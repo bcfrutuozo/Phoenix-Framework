@@ -4,17 +4,12 @@
 
 #include "GUI/Window/Window.hpp"
 #include "GUI/Window/WindowBackend.hpp"
-#include "Events/Categories/UIEvents.hpp"
-#include "GUI/Window/WindowHandle.hpp"
+#include "Events/GUI/UIEvents.hpp"
+#include "GUI/Core/UIHandle.hpp"
 #include "Events/EventDispatcher.hpp"
+#include "System/Types.hpp"
 
 #include "GUI/Rendering/Vulkan/VulkanContext.hpp"
-
-struct WindowEntry
-{
-    Window* window;
-    UIHandle handle;
-};
 
 class GUIApplication final : public Application
 {
@@ -22,13 +17,17 @@ private:
 
 public:
 
-    GUIApplication() = default;
+    GUIApplication() :
+        _windows(MaxWindows),
+        _count(0)
+    {
+    }
 
     ~GUIApplication() override
     {
-        for (uint32_t i = 0; i < _count; ++i)
+        for (auto i = 0; i < _count; ++i)
         {
-            delete _windows[i].window;
+            delete _windows[i];
         }
     }
 
@@ -38,20 +37,22 @@ public:
         if (!window || _count >= MaxWindows)
             return;
 
-        WindowEntry entry;
-        entry.window = window;
-        entry.window->attach_event_queue(&_events);
-        entry.handle = window->GetNativeHandle();
-        _windows[_count++] = entry;
+        _windows[_count++] = window;
     }
 
 protected:
 
     void OnInit() override
     {
-        // Mostrar todas as janelas anexadas
-        for (uint32_t i = 0; i < _count; ++i)
-            _windows[i].window->Show();
+        Window::InitializationContext ctx;
+        ctx.queue = &_events;
+
+        // Initialize all windows first
+        for (auto i = 0; i < _count; ++i) 
+        {
+            _windows[i]->Initialize(ctx);
+            _windows[i]->Show();
+        }
     }
 
     void Tick() override
@@ -60,9 +61,9 @@ protected:
         PollWindowBackendEvents(nullptr);
 
         // 2️⃣ Render frame (somente janelas com Vulkan)
-        for (uint32_t i = 0; i < _count; ++i)
+        for (auto i = 0; i < _count; ++i)
         {
-            Window* w = _windows[i].window;
+            Window* w = _windows[i];
             if (!w)
                 continue;
 
@@ -80,18 +81,18 @@ protected:
     {
         HandleWindowEvent(e);
 
-        for (uint32_t i = 0; i < _count; ++i)
+        for (auto i = 0; i < _count; ++i)
         {
-            _windows[i].window->Dispatch(e);
+            _windows[i]->Dispatch(e);
         }
 
         // Política global de fechamento
         EventDispatcher d(e);
 
-        d.Dispatch<UICloseEvent>(
+        d.Dispatch<CloseEvent>(
             EventCategory::UI,
             UIEventType::Close,
-            [&](const UICloseEvent& ev)
+            [&](const CloseEvent& ev)
             {
                 if (Window* w = FindWindow(ev.Handle))
                 {
@@ -100,10 +101,10 @@ protected:
             }
         );
 
-        d.Dispatch<UIDestroyEvent>(
+        d.Dispatch<DestroyEvent>(
             EventCategory::UI,
             UIEventType::Destroy,
-            [&](const UIDestroyEvent& ev)
+            [&](const DestroyEvent& ev)
             {
                 Detach(ev.Handle);
                 if (_count == 0)
@@ -117,8 +118,8 @@ protected:
     {
         for (uint32_t i = 0; i < _count; ++i)
         {
-            if (_windows[i].handle == h)
-                return _windows[i].window;
+            if (UIHandle::FromWindow(_windows[i]) == h)
+                return _windows[i];
         }
         return nullptr;
     }
@@ -127,9 +128,9 @@ private:
 
     void Detach(const UIHandle& handle)
     {
-        for (uint32_t i = 0; i < _count; ++i)
+        for (auto i = 0; i < _count; ++i)
         {
-            if (_windows[i].handle == handle)
+            if (UIHandle::FromWindow(_windows[i]) == handle)
             {
                 // Move o último para a posição removida
                 _windows[i] = _windows[_count - 1];
@@ -146,7 +147,7 @@ private:
         {
         case UIEventType::Resize:
         {
-            auto& ev = e.As<UIResizeEvent>();
+            auto& ev = e.As<ResizeEvent>();
             if (Window* w = FindWindow(ev.Handle))
             {
                 if (auto* vk = w->GetRenderContext())
@@ -156,7 +157,7 @@ private:
         }
         case UIEventType::Destroy:
         {
-            auto& ev = e.As<UIDestroyEvent>();
+            auto& ev = e.As<DestroyEvent>();
             if (Window* w = FindWindow(ev.Handle))
             {
                 if (auto* vk = w->GetRenderContext())
@@ -167,8 +168,8 @@ private:
         }
     }
 
-    static constexpr uint32_t MaxWindows = 16;
+    static constexpr u32 MaxWindows = 16;
 
-    WindowEntry _windows[MaxWindows]{};
-    uint32_t _count = 0;
+    Array<Window*>_windows;
+    u32 _count;
 };

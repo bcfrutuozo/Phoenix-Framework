@@ -1,7 +1,7 @@
 #pragma once
 
 #include "System/Types.hpp"
-#include "GUI/Window/WindowHandle.hpp"
+#include "GUI/Core/UIHandle.hpp"
 
 struct ControlBackend;
 class EventQueue;
@@ -11,5 +11,5 @@ void ShowControlBackend(ControlBackend* backend);
 void UpdateControlBackend(ControlBackend* backend);
 void SetEnabledControlBackend(ControlBackend* backend, Boolean enabled);
 void AttachEventQueueToControlBackend(ControlBackend* backend, EventQueue* queue);
-
-UIHandle GetControlBackendHandle(ControlBackend*);
+UIHandle GetControlNativeHandle(ControlBackend*);
+String GetControlParent(ControlBackend*);

@@ -11,13 +11,13 @@ class NetworkRuntime
 public:
     static void EnsureInitialized() noexcept
     {
-        if (IsWin32NetworkInitialized)
+        if (Phoenix::IsWin32NetworkInitialized)
             return;
 
         WSADATA data;
         if (WSAStartup(MAKEWORD(2, 2), &data) == 0)
         {
-            IsWin32NetworkInitialized = true;
+            Phoenix::IsWin32NetworkInitialized = true;
         }
     }
 };

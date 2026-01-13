@@ -13,8 +13,6 @@ Label::Label(const String& text, i32 x, i32 y)
 
 void Label::AttachTo(Window* window)
 {
-	_parent = window;
-	_impl = CreateLabelBackend(this, window->GetNativeHandle(), GetText(), GetX(), GetY());
 	OnAttach();
 }
 
@@ -22,6 +20,12 @@ void Label::OnAttach()
 {
 	// nada por enquanto
 
+}
+
+void Label::Initialize(InitializationContext ctx)
+{
+	_parentBackend = ctx.WindowBackend;
+	_impl = CreateLabelBackend(this, _parentBackend, GetText(), GetX(), GetY());
 }
 
 String Label::ToString() const noexcept

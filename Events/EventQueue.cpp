@@ -1,19 +1,20 @@
 #include "EventQueue.hpp"
+#include "Collections/Array.hpp"
 
 // ------------------------------------------------------------
 // Configuration
 // ------------------------------------------------------------
 
-static constexpr uint32_t EVENT_QUEUE_CAPACITY = 1024;
+static constexpr u32 EVENT_QUEUE_CAPACITY = 1024;
 
 // ------------------------------------------------------------
 // Internal storage (ST, pointer-based, no slicing)
 // ------------------------------------------------------------
 
-static Event* g_buffer[EVENT_QUEUE_CAPACITY];
-static uint32_t g_head = 0;
-static uint32_t g_tail = 0;
-static uint32_t g_count = 0;
+static Array<Event*> g_buffer(EVENT_QUEUE_CAPACITY);
+static u32 g_head = 0;
+static u32 g_tail = 0;
+static u32 g_count = 0;
 
 // ------------------------------------------------------------
 // Public API
