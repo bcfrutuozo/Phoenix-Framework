@@ -6,7 +6,8 @@
 #include "System/Types/UInt64.hpp"
 #include "System/Types/String.hpp"
 
-TEST_CASE("Array<int> basics", "[Array][int]") {
+TEST_CASE("Array<int> basics", "[Array][int]") 
+{
 
     SECTION("Construction & basic access") {
         Array<int> a(5);

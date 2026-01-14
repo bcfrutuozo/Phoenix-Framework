@@ -93,9 +93,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Collections\Array.hpp" />
+    <ClInclude Include="Collections\Dictionary.hpp" />
     <ClInclude Include="Collections\List.hpp" />
     <ClInclude Include="Collections\Queue.hpp" />
     <ClInclude Include="Collections\Stack.hpp" />
+    <ClInclude Include="CPUInfo.hpp" />
     <ClInclude Include="DivideByZeroTrap.hpp" />
     <ClInclude Include="Exceptions.hpp" />
     <ClInclude Include="Framework.hpp" />
@@ -159,6 +161,7 @@
     <ClInclude Include="Types\Char.hpp" />
     <ClInclude Include="Types\CodePoint.hpp" />
     <ClInclude Include="Types\Double.hpp" />
+    <ClInclude Include="Types\Hash.hpp" />
     <ClInclude Include="Types\Int16.hpp" />
     <ClInclude Include="Types\Int32.hpp" />
     <ClInclude Include="Types\Int64.hpp" />
@@ -174,6 +177,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Console\ConsoleIO.cpp" />
+    <ClCompile Include="CPUInfo.cpp" />
     <ClCompile Include="DivideByZeroTrap.cpp" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="Framework.cpp" />

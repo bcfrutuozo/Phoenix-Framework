@@ -6,13 +6,27 @@
 #include "GUI/Drawing/Point.hpp"
 #include "GUI/Drawing/Size.hpp"
 
+
 struct WindowBackend;
 struct ControlBackend;
 class VulkanContext;
 class Control;
 
-using ResizeFn = void(*)(u32, u32);
-using CloseFn = void(*)();
+// Events forward declare
+class CloseEvent;
+class DestroyEvent;
+class RestoreEvent;
+class ShowEvent;
+class HideEvent;
+class FocusGainedEvent;
+class FocusLostEvent;
+class ResizedEvent;
+class ResizingEvent;
+class MoveEvent;
+class MinimizeEvent;
+class MaximizeEvent;
+class DPIChangedEvent;
+
 
 class Window : public Object<Window>
 {
@@ -62,36 +76,37 @@ public:
     // ------------------------------------------------------------
     // Lifecycle
     // ------------------------------------------------------------
-    void (*OnClose)() = nullptr;
-    void (*OnDestroy)() = nullptr;
+    void (*OnClose)(CloseEvent*) = nullptr;
+    void (*OnDestroy)(DestroyEvent*) = nullptr;
 
     // ------------------------------------------------------------
     // Visibility / focus
     // ------------------------------------------------------------
-    void (*OnRestore)() = nullptr;
-    void (*OnShow)() = nullptr;
-    void (*OnHide)() = nullptr;
-    void (*OnFocusGained)() = nullptr;
-    void (*OnFocusLost)() = nullptr;
+    void (*OnRestore)(RestoreEvent*) = nullptr;
+    void (*OnShow)(ShowEvent*) = nullptr;
+    void (*OnHide)(HideEvent*) = nullptr;
+    void (*OnFocusGained)(FocusGainedEvent*) = nullptr;
+    void (*OnFocusLost)(FocusLostEvent*) = nullptr;
 
     // ------------------------------------------------------------
     // Geometry
     // ------------------------------------------------------------
-    void (*OnResize)(Window* window, u32 width, u32 height) = nullptr;
-    void (*OnMove)(i32 x, i32 y) = nullptr;
-    void (*OnMinimize)() = nullptr;
-    void (*OnMaximize)() = nullptr;
+    void (*OnResized)(ResizedEvent*) = nullptr;
+    void (*OnResizing)(ResizingEvent*) = nullptr;
+    void (*OnMove)(MoveEvent*, i32 x, i32 y) = nullptr;
+    void (*OnMinimize)(MinimizeEvent*) = nullptr;
+    void (*OnMaximize)(MaximizeEvent*) = nullptr;
 
     // ------------------------------------------------------------
     // DPI
     // ------------------------------------------------------------
-    void (*OnDPIChanged)(u32 dpi) = nullptr;
+    void (*OnDPIChanged)(DPIChangedEvent*) = nullptr;
 
     // ------------------------------------------------------------
     // Mouse enter / leave (window boundary)
     // ------------------------------------------------------------
-    void (*OnMouseEnter)() = nullptr;
-    void (*OnMouseLeave)() = nullptr;
+    //void (*OnMouseEnter)(MouseEnterEvent*) = nullptr;
+    //void (*OnMouseLeave)(MouseLeaveEvent*) = nullptr;
 
 private:
 

@@ -8,6 +8,7 @@
 #include "DivideByZeroTrap.hpp"
 #include "Exceptions.hpp"
 #include "Types.hpp"
+#include "CPUInfo.hpp"
 #include "Console/Console.hpp"
 
 // ---------------------------------------------------------
@@ -15,4 +16,5 @@
 // ---------------------------------------------------------
 
 void InitFramework();
+void CloseFramework();
 uint64_t GenerateRandomSeed() noexcept;

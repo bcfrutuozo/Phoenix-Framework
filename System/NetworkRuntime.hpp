@@ -20,6 +20,11 @@ public:
             Phoenix::IsWin32NetworkInitialized = true;
         }
     }
+
+    static void CloseNetwork() noexcept
+    {
+        WSACleanup();
+    }
 };
 
 #endif

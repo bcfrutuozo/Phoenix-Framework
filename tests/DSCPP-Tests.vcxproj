@@ -47,10 +47,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)build\bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <PublicIncludeDirectories>$(SolutionDir);$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)build\bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <PublicIncludeDirectories>$(SolutionDir);$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -59,8 +63,9 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)core\src\;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/utf-8</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(ProjectDir)include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 /bigobj</AdditionalOptions>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -78,8 +83,9 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)core\src\;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/utf-8</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(ProjectDir)include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 /bigobj</AdditionalOptions>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -105,6 +111,9 @@
   <ItemGroup>
     <ProjectReference Include="..\core\DSCPP.vcxproj">
       <Project>{7e78e29d-0696-414a-b36d-6d833c2b0c3d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Events\Events.vcxproj">
+      <Project>{8314f707-a655-4601-a701-aec30dcf994b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\GUI\GUI.vcxproj">
       <Project>{9e38c72a-3bff-4ca3-9a19-9200099a8fbf}</Project>

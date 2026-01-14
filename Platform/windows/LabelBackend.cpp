@@ -31,11 +31,7 @@ ControlBackend* CreateLabelBackend(Control* control, WindowBackend* parent, cons
 	);
 
 	// 🔑 ESSENCIAL
-	SetWindowLongPtr(
-		backend->hwnd,
-		GWLP_USERDATA,
-		reinterpret_cast<LONG_PTR>(backend)
-	);
+	SetWindowLongPtr(backend->hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(backend));
 
 	backend->Kind = Win32ObjectKind::Control;
 
@@ -44,12 +40,7 @@ ControlBackend* CreateLabelBackend(Control* control, WindowBackend* parent, cons
 	SendMessageW(backend->hwnd, WM_SETFONT, (WPARAM)font, TRUE);
 
 	// Subclass
-	SetWindowSubclass(
-		backend->hwnd,
-		Phoenix_Win32SubclassProc,
-		0,
-		reinterpret_cast<DWORD_PTR>(backend)
-	);
+	SetWindowSubclass(backend->hwnd, Phoenix_Win32SubclassProc, 0, reinterpret_cast<DWORD_PTR>(backend));
 
 	return backend;
 }

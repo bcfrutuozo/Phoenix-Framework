@@ -1,29 +1,31 @@
 #include "Platform/Phoenix.hpp"
 
-void ChangeWindowSize(Window* window, u32 w, u32 h)
+static void ChangeWindowSize(ResizingEvent* e)
 {
-    printf("Resize: %u x %u\n", w, h);
-    Console::WriteLine(window->GetText());
+    printf("Resize: %u x %u\n", e->Width, e->Height);
+    e->Handled = false;
+    Console::WriteLine(e->Handle.AsWindow()->GetText());
 }
 
-void WindowClosed()
+static void WindowClosed()
 {
     printf("Window closed\n");
 }
 
-void TesteLabel(MouseButton b)
+static void TesteLabel(MouseButtonDownEvent* b)
 {
-    if (b == MouseButton::Left)
+    if (b->Button == MouseButton::Left)
         printf("Cliquei LEFT!");
     else
         printf("Cliquei outro!");
+    b->Handled = true;
 }
 
 int main(int argc, char* argv[])
 {
     GUIApplication* app = CreateGUIApplication();
     Window* w = new Window("ABC", 800, 600);
-    w->OnResize = ChangeWindowSize;
+    w->OnResizing = ChangeWindowSize;
     VulkanContext* cx = new VulkanContext(w);
     w->AttachRenderContext(cx);
     Window* w2 = new Window( "Teste", 1000, 1000 );

@@ -32,8 +32,8 @@ public:
     inline constexpr i32 GetY() const noexcept { return _y; }
 
     void (*OnFocusGained)() = nullptr;
-    void (*OnMouseDown)(MouseButton) = nullptr;
-    void (*OnMouseUp)(MouseButton) = nullptr;
+    void (*OnMouseDown)(MouseButtonDownEvent*) = nullptr;
+    void (*OnMouseUp)(MouseButtonUpEvent*) = nullptr;
 
 protected:
 

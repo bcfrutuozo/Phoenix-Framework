@@ -145,9 +145,9 @@ private:
     {
         switch (e.Type<UIEventType>())
         {
-        case UIEventType::Resize:
+        case UIEventType::Resized:
         {
-            auto& ev = e.As<ResizeEvent>();
+            auto& ev = e.As<ResizedEvent>();
             if (Window* w = FindWindow(ev.Handle))
             {
                 if (auto* vk = w->GetRenderContext())

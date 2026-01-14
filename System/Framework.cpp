@@ -88,3 +88,10 @@ void InitFramework()
     Phoenix::ScreenHeight = GetSystemMetrics(SM_CYSCREEN);
 #endif
 }
+
+void CloseFramework()
+{
+#if defined(_WIN32) || defined(_WIN64)
+    NetworkRuntime::CloseNetwork();
+#endif
+}

@@ -42,6 +42,7 @@ protected:
     Application()
     {
         InitFramework();
+        CloseFramework();
     }
 
     // lifecycle hooks

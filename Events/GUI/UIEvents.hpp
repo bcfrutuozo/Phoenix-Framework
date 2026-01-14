@@ -4,11 +4,11 @@
 #include "System/Types.hpp"
 #include "GUI/Core/UIHandle.hpp"
 
-class ResizeEvent final: public Event
+class ResizedEvent final: public Event
 {
 public:
 
-    ResizeEvent(UIHandle handle, Int32 w, Int32 h)
+    ResizedEvent(UIHandle handle, Int32 w, Int32 h)
         :
         Handle(handle),
         Width(w),
@@ -22,7 +22,34 @@ public:
 
     UInt32 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Resize);
+        return static_cast<uint32_t>(UIEventType::Resized);
+    }
+
+    UIHandle Handle;
+    Int32 Width;
+    Int32 Height;
+};
+
+class ResizingEvent final : public Event
+{
+public:
+
+    ResizingEvent(UIHandle handle, Int32 w, Int32 h)
+        :
+        Handle(handle),
+        Width(w),
+        Height(h)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::UI;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(UIEventType::Resizing);
     }
 
     UIHandle Handle;

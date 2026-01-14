@@ -252,6 +252,15 @@
     <ClInclude Include="Meta\Forward.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Collections\Dictionary.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\Hash.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CPUInfo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Types\Boolean.cpp">
@@ -354,6 +363,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Globals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CPUInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

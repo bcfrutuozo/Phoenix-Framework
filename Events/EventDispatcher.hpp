@@ -20,6 +20,9 @@ public:
         if (_event.TypeId() != FromEnum<u32>(type))
             return false;
 
+        if (_event.Handled)
+            return false;
+
         fn(static_cast<T&>(_event));
         return true;
     }

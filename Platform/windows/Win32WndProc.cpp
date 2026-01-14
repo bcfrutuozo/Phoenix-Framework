@@ -11,6 +11,7 @@
 #include "Win32KeyMap.hpp"
 #include "Win32PowerMap.hpp"
 #include "System/Console/Console.hpp"
+#include "GUI/Window/Window.hpp"
 
 #ifdef _DEBUG
 #include "WIn32Message.hpp"
@@ -79,7 +80,7 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 			uint32_t height = HIWORD(lp);
 
 			// Resize sempre acontece
-			backend->queue->Push(new ResizeEvent(owner, width, height));
+			backend->queue->Push(new ResizedEvent(owner, width, height));
 
 			// Estados especiais
 			switch (wp)
@@ -95,6 +96,25 @@ Boolean CALLBACK HandleWin32Message(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, W
 			case SIZE_RESTORED:
 				backend->queue->Push(new RestoreEvent(owner));
 				break;
+			}
+
+			return true;
+		}
+		case WM_SIZING:
+		{
+			RECT* r = (RECT*)lp;
+		
+			ResizingEvent ev = ResizingEvent(owner, (int32_t)r->right, (int32_t)r->bottom);
+
+			// Dispatch imediato
+			backend->owner->Dispatch(ev);
+			if (ev.Handled)
+			{
+				// bloqueia o resize
+				Size z = backend->owner->GetSize();
+				r->right = (int32_t)z.GetWidth();
+				r->bottom = (int32_t)z.GetHeight();
+				return true;
 			}
 
 			return true;

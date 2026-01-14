@@ -116,12 +116,11 @@ void Window::Dispatch(Event& e)
 
 			// 🔔 Notifica o usuário
 			if (OnClose)
-				OnClose();
+				OnClose(&ev);
 
 			// 🔑 DECISÃO LOCAL:
 			// Por padrão, fecha a janela
 			// (política simples e previsível)
-			ev.Handled = true;
 		}
 	);
 
@@ -137,7 +136,7 @@ void Window::Dispatch(Event& e)
 
 			// 🔔 Notifica
 			if (OnDestroy)
-				OnDestroy();
+				OnDestroy(&ev);
 
 			// ❌ NÃO chama DestroyWindow aqui
 			// ❌ NÃO decide política global
@@ -148,12 +147,21 @@ void Window::Dispatch(Event& e)
 	// ------------------------------------------------------------
 	// Resize / move
 	// ------------------------------------------------------------
-	d.Dispatch<ResizeEvent>(
-		EventCategory::UI, UIEventType::Resize,
-		[&](ResizeEvent& ev)
+	d.Dispatch<ResizedEvent>(
+		EventCategory::UI, UIEventType::Resized,
+		[&](ResizedEvent& ev)
 		{
-			if (ev.Handle == UIHandle::FromWindow(this) && OnResize)
-				OnResize(this, ev.Width, ev.Height);
+			if (ev.Handle == UIHandle::FromWindow(this) && OnResized)
+				OnResized(&ev);
+		}
+	);
+
+	d.Dispatch<ResizingEvent>(
+		EventCategory::UI, UIEventType::Resizing,
+		[&](ResizingEvent& ev)
+		{
+			if (ev.Handle == UIHandle::FromWindow(this) && OnResizing)
+				OnResizing(&ev);
 		}
 	);
 
@@ -162,7 +170,7 @@ void Window::Dispatch(Event& e)
 		[&](MoveEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnMove)
-				OnMove(ev.X, ev.Y);
+				OnMove(&ev, ev.X, ev.Y);
 		}
 	);
 
@@ -174,7 +182,7 @@ void Window::Dispatch(Event& e)
 		[&](MinimizeEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnMinimize)
-				OnMinimize();
+				OnMinimize(&ev);
 		}
 	);
 
@@ -183,7 +191,7 @@ void Window::Dispatch(Event& e)
 		[&](MaximizeEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnMaximize)
-				OnMaximize();
+				OnMaximize(&ev);
 		}
 	);
 
@@ -195,7 +203,7 @@ void Window::Dispatch(Event& e)
 		[&](RestoreEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnRestore)
-				OnRestore();
+				OnRestore(&ev);
 		}
 	);
 
@@ -204,7 +212,7 @@ void Window::Dispatch(Event& e)
 		[&](ShowEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnShow)
-				OnShow();
+				OnShow(&ev);
 		}
 	);
 
@@ -213,7 +221,7 @@ void Window::Dispatch(Event& e)
 		[&](HideEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnHide)
-				OnHide();
+				OnHide(&ev);
 		}
 	);
 
@@ -222,7 +230,7 @@ void Window::Dispatch(Event& e)
 		[&](FocusGainedEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnFocusGained)
-				OnFocusGained();
+				OnFocusGained(&ev);
 		}
 	);
 
@@ -231,7 +239,7 @@ void Window::Dispatch(Event& e)
 		[&](FocusLostEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnFocusLost)
-				OnFocusLost();
+				OnFocusLost(&ev);
 		}
 	);
 
@@ -243,7 +251,7 @@ void Window::Dispatch(Event& e)
 		[&](DPIChangedEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnDPIChanged)
-				OnDPIChanged(ev.DPI);
+				OnDPIChanged(&ev);
 		}
 	);
 }

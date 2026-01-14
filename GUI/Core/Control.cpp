@@ -43,12 +43,12 @@ void Control::OnEvent(Event& e)
     d.Dispatch<MouseButtonDownEvent>(
         EventCategory::Mouse,
         MouseEventType::ButtonDown,
-        [&](const MouseButtonDownEvent& ev)
+        [&](MouseButtonDownEvent& ev)
         {
             if (ev.Target.AsControl() != this)
                 return;
 
-            if(OnMouseDown) OnMouseDown(ev.Button);
+            if(OnMouseDown) OnMouseDown(&ev);
             // comportamento
             e.Handled = true;
         }
@@ -57,12 +57,12 @@ void Control::OnEvent(Event& e)
     d.Dispatch<MouseButtonUpEvent>(
         EventCategory::Mouse,
         MouseEventType::ButtonUp,
-        [&](const MouseButtonUpEvent& ev)
+        [&](MouseButtonUpEvent& ev)
         {
             if (ev.Target.AsControl() != this)
                 return;
 
-            if (OnMouseUp) OnMouseUp(ev.Button);
+            if (OnMouseUp) OnMouseUp(&ev);
             // comportamento
             e.Handled = true;
         }

@@ -62,7 +62,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
@@ -82,7 +82,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
@@ -95,6 +95,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\Control.cpp" />
+    <ClCompile Include="Drawing\Font.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanInstance.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanSurface.cpp" />
@@ -105,6 +106,7 @@
   <ItemGroup>
     <ClInclude Include="Core\Control.hpp" />
     <ClInclude Include="Core\ControlBackend.hpp" />
+    <ClInclude Include="Drawing\Font.hpp" />
     <ClInclude Include="Drawing\Point.hpp" />
     <ClInclude Include="Drawing\Size.hpp" />
     <ClInclude Include="Rendering\Vulkan\VulkanContext.hpp" />

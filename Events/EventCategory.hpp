@@ -19,7 +19,8 @@ enum class UIEventType : uint8_t
 {
     Close,
     Destroy,
-    Resize,
+    Resized,
+    Resizing,
     Move,
     Restore,
     Minimize,
