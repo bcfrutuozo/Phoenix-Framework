@@ -1,8 +1,9 @@
 #pragma once
 
 #include "TimeSpan.hpp"
+#include "System/String.hpp"
 
-class TimePoint
+class TimePoint : public Object<TimePoint>
 {
     TimeSpan _sinceEpoch;
 
@@ -25,8 +26,13 @@ public:
         return _sinceEpoch - other._sinceEpoch;
     }
 
-    constexpr bool operator<(TimePoint other) const noexcept
+    constexpr Boolean operator<(TimePoint other) const noexcept
     {
         return _sinceEpoch < other._sinceEpoch;
+    }
+
+    String ToString() const noexcept
+    {
+        return _sinceEpoch.ToString();
     }
 };

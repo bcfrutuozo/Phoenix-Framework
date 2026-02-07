@@ -511,7 +511,6 @@ namespace UTF8
 			{
 				for (uint32_t k = 0; k < N; ++k)
 					out.Add(newv[k]);
-
 				i += O;
 			}
 			else

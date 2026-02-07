@@ -2,8 +2,8 @@
 
 #include "SocketBase.hpp"
 #include "Endpoint.hpp"
-#include "System/Types/Byte.hpp"
-#include "System/Types/UInt32.hpp"
+#include "System/Types/Primitives/Byte.hpp"
+#include "System/Types/Primitives/UInt32.hpp"
 
 class TcpSocket final : public SocketBase
 {

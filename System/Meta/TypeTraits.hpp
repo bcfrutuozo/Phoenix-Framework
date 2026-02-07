@@ -49,7 +49,7 @@ template<> struct is_signed<short> : true_type {};
 template<> struct is_signed<int> : true_type {};
 template<> struct is_signed<long> : true_type {};
 template<> struct is_signed<long long> : true_type {};
-template<> struct is_signed<char> : true_type {}; // dependendo do compilador, char pode ser signed
+template<> struct is_signed<char> : true_type {};
 
 template<typename T>
 inline constexpr bool is_signed_v = is_signed<T>::value;

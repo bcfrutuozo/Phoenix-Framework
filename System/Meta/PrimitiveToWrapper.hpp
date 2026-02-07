@@ -16,6 +16,7 @@ class SByte;
 class UInt16;
 class UInt32;
 class UInt64;
+class Pointer;
 
 template<typename T>
 struct primitive_to_wrapper;
@@ -33,6 +34,7 @@ template<> struct primitive_to_wrapper<double> { using type = Double; };
 template<> struct primitive_to_wrapper<bool> { using type = Boolean; };
 template<> struct primitive_to_wrapper<char> { using type = Char; };
 template<> struct primitive_to_wrapper<char32_t> { using type = CodePoint; };
+template<> struct primitive_to_wrapper<void> { using type = Pointer; };
 
 template<typename T>
 using primitive_to_wrapper_t = typename primitive_to_wrapper<T>::type;

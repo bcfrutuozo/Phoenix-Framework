@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Events/EventCategory.hpp"
+#include "System/Types.hpp"
 
-#include <cstdint>
-
-PowerEventType TranslatePowerEvent(uint32_t wp) noexcept;
+PowerEventType TranslatePowerEvent(u64 wp) noexcept;

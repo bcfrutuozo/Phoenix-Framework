@@ -16,25 +16,25 @@
 #include "System/Meta/TypeTraits.hpp"
 
 // Object base
-#include "System/Types/Object.hpp"
+#include "System/Types/Fundamentals/Object.hpp"
 
 // --- Fundamental Wrappers
-#include "Types/Boolean.hpp"
-#include "Types/Byte.hpp"
-#include "Types/Char.hpp"
-#include "Types/CodePoint.hpp"
-#include "Types/SByte.hpp"
+#include "Types/Primitives/Boolean.hpp"
+#include "Types/Primitives/Byte.hpp"
+#include "Types/Primitives/Char.hpp"
+#include "Types/Primitives/CodePoint.hpp"
+#include "Types/Primitives/SByte.hpp"
 
-#include "Types/Int16.hpp"
-#include "Types/Int32.hpp"
-#include "Types/Int64.hpp"
+#include "Types/Primitives/Int16.hpp"
+#include "Types/Primitives/Int32.hpp"
+#include "Types/Primitives/Int64.hpp"
 
-#include "Types/UInt16.hpp"
-#include "Types/UInt32.hpp"
-#include "Types/UInt64.hpp"
+#include "Types/Primitives/UInt16.hpp"
+#include "Types/Primitives/UInt32.hpp"
+#include "Types/Primitives/UInt64.hpp"
 
-#include "Types/Single.hpp"
-#include "Types/Double.hpp"
+#include "Types/Primitives/Single.hpp"
+#include "Types/Primitives/Double.hpp"
 
 #include "Meta/WrapperContract.hpp"
 
@@ -85,7 +85,7 @@ constexpr W FromEnum(E e) noexcept
     return W(static_cast<U>(e));
 }
 
-#include "Types/Pointer.hpp"
+#include "Types/Fundamentals/Pointer.hpp"
 #include "Meta/PointerContract.hpp"
 
 static_assert(sizeof(Pointer) == sizeof(void*));

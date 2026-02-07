@@ -19,7 +19,7 @@ struct promote_primitive {
 };
 
 template<typename A, typename B>
-using promote_primitive_t = typename    promote_primitive<A, B>::type;
+using promote_primitive_t = typename promote_primitive<A, B>::type;
 
 template<typename L, typename R>
 using promote_t =

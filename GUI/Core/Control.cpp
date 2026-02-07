@@ -6,19 +6,23 @@
 #include "Events/GUI/UIEvents.hpp"
 #include "System/Types.hpp"
 #include "Events/EventQueue.hpp"
+#include "GUI/Context/UIContext.hpp"
 
 Control::~Control()
 {
+    delete _desc;
     DestroyControlBackend(_impl);
 }
 
 Control::Control(const String& text, i32 x, i32 y)
-    :
-    _text(text),
-    _x(x),
-    _y(y)
 {
-
+    _desc = new ControlDescriptor();
+    _desc->AutoSize = true;
+    _desc->BackgroundColor = Color::White;
+    _desc->ForeColor = Color::Black;
+    _desc->Location = Point(x, y);
+    _desc->Size = Size(100, 23);
+    _desc->Text = text;
 }
 
 void Control::SetEnabled(Boolean enabled)
@@ -67,4 +71,9 @@ void Control::OnEvent(Event& e)
             e.Handled = true;
         }
     );
+}
+
+void Control::SetFont(Font* font) noexcept
+{
+    _desc->Font = font;
 }

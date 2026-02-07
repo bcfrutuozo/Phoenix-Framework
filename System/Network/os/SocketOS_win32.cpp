@@ -13,10 +13,10 @@ namespace SocketOS
         switch (err)
         {
         case WSAEWOULDBLOCK: return SocketError::WouldBlock;
-        case WSAETIMEDOUT:   return SocketError::Timeout;
+        case WSAETIMEDOUT: return SocketError::Timeout;
         case WSAECONNRESET: return SocketError::ConnectionReset;
-        case WSAECONNREFUSED:return SocketError::ConnectionRefused;
-        default:            return SocketError::Unknown;
+        case WSAECONNREFUSED: return SocketError::ConnectionRefused;
+        default: return SocketError::Unknown;
         }
     }
 

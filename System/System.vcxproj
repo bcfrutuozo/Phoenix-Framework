@@ -107,6 +107,7 @@
     <ClInclude Include="Input\MouseButton.hpp" />
     <ClInclude Include="Console\Console.hpp" />
     <ClInclude Include="Console\ConsoleIO.hpp" />
+    <ClInclude Include="Interfaces\IConvertible.hpp" />
     <ClInclude Include="IO\OSStream.hpp" />
     <ClInclude Include="IO\Stream.hpp" />
     <ClInclude Include="IO\StreamOperators.hpp" />
@@ -119,6 +120,7 @@
     <ClInclude Include="Meta\CharTraits.hpp" />
     <ClInclude Include="Meta\Forward.hpp" />
     <ClInclude Include="Meta\HierarchyTraits.hpp" />
+    <ClInclude Include="Meta\Language.hpp" />
     <ClInclude Include="Meta\PointerContract.hpp" />
     <ClInclude Include="Meta\PrimitiveToWrapper.hpp" />
     <ClInclude Include="Meta\Promotion.hpp" />
@@ -156,24 +158,28 @@
     <ClInclude Include="Time\TimePoint.hpp" />
     <ClInclude Include="Time\TimeSpan.hpp" />
     <ClInclude Include="Types.hpp" />
-    <ClInclude Include="Types\Boolean.hpp" />
-    <ClInclude Include="Types\Byte.hpp" />
-    <ClInclude Include="Types\Char.hpp" />
-    <ClInclude Include="Types\CodePoint.hpp" />
-    <ClInclude Include="Types\Double.hpp" />
-    <ClInclude Include="Types\Hash.hpp" />
-    <ClInclude Include="Types\Int16.hpp" />
-    <ClInclude Include="Types\Int32.hpp" />
-    <ClInclude Include="Types\Int64.hpp" />
-    <ClInclude Include="Types\Object.hpp" />
-    <ClInclude Include="Types\Operators.hpp" />
-    <ClInclude Include="Types\Pointer.hpp" />
-    <ClInclude Include="Types\SByte.hpp" />
-    <ClInclude Include="Types\Single.hpp" />
-    <ClInclude Include="Types\String.hpp" />
-    <ClInclude Include="Types\UInt16.hpp" />
-    <ClInclude Include="Types\UInt32.hpp" />
-    <ClInclude Include="Types\UInt64.hpp" />
+    <ClInclude Include="Types\Drawing\Color.hpp" />
+    <ClInclude Include="Types\Drawing\KnownColors.hpp" />
+    <ClInclude Include="Types\Drawing\Point.hpp" />
+    <ClInclude Include="Types\Drawing\Size.hpp" />
+    <ClInclude Include="Types\Primitives\Boolean.hpp" />
+    <ClInclude Include="Types\Primitives\Byte.hpp" />
+    <ClInclude Include="Types\Primitives\Char.hpp" />
+    <ClInclude Include="Types\Primitives\CodePoint.hpp" />
+    <ClInclude Include="Types\Primitives\Double.hpp" />
+    <ClInclude Include="Types\Fundamentals\Hash.hpp" />
+    <ClInclude Include="Types\Primitives\Int16.hpp" />
+    <ClInclude Include="Types\Primitives\Int32.hpp" />
+    <ClInclude Include="Types\Primitives\Int64.hpp" />
+    <ClInclude Include="Types\Fundamentals\Object.hpp" />
+    <ClInclude Include="Types\Primitives\Operators.hpp" />
+    <ClInclude Include="Types\Fundamentals\Pointer.hpp" />
+    <ClInclude Include="Types\Primitives\SByte.hpp" />
+    <ClInclude Include="Types\Primitives\Single.hpp" />
+    <ClInclude Include="Types\Text\String.hpp" />
+    <ClInclude Include="Types\Primitives\UInt16.hpp" />
+    <ClInclude Include="Types\Primitives\UInt32.hpp" />
+    <ClInclude Include="Types\Primitives\UInt64.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Console\ConsoleIO.cpp" />
@@ -196,24 +202,25 @@
     <ClCompile Include="Text\StringBuilder.cpp" />
     <ClCompile Include="Text\unicode\UnicodeCase_utils.cpp" />
     <ClCompile Include="Text\unicode\UnicodeNormalization_utils.cpp" />
-    <ClCompile Include="Types\Boolean.cpp" />
-    <ClCompile Include="Types\Byte.cpp" />
-    <ClCompile Include="Types\Char.cpp" />
-    <ClCompile Include="Types\CodePoint.cpp" />
-    <ClCompile Include="Types\Double.cpp" />
-    <ClCompile Include="Types\Int16.cpp" />
-    <ClCompile Include="Types\Int32.cpp" />
-    <ClCompile Include="Types\Int64.cpp" />
-    <ClCompile Include="Types\Pointer.cpp" />
-    <ClCompile Include="Types\SByte.cpp" />
-    <ClCompile Include="Types\Single.cpp" />
-    <ClCompile Include="Types\String.cpp" />
-    <ClCompile Include="Types\UInt16.cpp" />
-    <ClCompile Include="Types\UInt32.cpp" />
-    <ClCompile Include="Types\UInt64.cpp" />
+    <ClCompile Include="Types\Drawing\Color.cpp" />
+    <ClCompile Include="Types\Primitives\Boolean.cpp" />
+    <ClCompile Include="Types\Primitives\Byte.cpp" />
+    <ClCompile Include="Types\Primitives\Char.cpp" />
+    <ClCompile Include="Types\Primitives\CodePoint.cpp" />
+    <ClCompile Include="Types\Primitives\Double.cpp" />
+    <ClCompile Include="Types\Primitives\Int16.cpp" />
+    <ClCompile Include="Types\Primitives\Int32.cpp" />
+    <ClCompile Include="Types\Primitives\Int64.cpp" />
+    <ClCompile Include="Types\Fundamentals\Pointer.cpp" />
+    <ClCompile Include="Types\Primitives\SByte.cpp" />
+    <ClCompile Include="Types\Primitives\Single.cpp" />
+    <ClCompile Include="Types\Text\String.cpp" />
+    <ClCompile Include="Types\Primitives\UInt16.cpp" />
+    <ClCompile Include="Types\Primitives\UInt32.cpp" />
+    <ClCompile Include="Types\Primitives\UInt64.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Types\Wrappers.def" />
+    <None Include="Types\Primitives\Wrappers.def" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="DSCPP-Core.natvis" />

@@ -8,4 +8,4 @@ struct ControlBackend;
 struct WindowBackend;
 class Control;
 
-ControlBackend* CreateLabelBackend(Control* owner, WindowBackend* parent, const String& text, u32 x, u32 y);
+ControlBackend* CreateLabelBackend(Control* owner, WindowBackend* parent);

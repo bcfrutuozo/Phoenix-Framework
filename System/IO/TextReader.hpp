@@ -56,7 +56,7 @@ public:
         if (count == 0) { free(buf); return String(); }
         if (count > 0 && buf[count - 1] == '\r') --count;
 
-        String s(buf, static_cast<String::size_type>(count));
+        String s(buf, static_cast<u32>(count));
         free(buf);
         return s;
     }

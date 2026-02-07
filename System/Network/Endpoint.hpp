@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IPAddress.hpp"
-#include "System/Types/UInt16.hpp"
+#include "System/Types/Primitives/UInt16.hpp"
 
 class Endpoint
 {

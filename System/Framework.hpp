@@ -10,6 +10,7 @@
 #include "Types.hpp"
 #include "CPUInfo.hpp"
 #include "Console/Console.hpp"
+#include "System/Time/Clock.hpp"
 
 // ---------------------------------------------------------
 // Public API

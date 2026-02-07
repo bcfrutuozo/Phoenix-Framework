@@ -16,6 +16,7 @@ class SByte;
 class UInt16;
 class UInt32;
 class UInt64;
+class Pointer;
 
 // -----------------------------------------
 // is_promotion_wrapper
@@ -37,6 +38,7 @@ template<> struct is_promotion_wrapper<SByte> : true_type {};
 template<> struct is_promotion_wrapper<UInt16> : true_type {};
 template<> struct is_promotion_wrapper<UInt32> : true_type {};
 template<> struct is_promotion_wrapper<UInt64> : true_type {};
+template<> struct is_promotion_wrapper<Pointer> : true_type {};
 
 template<typename T>
 inline constexpr bool is_promotion_wrapper_v = is_promotion_wrapper<T>::value;

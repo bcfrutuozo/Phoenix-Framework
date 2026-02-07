@@ -2,19 +2,21 @@
 
 #include "System/Types.hpp"
 #include "System/Memory.hpp"
-#include "System/Types/Hash.hpp"
+#include "System/Types/Fundamentals/Hash.hpp"
 
 static constexpr u64 MAP_INITIAL_CAPACITY = 16;
-static constexpr Single MAP_MAX_LOAD = 0.70f;
+static constexpr f32 MAP_MAX_LOAD = 0.70f;
 
 template<typename K, typename V>
 class Map
 {
+public:
+
     Map()
         : _capacity(MAP_INITIAL_CAPACITY)
         , _count(0)
     {
-        _entries = (Entry*)Memory::Alloc(sizeof(Entry) * _capacity);
+        _entries = static_cast<Entry*>(Memory::Alloc(sizeof(Entry) * _capacity).Get());
         for (uint64_t i = 0; i < _capacity; ++i)
             _entries[i].occupied = false;
     }
@@ -22,7 +24,7 @@ class Map
     ~Map()
     {
         Clear();
-        Memory::Free(_entries);
+        Memory::Free(static_cast<Pointer>(_entries));
     }
 
     void Clear()
@@ -90,6 +92,17 @@ class Map
     }
 
 
+    V* operator[](K k)
+    {
+        return Find(k);
+    }
+
+    const V* const operator[](K k) const
+    {
+        return Find(k);
+    }
+
+
     Boolean Contains(const K& key) const
     {
         return Find(key) != nullptr;
@@ -123,14 +136,73 @@ class Map
         return _count;
     }
 
+    struct Pair
+    {
+        K& key;
+        V& value;
+    };
+
+    class Iterator
+    {
+    public:
+        Iterator(Map* map, u64 index)
+            : _map(map), _index(index)
+        {
+            SkipInvalid();
+        }
+
+        Iterator& operator++()
+        {
+            ++_index;
+            SkipInvalid();
+            return *this;
+        }
+
+        Boolean operator!=(const Iterator& other) const
+        {
+            return _index != other._index;
+        }
+
+        Pair operator*()
+        {
+            Entry& e = _map->_entries[_index];
+            return { e.key, e.value };
+        }
+
+    private:
+        void SkipInvalid()
+        {
+            while (_index < _map->_capacity)
+            {
+                Entry& e = _map->_entries[_index];
+                if (e.occupied && !e.tombstone)
+                    break;
+                ++_index;
+            }
+        }
+
+        Map* _map;
+        u64  _index;
+    };
+
+    Iterator begin()
+    {
+        return Iterator(this, 0);
+    }
+
+    Iterator end()
+    {
+        return Iterator(this, _capacity);
+    }
+
 private:
 
     void Rehash(u64 newCapacity)
     {
         Entry* oldEntries = _entries;
-        Size oldCap = _capacity;
+        u64 oldCap = _capacity;
 
-        _entries = (Entry*)System::Alloc(sizeof(Entry) * newCapacity);
+        _entries = static_cast<Entry*>(Memory::Alloc(sizeof(Entry) * newCapacity).Get());
         _capacity = newCapacity;
         _count = 0;
 
@@ -143,7 +215,7 @@ private:
                 Insert(oldEntries[i].key, oldEntries[i].value);
         }
 
-        System::Free(oldEntries);
+        Memory::Free(static_cast<Pointer>(oldEntries));
     }
 
     u64 Probe(u32 hash, u64 i) const
@@ -155,7 +227,7 @@ private:
     {
         K key;
         V value;
-        UInt32 hash;
+        u32 hash;
         Boolean occupied;
         Boolean tombstone;
     };

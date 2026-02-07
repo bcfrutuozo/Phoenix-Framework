@@ -5,18 +5,13 @@
 
 class Control;
 class EventQueue;
+class UIContext;
 class Window;
-
-enum class Win32ObjectKind : uint8_t
-{
-    Window,
-    Control
-};
 
 struct Win32ObjectHeader
 {
-    Win32ObjectKind Kind;
     EventQueue* queue;
+    UIContext* context;
     HWND hwnd;
 };
 

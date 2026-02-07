@@ -39,6 +39,9 @@
     <ClCompile Include="Drawing\Font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Context\UIContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window\Window.hpp">
@@ -74,12 +77,6 @@
     <ClInclude Include="Core\ControlBackend.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Drawing\Point.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Drawing\Size.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="System\MessageBox.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -90,6 +87,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Drawing\Font.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Context\FontManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\HorizontalAlignment.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\VerticalAlignment.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\TextFormat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Context\UIContext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ControlDescriptor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

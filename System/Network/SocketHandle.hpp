@@ -1,7 +1,7 @@
 #pragma once
 
-#include "System/Types/Boolean.hpp"
-#include "System/Types/Pointer.hpp"
+#include "System/Types/Primitives/Boolean.hpp"
+#include "System/Types/Fundamentals/Pointer.hpp"
 
 struct SocketHandle
 {

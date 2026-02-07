@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System/Types/Byte.hpp"
+#include "System/Types/Primitives/Byte.hpp"
 #include "System/Collections/Array.hpp"
 
 class String;

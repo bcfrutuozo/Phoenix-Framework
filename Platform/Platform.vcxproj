@@ -91,6 +91,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="linux\Clock.cpp" />
+    <ClCompile Include="windows\FontManager.cpp" />
     <ClCompile Include="windows\MessageBoxBackend.cpp" />
     <ClCompile Include="windows\Win32WndProc.cpp" />
     <ClCompile Include="windows\Clock.cpp" />
@@ -101,13 +102,8 @@
     <ClCompile Include="windows\WindowBackend.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Application.hpp" />
-    <ClInclude Include="ApplicationFactory.hpp" />
-    <ClInclude Include="ConsoleApplication.hpp" />
-    <ClInclude Include="GUIApplication.hpp" />
-    <ClInclude Include="Phoenix.hpp" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="windows\WIn32Message.hpp" />
+    <ClInclude Include="windows\Win32Helpers.hpp" />
+    <ClInclude Include="windows\Win32Message.hpp" />
     <ClInclude Include="windows\Win32Types.hpp" />
     <ClInclude Include="windows\Win32WndProc.hpp" />
     <ClInclude Include="windows\Win32KeyMap.hpp" />
@@ -124,9 +120,6 @@
     <ProjectReference Include="..\System\System.vcxproj">
       <Project>{9b07618e-b7f0-4ec3-a9ba-10054b18a750}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Platform.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,9 +3,14 @@
 #include "WindowDescriptor.hpp"
 #include "GUI/Core/UIHandle.hpp"
 #include "Events/EventQueue.hpp"
-#include "GUI/Drawing/Point.hpp"
-#include "GUI/Drawing/Size.hpp"
-
+#include "System/Types/Drawing/Point.hpp"
+#include "System/Types/Drawing/Size.hpp"
+#include "GUI/Drawing/Font.hpp"
+#include "System/Types/Drawing/Color.hpp"
+#include "GUI/Core/HorizontalAlignment.hpp"
+#include "GUI/Core/VerticalAlignment.hpp"
+#include "GUI/Core/TextFormat.hpp"
+#include "GUI/Context/UIContext.hpp"
 
 struct WindowBackend;
 struct ControlBackend;
@@ -27,7 +32,6 @@ class MinimizeEvent;
 class MaximizeEvent;
 class DPIChangedEvent;
 
-
 class Window : public Object<Window>
 {
 public:
@@ -36,7 +40,8 @@ public:
 
     struct InitializationContext
     {
-        EventQueue* queue;
+        EventQueue* Queue;
+        UIContext* UIContext;
     };
 
     explicit Window(const String& title, i32 width, i32 height, Boolean isResizable = true);
@@ -61,6 +66,9 @@ public:
     void Dispatch(Event& e);
     void AddControl(Control* c);
 
+    inline constexpr Font* GetFont() const noexcept { return _desc->Font; }
+    void SetFont(Font* f) noexcept;
+
     void SetText(const String& text) const;
     void SetSize(i32 width, i32 height) const;
     void SetLocation(i32 x, i32 y) const;
@@ -68,6 +76,17 @@ public:
     inline String GetText() const noexcept { return _desc->Title; }
     inline constexpr Size GetSize() const noexcept { return _desc->Size; }
     inline constexpr Point GetLocation() const noexcept { return _desc->Location; }
+    inline constexpr Color GetBackgroundColor() const noexcept { return _desc->BackgroundColor; }
+    inline constexpr Color GetForeColor() const noexcept { return _desc->ForeColor; }
+    inline constexpr void SetBackgroundColor(Color c) noexcept { _desc->BackgroundColor = Color::White; }
+    inline constexpr void SetForeColor(Color c) noexcept { _desc->ForeColor = Color::Black; }
+
+    inline constexpr HorizontalAlignment GetHorizontalAlignment() const noexcept { return _desc->HorizontalAlignment; }
+    inline constexpr VerticalAlignment GetVerticalAlignment() const noexcept { return _desc->VerticalAlignment; }
+    inline constexpr TextFormat GetTextFormat() const noexcept { return _desc->TextFormat; }
+    inline constexpr void SetHorizontalAlignment(HorizontalAlignment ha) { _desc->HorizontalAlignment = ha; }
+    inline constexpr void SetVerticalAlignment(VerticalAlignment va) { _desc->VerticalAlignment = va; }
+    inline constexpr void SetTextFormat(TextFormat tf) { _desc->TextFormat = tf; }
 
     inline constexpr Boolean IsResizable() const noexcept { return _desc->Resizable; }
     void EnableResize();
@@ -115,7 +134,7 @@ private:
     void dispatch_to_controls(Event& e);
     
     VulkanContext* _vk = nullptr;
-    WindowDescriptor* _desc;
+    WindowDescriptor* _desc = nullptr;
     WindowBackend* _impl = nullptr;
     Boolean _backendDestroyed = false;
     List<Control*> _controls = List<Control*>(16);

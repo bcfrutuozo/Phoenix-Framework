@@ -36,7 +36,7 @@ struct has_value_type : false_type {};
 
 template<typename T>
 struct has_value_type<T, decltype((void)sizeof(typename T::value_type))>
-    : true_type {
+	: true_type {
 };
 
 // has WrapperAccess::get(T&)
@@ -45,11 +45,11 @@ struct has_wrapper_access : false_type {};
 
 template<typename T>
 struct has_wrapper_access<T, decltype(
-    (void)WrapperAccess<T>::get(
-        declval<T&>(),
-        Wrapper<T>::Access()
-    )
-    )> : true_type {
+	(void)WrapperAccess<T>::get(
+		declval<T&>(),
+		Wrapper<T>::Access()
+	)
+	)> : true_type {
 };
 
 // convertible to value_type
@@ -58,8 +58,8 @@ struct is_value_convertible : false_type {};
 
 template<typename T>
 struct is_value_convertible<
-    T,
-    decltype((void)static_cast<typename T::value_type>(declval<T>()))
+	T,
+	decltype((void)static_cast<typename T::value_type>(declval<T>()))
 > : true_type {
 };
 
@@ -69,25 +69,15 @@ struct is_value_convertible<
 template<typename T>
 struct WrapperContract
 {
-    // Structural requirements
-    static_assert(has_value_type<T>::value,
-        "Wrapper must define a public `using value_type = ...`");
+	// Structural requirements
+	static_assert(has_value_type<T>::value, "Wrapper must define a public `using value_type = ...`");
+	static_assert(has_wrapper_access<T>::value, "Wrapper must expose its underlying value via WrapperAccess<T>::get(T&)");
+	static_assert(is_value_convertible<T>::value, "Wrapper must be implicitly convertible to value_type");
 
-    static_assert(has_wrapper_access<T>::value,
-        "Wrapper must expose its underlying value via WrapperAccess<T>::get(T&)");
-
-    static_assert(is_value_convertible<T>::value,
-        "Wrapper must be implicitly convertible to value_type");
-
-    // Zero-overhead guarantees
-    static_assert(sizeof(T) == sizeof(typename T::value_type),
-        "Wrapper must have zero size overhead");
-
-    static_assert(alignof(T) == alignof(typename T::value_type),
-        "Wrapper alignment must match value_type");
-
-    static_assert(sizeof(T) > 0,
-        "Wrapper must not be an empty type");
+	// Zero-overhead guarantees
+	static_assert(sizeof(T) == sizeof(typename T::value_type), "Wrapper must have zero size overhead");
+	static_assert(alignof(T) == alignof(typename T::value_type), "Wrapper alignment must match value_type");
+	static_assert(sizeof(T) > 0, "Wrapper must not be an empty type");
 };
 
 // ------------------------------------------------------------

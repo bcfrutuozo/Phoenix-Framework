@@ -2,6 +2,7 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
+  <Project Path="Application/Application.vcxproj" Id="fd6a96ab-6370-433a-abaa-09443e74dc56" />
   <Project Path="console/DSCPP-Console.vcxproj" Id="4229181f-23f6-4c58-9444-d9aa15bd9180" />
   <Project Path="Events/Events.vcxproj" Id="8314f707-a655-4601-a701-aec30dcf994b" />
   <Project Path="GUI/GUI.vcxproj" Id="9e38c72a-3bff-4ca3-9a19-9200099a8fbf" />

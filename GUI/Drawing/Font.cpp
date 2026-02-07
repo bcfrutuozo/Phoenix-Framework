@@ -1,14 +1,27 @@
 #include "Font.hpp"
 
-Font::Font(u32 id, const String& name) noexcept
-    : _id(id)
-    , _name(name)
+// Conversão clássica: pontos tipográficos → pixels
+static inline Single PointsToPixels(Single pt, Single dpi) noexcept
+{
+    return (pt * dpi) / 72.0f;
+}
+
+Font::Font(const String& name) noexcept
+    : Font(name, 10.0, 96.0)
 {
 }
 
-u32 Font::GetId() const noexcept
+Font::Font(const String& name, Single size) noexcept
+    : Font(name, size, 96.0)
 {
-    return _id;
+}
+
+Font::Font(const String& name, Single size, Single dpi) noexcept
+    : _name(name)
+    , _size(size)
+    , _dpi(dpi)
+{
+
 }
 
 String Font::GetName() const noexcept
@@ -16,62 +29,54 @@ String Font::GetName() const noexcept
     return _name;
 }
 
-Boolean Font::IsValid() const noexcept
-{
-    return _id != 0;
-}
-
-// Conversão clássica: pontos tipográficos → pixels
-static inline Single PointsToPixels(Single pt, Single dpi) noexcept
-{
-    return (pt * dpi) / 72.0f;
-}
-
-FontInstance::FontInstance(Font* font, Single size, Single dpi) noexcept
-    : _font(font)
-    , _size(size)
-    , _dpi(dpi)
-{
-}
-
-Font* FontInstance::GetFont() const noexcept
-{
-    return _font;
-}
-
-Single FontInstance::GetSize() const noexcept
+Single Font::GetSize() const noexcept
 {
     return _size;
 }
 
-Single FontInstance::GetDPI() const noexcept
+Single Font::GetDPI() const noexcept
 {
     return _dpi;
 }
 
-Single FontInstance::GetPixelSize() const noexcept
+Single Font::GetPixelSize() const noexcept
 {
     return PointsToPixels(_size, _dpi);
 }
 
 // Esses valores são *proporcionais* e independentes do backend.
 // O renderer real (DirectWrite / FreeType / etc) pode refiná-los.
-Single FontInstance::GetLineHeight() const noexcept
+Single Font::GetLineHeight() const noexcept
 {
     return GetPixelSize() * 1.25f;
 }
 
-Single FontInstance::GetAscent() const noexcept
+Single Font::GetAscent() const noexcept
 {
     return GetPixelSize() * 0.80f;
 }
 
-Single FontInstance::GetDescent() const noexcept
+Single Font::GetDescent() const noexcept
 {
     return GetPixelSize() * 0.20f;
 }
 
-Boolean FontInstance::IsValid() const noexcept
+Boolean Font::IsValid() const noexcept
 {
-    return _font != nullptr && _font->IsValid() && _size > 0.0f;
+    return _size > 0.0f;
+}
+
+String Font::ToString() const noexcept
+{
+    return String::Concat("Font: ", _name, " | Size: ", _size.ToString(), " | DPI: ", _dpi.ToString());
+}
+
+Boolean Font::Equals(const Font& other) const noexcept
+{
+    return _name == other.GetName() && _size == other.GetSize() && _dpi == other.GetDPI();
+}
+
+u32 Font::GetHashCode() const noexcept
+{
+    return ToString().GetHashCode();
 }

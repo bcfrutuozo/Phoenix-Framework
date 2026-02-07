@@ -1,8 +1,9 @@
 #pragma once
 
 #include "System/Types.hpp"
+#include "System/String.hpp"
 
-class TimeSpan
+class TimeSpan : public Object<TimeSpan>
 {
 public:
     using rep = i64; // nanoseconds
@@ -34,4 +35,9 @@ public:
     constexpr Boolean operator<(TimeSpan other) const noexcept { return _ns < other._ns; }
     constexpr Boolean operator>(TimeSpan other) const noexcept { return _ns > other._ns; }
     constexpr Boolean operator==(TimeSpan other) const noexcept { return _ns == other._ns; }
+
+    String ToString() const noexcept
+    {
+        return _ns.ToString();
+    }
 };

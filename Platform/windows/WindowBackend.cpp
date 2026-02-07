@@ -8,9 +8,6 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <commctrl.h>
-
-#pragma comment(lib, "comctl32.lib")
 
 static const wchar_t* kWindowClassName = L"Phoenix_Window";
 
@@ -23,15 +20,9 @@ static void RegisterWindowClass()
 	if (registered)
 		return;
 
-	// For subclasses comctl32 initialization
-	INITCOMMONCONTROLSEX icc{};
-	icc.dwSize = sizeof(icc);
-	icc.dwICC = ICC_STANDARD_CLASSES;
-	InitCommonControlsEx(&icc);
-
 	WNDCLASSW wc{};
 	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = Phoenix_Win32WindowProc;
+	wc.lpfnWndProc = Win32WindowProc;
 	wc.hInstance = GetModuleHandle(nullptr);
 	wc.lpszClassName = kWindowClassName;
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -80,6 +71,7 @@ WindowBackend* CreateWindowBackend(Window* window, const WindowDesc* desc)
 	);
 
 	backend->owner = window;
+	backend->context = desc->UIContext;
 
 	return backend;
 }

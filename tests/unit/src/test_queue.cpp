@@ -4,8 +4,8 @@
 
 #include "System/Collections/Queue.hpp"
 #include "System/Collections/Array.hpp"
-#include "System/Types/String.hpp"
-#include "System/Types/UInt64.hpp"
+#include "System/Types/Text/String.hpp"
+#include "System/Types/Primitives/UInt64.hpp"
 
 // Struct customizada para testes
 struct Custom {

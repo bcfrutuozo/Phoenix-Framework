@@ -86,12 +86,19 @@ VulkanContext* Window::GetRenderContext() const
 
 void Window::Initialize(InitializationContext ctx)
 {
+	// Set font if none was specified
+	_desc->UIContext = ctx.UIContext;
+	if (!_desc->Font) _desc->Font = ctx.UIContext->GetDefaultFont();
+
 	_impl = CreateWindowBackend(this, _desc);
 	if (_vk) _vk->Initialize();
-	AttachEventQueue(_impl, ctx.queue);
+	AttachEventQueue(_impl, ctx.Queue);
+	
 	for (const auto& c : _controls)
 	{
 		Control::InitializationContext cCtx;
+		cCtx.Font = _desc->Font;
+		cCtx.UIContext = _desc->UIContext;
 		cCtx.WindowBackend = _impl;
 		c->Initialize(cCtx);
 	}
@@ -260,6 +267,11 @@ void Window::AddControl(Control* control)
 {
 	control->AttachTo(this);
 	_controls.Add(control);
+}
+
+void Window::SetFont(Font* font) noexcept
+{
+	_desc->Font = font;
 }
 
 void Window::SetText(const String& text) const

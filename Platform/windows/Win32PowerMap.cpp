@@ -3,7 +3,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-PowerEventType TranslatePowerEvent(uint32_t wp) noexcept
+PowerEventType TranslatePowerEvent(u64 wp) noexcept
 {
     switch (wp)
     {
@@ -15,10 +15,8 @@ PowerEventType TranslatePowerEvent(uint32_t wp) noexcept
     case PBT_APMRESUMECRITICAL:
     case PBT_APMRESUMESUSPEND:
         return PowerEventType::Resume;
-
     case PBT_APMPOWERSTATUSCHANGE:
-        return PowerEventType::Unknown; // ou BatteryLow se quiser mapear
-
+        return PowerEventType::Unknown;
     default:
         return PowerEventType::Unknown;
     }

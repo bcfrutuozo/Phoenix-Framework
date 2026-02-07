@@ -1,5 +1,7 @@
 #include "Label.hpp"
 #include "LabelBackend.hpp"
+#include "GUI/Core/ControlBackend.hpp"
+#include "GUI/Context/UIContext.hpp"
 #include "GUI/Window/Window.hpp"
 
 class Window;
@@ -19,16 +21,18 @@ void Label::AttachTo(Window* window)
 void Label::OnAttach()
 {
 	// nada por enquanto
-
 }
 
 void Label::Initialize(InitializationContext ctx)
 {
 	_parentBackend = ctx.WindowBackend;
-	_impl = CreateLabelBackend(this, _parentBackend, GetText(), GetX(), GetY());
+	_desc->UIContext = ctx.UIContext;
+	if(!_desc->Font) _desc->Font = ctx.Font ? ctx.UIContext->GetDefaultFont() : ctx.Font;
+	if(_desc->AutoSize) _desc->Size = CalculateControlSizeByText(this, ctx.UIContext->GetFontManager());
+	_impl = CreateLabelBackend(this, _parentBackend);
 }
 
 String Label::ToString() const noexcept
 {
-	return _text;
+	return _desc->Text;
 }

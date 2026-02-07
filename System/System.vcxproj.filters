@@ -54,55 +54,55 @@
     <ClInclude Include="Meta\WrapperValue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Boolean.hpp">
+    <ClInclude Include="Types\Primitives\Boolean.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Byte.hpp">
+    <ClInclude Include="Types\Primitives\Byte.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Char.hpp">
+    <ClInclude Include="Types\Primitives\Char.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\CodePoint.hpp">
+    <ClInclude Include="Types\Primitives\CodePoint.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Double.hpp">
+    <ClInclude Include="Types\Primitives\Double.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Int16.hpp">
+    <ClInclude Include="Types\Primitives\Int16.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Int32.hpp">
+    <ClInclude Include="Types\Primitives\Int32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Int64.hpp">
+    <ClInclude Include="Types\Primitives\Int64.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Object.hpp">
+    <ClInclude Include="Types\Fundamentals\Object.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Operators.hpp">
+    <ClInclude Include="Types\Primitives\Operators.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Pointer.hpp">
+    <ClInclude Include="Types\Fundamentals\Pointer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\SByte.hpp">
+    <ClInclude Include="Types\Primitives\SByte.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Single.hpp">
+    <ClInclude Include="Types\Primitives\Single.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\String.hpp">
+    <ClInclude Include="Types\Text\String.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\UInt16.hpp">
+    <ClInclude Include="Types\Primitives\UInt16.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\UInt32.hpp">
+    <ClInclude Include="Types\Primitives\UInt32.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\UInt64.hpp">
+    <ClInclude Include="Types\Primitives\UInt64.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Input\KeyCode.hpp">
@@ -255,57 +255,75 @@
     <ClInclude Include="Collections\Dictionary.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Types\Hash.hpp">
+    <ClInclude Include="Types\Fundamentals\Hash.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CPUInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Interfaces\IConvertible.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\Drawing\Color.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\Drawing\Point.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\Drawing\Size.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Meta\Language.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Types\Drawing\KnownColors.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Types\Boolean.cpp">
+    <ClCompile Include="Types\Primitives\Boolean.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\Byte.cpp">
+    <ClCompile Include="Types\Primitives\Byte.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\Char.cpp">
+    <ClCompile Include="Types\Primitives\Char.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\CodePoint.cpp">
+    <ClCompile Include="Types\Primitives\CodePoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\Double.cpp">
+    <ClCompile Include="Types\Primitives\Double.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\Int16.cpp">
+    <ClCompile Include="Types\Primitives\Int16.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\Int32.cpp">
+    <ClCompile Include="Types\Primitives\Int32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\Int64.cpp">
+    <ClCompile Include="Types\Primitives\Int64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\Pointer.cpp">
+    <ClCompile Include="Types\Fundamentals\Pointer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\SByte.cpp">
+    <ClCompile Include="Types\Primitives\SByte.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\Single.cpp">
+    <ClCompile Include="Types\Primitives\Single.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\String.cpp">
+    <ClCompile Include="Types\Text\String.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\UInt16.cpp">
+    <ClCompile Include="Types\Primitives\UInt16.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\UInt32.cpp">
+    <ClCompile Include="Types\Primitives\UInt32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Types\UInt64.cpp">
+    <ClCompile Include="Types\Primitives\UInt64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Network\os\SocketOS_posix.cpp">
@@ -368,9 +386,12 @@
     <ClCompile Include="CPUInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Types\Drawing\Color.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Types\Wrappers.def">
+    <None Include="Types\Primitives\Wrappers.def">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

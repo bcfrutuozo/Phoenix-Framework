@@ -3,7 +3,7 @@
 #include "SocketHandle.hpp"
 #include "SocketError.hpp"
 
-#include "System/Types/UInt32.hpp"
+#include "System/Types/Primitives/UInt32.hpp"
 
 // RAII common base (DO NOT INSTANTIATE IT DIRECTLY!)
 class SocketBase

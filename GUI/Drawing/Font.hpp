@@ -3,31 +3,19 @@
 #include "System/Types.hpp"
 #include "System/String.hpp"
 
-class Font : public Object<Font>
+class Font final: public Object<Font>
 {
 public:
 
-	Font(u32 id, const String& name) noexcept;
+	Font() = delete;
+	Font(const String& name) noexcept;
+	Font(const String& name, Single size) noexcept;
+	Font(const String& name, Single size, Single dpi) noexcept;
 
-	u32 GetId() const noexcept;
+	inline friend Boolean operator==(const Font& a, const Font& b) noexcept { return a.Equals(b); }
+	inline friend Boolean operator!=(const Font& a, const Font& b) noexcept { return !(a == b); }
+
 	String GetName() const noexcept;
-
-	Boolean IsValid() const noexcept;
-
-private:
-
-	u32 _id;
-	String _name;
-};
-
-class FontInstance : public Object<FontInstance>
-{
-public:
-
-	FontInstance() = default;
-	FontInstance(Font* font, Single size, Single dpi) noexcept;
-
-	Font* GetFont() const noexcept;
 	Single GetSize() const noexcept;
 	Single GetDPI() const noexcept;
 
@@ -38,10 +26,14 @@ public:
 	Single GetDescent() const noexcept;
 
 	Boolean IsValid() const noexcept;
+	String ToString() const noexcept;
+
+	Boolean Equals(const Font& other) const noexcept;
+	u32 GetHashCode() const noexcept;
 
 private:
 
-	Font* _font = nullptr;
-	Single _size{ 0.0f };
-	Single _dpi{ 96.0f };
+	String _name;
+	Single _size;
+	Single _dpi;
 };

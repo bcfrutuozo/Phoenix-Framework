@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System/Types/String.hpp"
+#include "System/String.hpp"
 #include "System/Types.hpp"
 
 class Exception

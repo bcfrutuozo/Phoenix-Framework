@@ -1,7 +1,7 @@
 #pragma once
 
 #include "catch_amalgamated.hpp"
-#include "System/Types/String.hpp"
+#include "System/Types/Text/String.hpp"
 #include "System/Globalization/Locale.hpp"
 #include "System/Text/unicode/UnicodeCase_utils.hpp"
 #include "System/Text/unicode/UnicodeNormalization_utils.hpp"

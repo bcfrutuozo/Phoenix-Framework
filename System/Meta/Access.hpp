@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 template<typename>
 class Wrapper;        // forward
@@ -23,11 +23,11 @@ private:
 template<typename T>
 struct WrapperAccess {
     static constexpr auto& get(T& v, PrimitiveAccess) noexcept {
-        return v.Value;
+        return v._value;
     }
 
     static constexpr auto const& get(T const& v, PrimitiveAccess) noexcept {
-        return v.Value;
+        return v._value;
     }
 };
 

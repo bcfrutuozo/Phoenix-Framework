@@ -6,9 +6,9 @@
 #include "System/Network/SocketBase.hpp" // BlockingMode
 
 // Not importing System/Types.hpp due to byte redefinition on windows headers on .cpp
-#include "System/Types/Int32.hpp"
-#include "System/Types/UInt32.hpp"
-#include "System/Types/Byte.hpp"
+#include "System/Types/Primitives/Int32.hpp"
+#include "System/Types/Primitives/UInt32.hpp"
+#include "System/Types/Primitives/Byte.hpp"
 
 namespace SocketOS
 {

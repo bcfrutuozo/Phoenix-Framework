@@ -1,7 +1,7 @@
 #pragma once
 
-#include "System/Types/Byte.hpp"
-#include "System/Types/UInt64.hpp"
+#include "System/Types/Primitives/Byte.hpp"
+#include "System/Types/Primitives/UInt64.hpp"
 
 class Stream {
 public:

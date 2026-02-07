@@ -149,7 +149,7 @@ struct UTF8Encoding
 		if (codePoints.Count() == 0)
 			return out;
 
-		uint32_t totalBytes = 0;
+		u64 totalBytes = 0;
 		for (CodePoint cp : codePoints)
 			totalBytes += cp.ByteCount();
 
@@ -158,7 +158,7 @@ struct UTF8Encoding
 		for (CodePoint cp : codePoints)
 		{
 			auto enc = ::UTF8::encode_utf8(cp);
-			for (uint32_t i = 0; i < enc.Length; ++i)
+			for (u64 i = 0; i < enc.Length; ++i)
 				out.Add(enc.Bytes[i]);
 		}
 
@@ -169,7 +169,7 @@ struct UTF8Encoding
 	{
 		auto enc = ::UTF8::encode_utf8(cp);
 
-		for (uint32_t i = 0; i < enc.Length; ++i)
+		for (u64 i = 0; i < enc.Length; ++i)
 			outBytes[i] = enc.Bytes[i];
 
 		return enc.Length;
@@ -182,7 +182,7 @@ struct UTF8Encoding
 
 		auto enc = ::UTF8::encode_utf8(cp);
 
-		for (uint32_t i = 0; i < enc.Length; ++i)
+		for (u64 i = 0; i < enc.Length; ++i)
 			out.Add(enc.Bytes[i]);
 
 		return out;
@@ -193,7 +193,7 @@ struct UTF8Encoding
 		List<Byte> out;
 		out.EnsureCapacity(byteCount);
 
-		for (uint32_t i = 0; i < byteCount; ++i)
+		for (u64 i = 0; i < byteCount; ++i)
 			out.Add(bytes[i]);
 
 		return out;

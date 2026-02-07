@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System/Types/Pointer.hpp"
+#include "System/Types/Fundamentals/Pointer.hpp"
 
 struct WindowNativeHandle
 {
