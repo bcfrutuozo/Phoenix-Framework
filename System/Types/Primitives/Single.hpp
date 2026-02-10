@@ -447,46 +447,36 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, Single const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs._value; }
 
-	static inline constexpr Single Epsilon() noexcept { return static_cast<value_type>(1.1920928955078125e-7f); }
-	static inline constexpr Single MaxValue() noexcept { return static_cast<value_type>(3.40282346638528859e+38f); }
-	static inline constexpr Single MinValue() noexcept { return static_cast<value_type>(1.1754943508222875e-38f); }
-	static inline constexpr Single Lowest() noexcept { return static_cast<value_type>(-3.4028234663852886e+38f); }
-	static inline constexpr Single Zero() noexcept { return 0.0f; }
-	static inline constexpr Single NegativeZero() noexcept { return -0.0f; }
-	static inline constexpr Single One() noexcept { return 1.0f; }
-	static inline constexpr Single NegativeOne() noexcept { return -1.0f; }
-	static inline constexpr Single NaN() noexcept { return NaN_F32(); }
-	static inline constexpr Single NegativeInfinity() noexcept { return NegInf_F32(); }
-	static inline constexpr Single PositiveInfinity() noexcept { return PosInf_F32(); }
+	static const Single Epsilon;
+	static const Single MaxValue;
+	static const Single MinValue;
+	static const Single Lowest;
+	static const Single Zero;
+	static const Single NegativeZero;
+	static const Single One;
+	static const Single NegativeOne;
+	static const Single NaN;
+	static const Single NegativeInfinity;
+	static const Single PositiveInfinity;
 
-	static inline Boolean IsInfinity(Single const& s) noexcept { return s == Single::PositiveInfinity() || s == Single::NegativeInfinity(); }
+	static inline Boolean IsInfinity(Single const& s) noexcept { return s == Single::PositiveInfinity || s == Single::NegativeInfinity; }
 	static inline Boolean IsNaN(Single const& s) noexcept { return s != s; }
-	static inline Boolean IsNegativeInfinity(Single const& s) noexcept { return s == Single::NegativeInfinity(); }
-	static inline Boolean IsPositiveInfinity(Single const& s) noexcept { return s == Single::PositiveInfinity(); }
+	static inline Boolean IsNegativeInfinity(Single const& s) noexcept { return s == Single::NegativeInfinity; }
+	static inline Boolean IsPositiveInfinity(Single const& s) noexcept { return s == Single::PositiveInfinity; }
 
 	Boolean Equals(const Single& other) const noexcept;
 	UInt32 GetHashCode() const noexcept;
 	String ToString() const noexcept;
-
-private:
-
-	static inline constexpr float NaN_F32() noexcept
-	{
-		union { unsigned int u; float f; } u = { 0x7FC00000U };
-		return u.f; // Quiet NaN IEEE754 (32-bit)
-	}
-
-	static inline constexpr float PosInf_F32() noexcept
-	{
-		union { unsigned int u; float f; } u = { 0x7F800000U };
-		return u.f; // +Infinity IEEE754 (32-bit)
-	}
-
-	static inline constexpr float NegInf_F32() noexcept
-	{
-		union { unsigned int u; float f; } u = { 0xFF800000U };
-		return u.f; // -Infinity IEEE754 (32-bit)
-	}
 };
 
-typedef Single f32;
+inline const Single Single::Epsilon = static_cast<Single::value_type>(1.1920928955078125e-7f);
+inline const Single Single::MaxValue = static_cast<Single::value_type>(3.40282346638528859e+38f);
+inline const Single Single::MinValue = static_cast<Single::value_type>(1.1754943508222875e-38f);
+inline const Single Single::Lowest = static_cast<Single::value_type>(-3.4028234663852886e+38f);
+inline const Single Single::Zero = 0.0f;
+inline const Single Single::NegativeZero = -0.0f;
+inline const Single Single::One = 1.0f;
+inline const Single Single::NegativeOne = -1.0f;
+inline const Single Single::NaN = 0x7FC00000u;
+inline const Single Single::NegativeInfinity = 0xFF800000u;
+inline const Single Single::PositiveInfinity = 0x7F800000u;

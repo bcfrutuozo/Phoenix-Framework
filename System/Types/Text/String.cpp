@@ -187,7 +187,7 @@ String::String(const String& other) noexcept
 	}
 
 	// reset caches
-	_gcLength = u32::MaxValue();
+	_gcLength = u32::MaxValue;
 }
 
 String::String(String&& other) noexcept
@@ -227,8 +227,7 @@ String::String(String&& other) noexcept
 
 	// limpa origem
 	other._flags = FLAG_SSO;
-
-	_gcLength = u32::MaxValue();
+	_gcLength = u32::MaxValue;
 }
 
 String& String::operator=(const String& other) noexcept
@@ -259,7 +258,7 @@ String& String::operator=(const String& other) noexcept
 	}
 
 	// reset caches
-	_gcLength = u32::MaxValue();
+	_gcLength = u32::MaxValue;
 
 	return *this;
 }
@@ -295,7 +294,7 @@ String& String::operator=(String&& other) noexcept
 		other._flags = FLAG_SSO;
 	}
 
-	_gcLength = u32::MaxValue();
+	_gcLength = u32::MaxValue;
 	_flags |= (other._flags & (FLAG_ASCII_KNOWN | FLAG_IS_ASCII));
 
 	return *this;
@@ -316,13 +315,11 @@ UInt32 String::GetHashCode() const noexcept
 		_byteLength,
 		Phoenix::GLOBAL_HASH_SEED
 	);
-
-	return 0;
 }
 
 u32 String::GetLength() const noexcept
 {
-	if (_gcLength != u32::MaxValue())
+	if (_gcLength != u32::MaxValue)
 		return _gcLength;
 
 	if (_byteLength == 0)
@@ -1824,12 +1821,12 @@ List<String> String::Split(const String& separator, StringSplitOptions options) 
 {
 	List<String> s;
 	s.Add(separator);
-	return impl_Split(s, {}, Int32::MaxValue(), options);
+	return impl_Split(s, {}, Int32::MaxValue, options);
 }
 
 List<String> String::Split(const List<String>& seps, StringSplitOptions opt) const
 {
-	return impl_Split(seps, {}, Int32::MaxValue(), opt);
+	return impl_Split(seps, {}, Int32::MaxValue, opt);
 }
 
 List<String> String::Split(const List<String>& separators, i32 maxCount, StringSplitOptions options) const
@@ -1844,24 +1841,24 @@ List<String> String::Split(const List<Char>& separators, i32 maxCount, StringSpl
 
 List<String> String::Split(const List<Char>& separators, StringSplitOptions options) const
 {
-	return impl_Split({}, separators, Int32::MaxValue(), options);
+	return impl_Split({}, separators, Int32::MaxValue, options);
 }
 
 List<String> String::Split(const List<Char>& separators) const
 {
-	return impl_Split({}, separators, Int32::MaxValue(), StringSplitOptions::None);
+	return impl_Split({}, separators, Int32::MaxValue, StringSplitOptions::None);
 }
 
 List<String> String::Split(const String& separator) const
 {
 	List<String> s;
 	s.Add(separator);
-	return impl_Split(s, {}, Int32::MaxValue(), StringSplitOptions::None);
+	return impl_Split(s, {}, Int32::MaxValue, StringSplitOptions::None);
 }
 
 List<String> String::Split(const List<String>& separators) const
 {
-	return impl_Split(separators, {}, Int32::MaxValue(), StringSplitOptions::None);
+	return impl_Split(separators, {}, Int32::MaxValue, StringSplitOptions::None);
 }
 
 Boolean String::StartsWith(const String& compare, Boolean ignoreCase, const Locale& locale) const noexcept
@@ -1911,7 +1908,7 @@ String String::Substring(u32 gcStart, u32 gcCount) const noexcept
 			sub._byteLength = len;
 
 			sub.invalidate_ascii_flag();
-			sub._gcLength = UInt32::MaxValue();
+			sub._gcLength = UInt32::MaxValue;
 
 			return sub;
 		}
@@ -1954,7 +1951,7 @@ String String::Substring(u32 gcStart, u32 gcCount) const noexcept
 	sub._byteLength = len;
 
 	sub.invalidate_ascii_flag();
-	sub._gcLength = UInt32::MaxValue();
+	sub._gcLength = UInt32::MaxValue;
 
 	return sub;
 }
@@ -2544,7 +2541,7 @@ void String::release() noexcept
 
 	// invalidate caches
 	invalidate_ascii_flag();
-	_gcLength = UInt32::MaxValue();
+	_gcLength = UInt32::MaxValue;
 }
 
 unsigned char* String::allocate_block(uint32_t lenChars) noexcept
@@ -2831,7 +2828,7 @@ List<String> String::impl_Split(
 		return result;
 	}
 
-	const int limit = (maxCount <= 0 ? Int32::MaxValue() : (Int32)maxCount);
+	const int limit = (maxCount <= 0 ? Int32::MaxValue : (Int32)maxCount);
 
 	const Char* bytes = this->data();
 	uint32_t H = this->GetByteCount();
@@ -2887,7 +2884,7 @@ List<String> String::impl_Split(
 		}
 
 		// Nenhum separador encontrado → fim
-		if (cutPos == UInt32::MaxValue())
+		if (cutPos == UInt32::MaxValue)
 			break;
 
 		// Extrai token (byte-based)
@@ -2946,7 +2943,7 @@ String String::substring_by_bytes(uint32_t byteStart, uint32_t byteLen) const no
 	sub._byteOffset += byteStart;
 	sub._byteLength = byteLen;
 
-	sub._gcLength = UInt32::MaxValue();
+	sub._gcLength = UInt32::MaxValue;
 
 	return sub;
 }

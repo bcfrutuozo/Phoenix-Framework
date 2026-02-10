@@ -31,6 +31,7 @@ class MoveEvent;
 class MinimizeEvent;
 class MaximizeEvent;
 class DPIChangedEvent;
+class FontChangedEvent;
 
 class Window : public Object<Window>
 {
@@ -63,7 +64,7 @@ public:
 
     void Initialize(InitializationContext ctx);
 
-    void Dispatch(Event& e);
+    Boolean Dispatch(Event& e);
     void AddControl(Control* c);
 
     inline constexpr Font* GetFont() const noexcept { return _desc->Font; }
@@ -127,15 +128,17 @@ public:
     //void (*OnMouseEnter)(MouseEnterEvent*) = nullptr;
     //void (*OnMouseLeave)(MouseLeaveEvent*) = nullptr;
 
+    void (*OnFontChanged)(FontChangedEvent*) = nullptr;
+
 private:
 
     explicit Window() noexcept;
 
-    void dispatch_to_controls(Event& e);
+    bool dispatch_to_controls(Event& e);
     
     VulkanContext* _vk = nullptr;
     WindowDescriptor* _desc = nullptr;
     WindowBackend* _impl = nullptr;
     Boolean _backendDestroyed = false;
-    List<Control*> _controls = List<Control*>(16);
+    List<Control*> _controls;
 };

@@ -455,10 +455,13 @@ public:
 
 	inline constexpr Byte ToByte() const noexcept { return static_cast<uint8_t>(_value); }
 
-	static inline constexpr Char MaxValue() { return static_cast<Char>(0xFF); }
-	static inline constexpr Char MinValue() { return static_cast<Char>(0x00); }
+	static const Char MaxValue;
+	static const Char MinValue;
 
 	Boolean Equals(const Char& other) const noexcept;
 	UInt32 GetHashCode() const noexcept;
 	String ToString() const noexcept;
 };
+
+inline const Char Char::MaxValue = static_cast<Char>(0xFF);
+inline const Char Char::MinValue = static_cast<Char>(0x00);

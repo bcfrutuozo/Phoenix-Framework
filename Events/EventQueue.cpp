@@ -1,5 +1,6 @@
 #include "EventQueue.hpp"
 #include "Collections/Array.hpp"
+#include "System/Console/Console.hpp"
 
 // ------------------------------------------------------------
 // Configuration

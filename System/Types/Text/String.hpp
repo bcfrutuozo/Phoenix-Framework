@@ -451,7 +451,7 @@ private:
 	uint32_t _byteOffset = 0;        // offset em bytes dentro do bloco
 	uint32_t _byteLength = 0;        // comprimento em bytes desta string
 	mutable uint32_t _flags = 0;
-	mutable uint32_t _gcLength = UInt32::MaxValue(); // Grapheme cluster lazy cache
+	mutable uint32_t _gcLength = UInt32::MaxValue; // Grapheme cluster lazy cache
 
 	explicit String(unsigned char* block) noexcept;
 

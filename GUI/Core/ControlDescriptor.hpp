@@ -11,6 +11,7 @@
 #include "TextFormat.hpp"
 
 class UIContext;
+class Window;
 
 struct ControlDescriptor : public Object<ControlDescriptor>
 {

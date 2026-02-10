@@ -90,7 +90,8 @@ protected:
 
         for (auto i = 0; i < _count; ++i)
         {
-            _windows[i]->Dispatch(e);
+            if (_windows[i]->Dispatch(e))
+                break;
         }
 
         // Política global de fechamento

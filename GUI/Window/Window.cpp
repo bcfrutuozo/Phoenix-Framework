@@ -30,7 +30,7 @@ Window::~Window()
 	if (_impl && !_backendDestroyed)
 	{
 		DestroyWindowBackend(_impl);
-		for (const auto& c : _controls)
+		for (auto c : _controls)
 		{
 			delete c;
 		}
@@ -94,7 +94,7 @@ void Window::Initialize(InitializationContext ctx)
 	if (_vk) _vk->Initialize();
 	AttachEventQueue(_impl, ctx.Queue);
 	
-	for (const auto& c : _controls)
+	for (auto c : _controls)
 	{
 		Control::InitializationContext cCtx;
 		cCtx.Font = _desc->Font;
@@ -104,16 +104,17 @@ void Window::Initialize(InitializationContext ctx)
 	}
 }
 
-void Window::Dispatch(Event& e)
+Boolean Window::Dispatch(Event& e)
 {
-	dispatch_to_controls(e);
+	if (dispatch_to_controls(e))
+		return true;
 
 	EventDispatcher d(e);
 
 	// ------------------------------------------------------------
 	// Close / destroy
 	// ------------------------------------------------------------
-	d.Dispatch<CloseEvent>(
+	if (d.Dispatch<CloseEvent>(
 		EventCategory::UI,
 		UIEventType::Close,
 		[&](CloseEvent& ev)
@@ -124,14 +125,10 @@ void Window::Dispatch(Event& e)
 			// 🔔 Notifica o usuário
 			if (OnClose)
 				OnClose(&ev);
-
-			// 🔑 DECISÃO LOCAL:
-			// Por padrão, fecha a janela
-			// (política simples e previsível)
 		}
-	);
+	)) return true;
 
-	d.Dispatch<DestroyEvent>(
+	if(d.Dispatch<DestroyEvent>(
 		EventCategory::UI,
 		UIEventType::Destroy,
 		[&](DestroyEvent& ev)
@@ -149,118 +146,132 @@ void Window::Dispatch(Event& e)
 			// ❌ NÃO decide política global
 			// Só cleanup local
 		}
-	);
+	)) return true;
 
 	// ------------------------------------------------------------
 	// Resize / move
 	// ------------------------------------------------------------
-	d.Dispatch<ResizedEvent>(
+	if(d.Dispatch<ResizedEvent>(
 		EventCategory::UI, UIEventType::Resized,
 		[&](ResizedEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnResized)
 				OnResized(&ev);
 		}
-	);
+	)) return true;
 
-	d.Dispatch<ResizingEvent>(
+	if(d.Dispatch<ResizingEvent>(
 		EventCategory::UI, UIEventType::Resizing,
 		[&](ResizingEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnResizing)
 				OnResizing(&ev);
 		}
-	);
+	)) return true;
 
-	d.Dispatch<MoveEvent>(
+	if(d.Dispatch<MoveEvent>(
 		EventCategory::UI, UIEventType::Move,
 		[&](MoveEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnMove)
 				OnMove(&ev, ev.X, ev.Y);
 		}
-	);
+	)) return true;
 
 	// ------------------------------------------------------------
 	// Min / max
 	// ------------------------------------------------------------
-	d.Dispatch<MinimizeEvent>(
+	if(d.Dispatch<MinimizeEvent>(
 		EventCategory::UI, UIEventType::Minimize,
 		[&](MinimizeEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnMinimize)
 				OnMinimize(&ev);
 		}
-	);
+	)) return true;
 
-	d.Dispatch<MaximizeEvent>(
+	if(d.Dispatch<MaximizeEvent>(
 		EventCategory::UI, UIEventType::Maximize,
 		[&](MaximizeEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnMaximize)
 				OnMaximize(&ev);
 		}
-	);
+	)) return true;
 
 	// ------------------------------------------------------------
 	// Visibility / focus
 	// ------------------------------------------------------------
-	d.Dispatch<RestoreEvent>(
+	if(d.Dispatch<RestoreEvent>(
 		EventCategory::UI, UIEventType::Restore,
 		[&](RestoreEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnRestore)
 				OnRestore(&ev);
 		}
-	);
+	)) return true;
 
-	d.Dispatch<ShowEvent>(
+	if(d.Dispatch<ShowEvent>(
 		EventCategory::UI, UIEventType::Show,
 		[&](ShowEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnShow)
 				OnShow(&ev);
 		}
-	);
+	)) return true;
 
-	d.Dispatch<HideEvent>(
+	if(d.Dispatch<HideEvent>(
 		EventCategory::UI, UIEventType::Hide,
 		[&](HideEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnHide)
 				OnHide(&ev);
 		}
-	);
+	)) return true;
 
-	d.Dispatch<FocusGainedEvent>(
+	if(d.Dispatch<FocusGainedEvent>(
 		EventCategory::UI, UIEventType::FocusGained,
 		[&](FocusGainedEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnFocusGained)
 				OnFocusGained(&ev);
 		}
-	);
+	)) return true;
 
-	d.Dispatch<FocusLostEvent>(
+	if(d.Dispatch<FocusLostEvent>(
 		EventCategory::UI, UIEventType::FocusLost,
 		[&](FocusLostEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnFocusLost)
 				OnFocusLost(&ev);
 		}
-	);
+	)) return true;
 
 	// ------------------------------------------------------------
 	// DPI
 	// ------------------------------------------------------------
-	d.Dispatch<DPIChangedEvent>(
+	if(d.Dispatch<DPIChangedEvent>(
 		EventCategory::UI, UIEventType::DPIChanged,
 		[&](DPIChangedEvent& ev)
 		{
 			if (ev.Handle == UIHandle::FromWindow(this) && OnDPIChanged)
 				OnDPIChanged(&ev);
 		}
-	);
+	)) return true;
+
+	// ------------------------------------------------------------
+	// FontChanged
+	// ------------------------------------------------------------
+	if(d.Dispatch<FontChangedEvent>(
+		EventCategory::UI, UIEventType::FontChanged,
+		[&](FontChangedEvent& ev)
+		{
+			if (ev.Target == UIHandle::FromWindow(this) && OnFontChanged)
+				OnFontChanged(&ev);
+		}
+	)) return true;
+
+	return false;
 }
 
 void Window::AddControl(Control* control)
@@ -308,35 +319,13 @@ void Window::DisableResize()
 	return SetWindowResize(_impl, _desc);
 }
 
-void Window::dispatch_to_controls(Event& e)
+bool Window::dispatch_to_controls(Event& e)
 {
-	if (e.Is(EventCategory::Mouse) || e.Is(EventCategory::Keyboard) || e.Is(EventCategory::Text))
+	for (auto& c : _controls)
 	{
-		const UIHandle* target = nullptr;
-
-		if (e.Is(EventCategory::Mouse))
-		{
-			target = &e.As<MouseButtonDownEvent>().Target; // ou ButtonDown/Up
-			if (target == nullptr) target = &e.As<MouseButtonUpEvent>().Target; // ou ButtonDown/Up
-		}
-		else if (e.Is(EventCategory::Keyboard))
-		{
-			target = &e.As<KeyDownEvent>().Target;
-			if (target == nullptr) target = &e.As<KeyUpEvent>().Target;
-		}
-		else if (e.Is(EventCategory::Text))
-		{
-			target = &e.As<TextInputEvent>().Target;
-			if (target == nullptr) target = &e.As<ImeCompositionEvent>().Target;
-		}
-		if (target && target->IsControl())
-		{
-			if (Control* c = target->AsControl())
-			{
-				c->OnEvent(e);
-				if (e.Handled)
-					return;
-			}
-		}
+		if(c->OnEvent(e));
+			return true;
 	}
+
+	return false;
 }

@@ -447,45 +447,36 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, Double const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs._value; }
 
-	static inline constexpr Double Epsilon() noexcept { return static_cast<value_type>(2.2204460492503131E-16); }
-	static inline constexpr Double MaxValue() noexcept { return static_cast<value_type>(1.7976931348623157E+308); }
-	static inline constexpr Double Lowest() noexcept { return static_cast<value_type>(-1.7976931348623157E+308); }
-	static inline constexpr Double MinValue() noexcept { return static_cast<value_type>(2.2250738585072014E-308); }
-	static inline constexpr Double Zero() noexcept { return 0.0; }
-	static inline constexpr Double NegativeZero() noexcept { return -0.0; }
-	static inline constexpr Double One() noexcept { return 1.0; }
-	static inline constexpr Double NegativeOne() noexcept { return -1.0; }
-	static inline constexpr Double NaN() noexcept { return NaN_F64(); }
-	static inline constexpr Double NegativeInfinity() noexcept { return NegInf_F64(); }
-	static inline constexpr Double PositiveInfinity() noexcept { return PosInf_F64(); }
+	static const Double Epsilon;
+	static const Double MaxValue;
+	static const Double Lowest;
+	static const Double MinValue;
+	static const Double Zero;
+	static const Double NegativeZero;
+	static const Double One;
+	static const Double NegativeOne;
+	static const Double NaN;
+	static const Double NegativeInfinity;
+	static const Double PositiveInfinity;
 
-	static inline Boolean IsInfinity(Double const& s) noexcept { return s == Double::PositiveInfinity() || s == Double::NegativeInfinity(); }
+	static inline Boolean IsInfinity(Double const& s) noexcept { return s == Double::PositiveInfinity || s == Double::NegativeInfinity; }
 	static inline Boolean IsNaN(Double const& s) noexcept { return s != s; }
-	static inline Boolean IsNegativeInfinity(Double const& s) noexcept { return s == Double::NegativeInfinity(); }
-	static inline Boolean IsPositiveInfinity(Double const& s) noexcept { return s == Double::PositiveInfinity(); }
+	static inline Boolean IsNegativeInfinity(Double const& s) noexcept { return s == Double::NegativeInfinity; }
+	static inline Boolean IsPositiveInfinity(Double const& s) noexcept { return s == Double::PositiveInfinity; }
 
 	Boolean Equals(const Double& other) const noexcept;
 	UInt32 GetHashCode() const noexcept;
 	String ToString() const noexcept;
-
-private:
-
-	static inline constexpr Double NaN_F64() noexcept
-	{
-		union { unsigned long long u; double f; } u = { 0x7FF8000000000000ULL };
-		return u.f; // Quiet NaN IEEE754 (64-bit)
-	}
-
-	static inline constexpr Double PosInf_F64() noexcept
-	{
-		union { unsigned long long u; double f; } u = { 0x7FF0000000000000ULL };
-		return u.f; // +Infinity IEEE754 (64-bit)
-	}
-
-	static inline constexpr Double NegInf_F64() noexcept
-	{
-		union { unsigned long long u; double f; } u = { 0xFFF0000000000000ull };
-		return u.f; // -Infinity IEEE754 (64-bit)
-	}
 };
 
+inline const Double Double::Epsilon = static_cast<Double::value_type>(2.2204460492503131E-16);
+inline const Double Double::MaxValue = static_cast<Double::value_type>(1.7976931348623157E+308);
+inline const Double Double::Lowest = static_cast<Double::value_type>(-1.7976931348623157E+308);
+inline const Double Double::MinValue = static_cast<Double::value_type>(2.2250738585072014E-308);
+inline const Double Double::Zero = 0.0;
+inline const Double Double::NegativeZero = -0.0;
+inline const Double Double::One = 1.0;
+inline const Double Double::NegativeOne = -1.0;
+inline const Double Double::NaN = 0x7FF8000000000000ULL;
+inline const Double Double::NegativeInfinity = 0xFFF0000000000000ULL;
+inline const Double Double::PositiveInfinity = 0x7FF0000000000000ULL;

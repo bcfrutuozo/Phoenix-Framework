@@ -19,8 +19,8 @@ struct WindowDescriptor : public Object<WindowDescriptor>
     Boolean Resizable = true;
     Point Location;
     UIContext* UIContext = nullptr;
-    Color BackgroundColor = Color::Black;
-    Color ForeColor = Color::White;
+    Color BackgroundColor = Color::White;
+    Color ForeColor = Color::Black;
     Font* Font = nullptr;
     HorizontalAlignment HorizontalAlignment = HorizontalAlignment::Left;
     VerticalAlignment VerticalAlignment = VerticalAlignment::Top;

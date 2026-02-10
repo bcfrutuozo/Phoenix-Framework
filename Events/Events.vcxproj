@@ -88,6 +88,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GUI\GUI.vcxproj">
+      <Project>{9e38c72a-3bff-4ca3-9a19-9200099a8fbf}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\System\System.vcxproj">
       <Project>{9b07618e-b7f0-4ec3-a9ba-10054b18a750}</Project>
     </ProjectReference>

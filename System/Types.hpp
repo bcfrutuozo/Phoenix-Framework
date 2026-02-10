@@ -59,6 +59,7 @@ using byte = Byte;
 using uint8 = Byte;
 using c8 = Char;
 using c32 = CodePoint;
+using f32 = Single;
 using f64 = Double;
 using i16 = Int16;
 using int16 = Int16;

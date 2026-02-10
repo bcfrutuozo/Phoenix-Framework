@@ -21,7 +21,7 @@ Pointer FontManager::create_native_object(Font* fi, Boolean shouldCache) noexcep
 	wcsncpy_s(lf.lfFaceName, LF_FACESIZE, src, _TRUNCATE);
 
 	Pointer createdFont = Pointer(CreateFontIndirectW(&lf));
-	if (shouldCache) _cache.Insert(*fi, createdFont);
+	if (shouldCache) _cache.Insert(fi, createdFont);
 	return createdFont;
 }
 

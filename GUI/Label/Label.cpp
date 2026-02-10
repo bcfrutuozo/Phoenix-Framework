@@ -13,23 +13,17 @@ Label::Label(const String& text, i32 x, i32 y)
 
 }
 
-void Label::AttachTo(Window* window)
-{
-	OnAttach();
-}
-
-void Label::OnAttach()
-{
-	// nada por enquanto
-}
-
 void Label::Initialize(InitializationContext ctx)
 {
 	_parentBackend = ctx.WindowBackend;
 	_desc->UIContext = ctx.UIContext;
 	if(!_desc->Font) _desc->Font = ctx.Font ? ctx.UIContext->GetDefaultFont() : ctx.Font;
-	if(_desc->AutoSize) _desc->Size = CalculateControlSizeByText(this, ctx.UIContext->GetFontManager());
 	_impl = CreateLabelBackend(this, _parentBackend);
+	if (_desc->AutoSize) 
+	{
+		_desc->Size = CalculateControlSizeByText(_impl);
+		ResizeControl(_impl);
+	}
 }
 
 String Label::ToString() const noexcept

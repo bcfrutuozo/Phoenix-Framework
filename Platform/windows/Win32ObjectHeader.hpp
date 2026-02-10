@@ -12,12 +12,14 @@ struct Win32ObjectHeader
 {
     EventQueue* queue;
     UIContext* context;
+    bool trackingMouse = false;
     HWND hwnd;
 };
 
 struct ControlBackend : Win32ObjectHeader
 {
     Control* owner;
+
 };
 
 struct LabelBackend : ControlBackend

@@ -15,4 +15,6 @@ void SetEnabledControlBackend(ControlBackend* backend, Boolean enabled);
 void AttachEventQueueToControlBackend(ControlBackend* backend, EventQueue* queue);
 UIHandle GetControlNativeHandle(ControlBackend*);
 String GetControlParent(ControlBackend*);
-Size CalculateControlSizeByText(Control*, FontManager*);
+Size CalculateControlSizeByText(ControlBackend*);
+
+void ResizeControl(ControlBackend*);

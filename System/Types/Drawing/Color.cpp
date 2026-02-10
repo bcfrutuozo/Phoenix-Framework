@@ -13,6 +13,11 @@ String Color::GetName() const noexcept
 	return "Unknown Color";
 }
 
+Boolean Color::Equals(const Color& other) const noexcept
+{
+	return _r == other._r && _g == other._g && _b == other._b && _a == other._a;
+}
+
 UInt32 Color::GetHashCode() const noexcept
 {
 	return PackRGBA().GetHashCode();

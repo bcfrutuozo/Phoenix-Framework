@@ -459,14 +459,19 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, Int64 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs._value; }
 
-	static inline constexpr Int64 MaxValue() noexcept { return 0X7FFFFFFFFFFFFFFFLL; }
-	static inline constexpr Int64 MinValue() noexcept { return 0x8000000000000000LL; }
-	static inline constexpr Int64 Zero() noexcept { return 0x0000000000000000LL; }
-	static inline constexpr Int64 One() noexcept { return 0x0000000000000001LL; }
-	static inline constexpr Int64 NegativeOne() noexcept { return 0XFFFFFFFFFFFFFFFFLL; }
+	static const Int64 MaxValue;
+	static const Int64 MinValue;
+	static const Int64 Zero;
+	static const Int64 One;
+	static const Int64 NegativeOne;
 
 	Boolean Equals(const Int64& other) const noexcept;
 	UInt32 GetHashCode() const noexcept;
 	String ToString() const noexcept;
 };
 
+inline const Int64 Int64::MaxValue = 0X7FFFFFFFFFFFFFFFLL;
+inline const Int64 Int64::MinValue = 0x8000000000000000LL;
+inline const Int64 Int64::Zero = 0x0000000000000000LL;
+inline const Int64 Int64::One = 0x0000000000000001LL;
+inline const Int64 Int64::NegativeOne = 0XFFFFFFFFFFFFFFFFLL;

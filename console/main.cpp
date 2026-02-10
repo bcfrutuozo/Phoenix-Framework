@@ -3,7 +3,6 @@
 static void ChangeWindowSize(ResizingEvent* e)
 {
     printf("Resize: %u x %u\n", e->Width, e->Height);
-    e->Handled = false;
     Console::WriteLine(e->Handle.AsWindow()->GetText());
 }
 
@@ -14,20 +13,28 @@ static void WindowClosed()
 
 static void TesteLabel(MouseButtonDownEvent* b)
 {
-    if (b->Button == MouseButton::Left)
-        printf("Cliquei LEFT!");
-    else
-        printf("Cliquei outro!");
-    b->Handled = true;
+    Control* c = b->Target.AsControl();
+
+    if (b->Button == MouseButton::Right)
+    {
+        c->SetWidth(c->GetWidth() - 10);
+    }
+    else if(b->Button == MouseButton::Left)
+    {
+        c->SetWidth(c->GetWidth() + 10);
+    }
+}
+
+static void ChangeFont(FontChangedEvent* e)
+{
+    auto f1 = e->NewFont;
+    auto f2 = e->PreviousFont;
+
+    bool c = f1 == f2;
 }
 
 int main(int argc, char* argv[])
 {
-    String aa = "BC";
-    String cc = "CDE";
-
-    Boolean zz = aa == cc;
-
     u32 a = 2;
     const char* c = "ABCDE";
     Console::WriteLine(c[a]);
@@ -38,11 +45,15 @@ int main(int argc, char* argv[])
     VulkanContext* cx = new VulkanContext(w);
     w->AttachRenderContext(cx);
     Window* w2 = new Window( "Teste", 1000, 1000 );
-    Label* l = new Label("Teste Label 1", 50, 50);
+    Label* l = new Label("Teste  Label 1", 50, 50);
     Label* l2 = new Label("Teste Label 2", 100, 300);
-    l2->SetFont(new Font("Vivaldi Italic", 25, 150));
     Font f = Font("Elephant", 30, 200);
+    l->DisableAutoSize();
+    l->SetTextFormat(TextFormat::WordWrap);
+    l->SetBackgroundColor(Color::Aquamarine);
+    l->SetSize({ 50, 400 });
     l->SetFont(&f);
+    l->OnFontChanged = ChangeFont;
     l->OnMouseDown = TesteLabel;
     app->Attach(w2);
     w2->AddControl(l);

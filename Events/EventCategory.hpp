@@ -29,7 +29,11 @@ enum class UIEventType : uint8_t
     FocusLost,
     Show,
     Hide,
-    DPIChanged
+    DPIChanged,
+    FontChanged,
+    Paint,
+    ControlAdded,
+    ControlRemoved
 };
 
 enum class KeyEventType : uint8_t
@@ -44,6 +48,8 @@ enum class MouseEventType : uint8_t
     ButtonDown,
     ButtonUp,
     Scroll,
+    Enter,
+    Leave
 };
 
 enum class TextEventType : uint8_t

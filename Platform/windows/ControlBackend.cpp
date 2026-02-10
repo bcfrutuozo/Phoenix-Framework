@@ -3,6 +3,7 @@
 #include "Events/EventQueue.hpp"
 #include "GUI/Core/Control.hpp"
 #include "GUI/Context/FontManager.hpp"
+#include "GUI/Context/UIContext.hpp"
 #include "Win32Helpers.hpp"
 
 #define WIN32_LEAN_AND_MEAN
@@ -19,17 +20,20 @@ void ShowControlBackend(ControlBackend* backend)
 	ShowWindow(backend->hwnd, SW_SHOW);
 }
 
-Size CalculateControlSizeByText(Control* owner, FontManager* fontManager)
+Size CalculateControlSizeByText(ControlBackend* backend)
 {
-	RECT rc{ 0,0,0,0 };
+	Control* c = backend->owner;
+	FontManager* fm = backend->context->GetFontManager();
+
+	RECT rc{ 0,0, c->GetWidth(), c->GetHeight()};
 
 	HDC hdc = GetDC(nullptr);
 
-	HFONT hfont = (HFONT)fontManager->GetNativeObject(owner->GetFont()).Get();
+	HFONT hfont = (HFONT)fm->GetNativeObject(c->GetFont()).Get();
 	HGDIOBJ old = SelectObject(hdc, hfont);
-	Array<wchar_t> text = owner->GetText().ToWideCharArray();
+	Array<wchar_t> text = c->GetText().ToWideCharArray();
 
-	UINT drawFlags = Win32ConvertTextFlags(owner->GetHorizontalAlignment(), owner->GetVerticalAlignment(), owner->GetTextFormat());
+	UINT drawFlags = Win32ConvertTextFlags(c->GetHorizontalAlignment(), c->GetVerticalAlignment(), c->GetTextFormat());
 
 	DrawTextExW(
 		hdc,
@@ -48,7 +52,7 @@ Size CalculateControlSizeByText(Control* owner, FontManager* fontManager)
 
 void UpdateControlBackend(ControlBackend* backend)
 {
-	UpdateWindow(backend->hwnd);
+	InvalidateRect(backend->hwnd, NULL, TRUE);
 }
 
 void SetEnabledControlBackend(ControlBackend* backend, Boolean enabled)
@@ -67,4 +71,16 @@ UIHandle GetControlNativeHandle(ControlBackend* backend)
 	h.Handle = Pointer(backend->hwnd);
 	h.Type = UIHandle::Type::Control;
 	return h;
+}
+
+void ResizeControl(ControlBackend* backend)
+{
+	Control* c = backend->owner;
+	SetWindowPos(backend->hwnd, 
+		nullptr, 
+		0, 
+		0, 
+		c->GetWidth(), 
+		c->GetHeight(), 
+		SWP_NOMOVE);
 }

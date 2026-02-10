@@ -8,6 +8,9 @@ class Color final : public Object<Color>
 {
 public:
 
+	inline friend Boolean operator==(const Color& a, const Color& b) noexcept { return a.Equals(b); }
+	inline friend Boolean operator!=(const Color& a, const Color& b) noexcept { return !(a == b); }
+
 	inline constexpr u8 GetR() const noexcept { return _r; }
 	inline constexpr u8 GetG() const noexcept { return _g; }
 	inline constexpr u8 GetB() const noexcept { return _b; }
@@ -231,6 +234,7 @@ public:
 	DECLARE_KNOWN_COLOR(YellowGreen)
 #undef DECLARE_KNOWN_COLOR
 
+	Boolean Equals(const Color& other) const noexcept;
 	UInt32 GetHashCode() const noexcept;
 	String ToString() const noexcept;
 

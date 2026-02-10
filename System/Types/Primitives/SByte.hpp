@@ -460,14 +460,19 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, SByte const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs._value; }
 
-	static inline constexpr SByte MaxValue() { return static_cast<value_type>(0x7F); }
-	static inline constexpr SByte MinValue() { return static_cast<value_type>(0x80); }
-	static inline constexpr SByte Zero() noexcept { return static_cast<value_type>(0x00); }
-	static inline constexpr SByte One() noexcept { return static_cast<value_type>(0x01); }
-	static inline constexpr SByte NegativeOne() noexcept { return static_cast<value_type>(0xFF); }
+	static const SByte MaxValue;
+	static const SByte MinValue;
+	static const SByte Zero;
+	static const SByte One;
+	static const SByte NegativeOne;
 
 	Boolean Equals(const SByte& other) const noexcept;
 	UInt32 GetHashCode() const noexcept;
 	String ToString() const noexcept;
 };
 
+inline const SByte SByte::MaxValue = static_cast<SByte::value_type>(0x7F);
+inline const SByte SByte::MinValue = static_cast<SByte::value_type>(0x80);
+inline const SByte SByte::Zero = static_cast<SByte::value_type>(0x00);
+inline const SByte SByte::One = static_cast<SByte::value_type>(0x01);
+inline const SByte SByte::NegativeOne = static_cast<SByte::value_type>(0xFF);

@@ -459,14 +459,19 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, Int16 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs._value; }
 
-	static inline constexpr Int16 MaxValue() noexcept { return static_cast<value_type>(0x7FFF); }
-	static inline constexpr Int16 MinValue() noexcept { return static_cast<value_type>(0x8000); }
-	static inline constexpr Int16 Zero() noexcept { return static_cast<value_type>(0x0000); }
-	static inline constexpr Int16 One() noexcept { return static_cast<value_type>(0x0001); }
-	static inline constexpr Int16 NegativeOne() noexcept { return static_cast<value_type>(0xFFFF); }
+	static const Int16 MaxValue;
+	static const Int16 MinValue;
+	static const Int16 Zero;
+	static const Int16 One;
+	static const Int16 NegativeOne;
 
 	Boolean Equals(const Int16& other) const noexcept;
 	UInt32 GetHashCode() const noexcept;
 	String ToString() const noexcept;
 };
 
+inline const Int16 Int16::MaxValue = static_cast<Int16::value_type>(0x7FFF);
+inline const Int16 Int16::MinValue = static_cast<Int16::value_type>(0x8000);
+inline const Int16 Int16::Zero = static_cast<Int16::value_type>(0x0000);
+inline const Int16 Int16::One = static_cast<Int16::value_type>(0x0001);
+inline const Int16 Int16::NegativeOne = static_cast<Int16::value_type>(0xFFFF);

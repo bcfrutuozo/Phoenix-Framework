@@ -10,11 +10,12 @@ class FrameTimer
     TimeSpan  _delta;
 
 public:
-    FrameTimer() noexcept
+
+    constexpr FrameTimer() noexcept
         : _last(Clock::Now()), _delta() {
     }
 
-    void Tick() noexcept
+    constexpr void Tick() noexcept
     {
         TimePoint now = Clock::Now();
         _delta = now - _last;
@@ -22,5 +23,5 @@ public:
     }
 
     TimeSpan Delta() const noexcept { return _delta; }
-    Double   DeltaSeconds() const noexcept { return _delta.Seconds(); }
+    Double DeltaSeconds() const noexcept { return _delta.Seconds(); }
 };

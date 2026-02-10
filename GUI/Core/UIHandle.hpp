@@ -1,6 +1,6 @@
 #pragma once
 
-#include "System/Types/Fundamentals/Pointer.hpp"
+#include "System/Types.hpp"
 
 struct WindowNativeHandle
 {
@@ -15,7 +15,7 @@ struct DisplayNativeHandle
 class Window;
 class Control;
 
-struct UIHandle
+struct UIHandle : public Object<UIHandle>
 {
     enum class Type : uint8_t
     {
@@ -98,6 +98,8 @@ struct UIHandle
     {
         return !(*this == other);
     }
+
+    u32 GetHashCode() const noexcept { return Handle.GetHashCode(); }
 };
 
 struct SurfaceHandle

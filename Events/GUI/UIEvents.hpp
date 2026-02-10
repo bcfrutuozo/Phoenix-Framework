@@ -313,3 +313,105 @@ public:
     UIHandle Handle;
     UInt32 DPI;
 };
+
+class PaintEvent final : public Event
+{
+public:
+
+    PaintEvent(UIHandle handle)
+        :
+        Handle(handle)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::UI;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(UIEventType::Paint);
+    }
+
+    UIHandle Handle;
+};
+
+class FontChangedEvent final : public Event
+{
+public:
+
+    FontChangedEvent(UIHandle handle, Font* newFont, Font* previousFont)
+        :
+        Target(handle),
+        NewFont(newFont),
+        PreviousFont(previousFont)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::UI;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(UIEventType::DPIChanged);
+    }
+
+    UIHandle Target;
+    Font* NewFont;
+    Font* PreviousFont;
+};
+
+class ControlAddedEvent final : public Event
+{
+public:
+
+    ControlAddedEvent(UIHandle handle, UIHandle addedControl)
+        :
+        Target(handle),
+        Child(addedControl)
+    {
+
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::UI;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(UIEventType::ControlAdded);
+    }
+
+    UIHandle Target;
+    UIHandle Child;
+};
+
+class ControlRemovedEvent final : public Event
+{
+public:
+
+    ControlRemovedEvent(UIHandle handle, UIHandle removedControl)
+        :
+        Target(handle),
+        Child(removedControl)
+    {
+
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::UI;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(UIEventType::ControlRemoved);
+    }
+
+    UIHandle Target;
+    UIHandle Child;
+};

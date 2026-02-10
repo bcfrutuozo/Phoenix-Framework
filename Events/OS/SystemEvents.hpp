@@ -23,6 +23,7 @@ public:
 class SystemShutdownEvent final : public Event
 {
 public:
+
     SystemShutdownEvent() = default;
 
     EventCategory Category() const noexcept override
@@ -55,11 +56,11 @@ public:
     }
 };
 
-class SystemBatterLowPowerEvent final : public Event
+class SystemBatteryLowPowerEvent final : public Event
 {
 public:
 
-    SystemBatterLowPowerEvent()
+    SystemBatteryLowPowerEvent()
     {
     }
 

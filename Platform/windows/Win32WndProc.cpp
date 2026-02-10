@@ -41,7 +41,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	auto* header = reinterpret_cast<Win32ObjectHeader*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 #ifdef _DEBUG
-	Console::WriteLine(String::Concat("Handle: ", Pointer(hwnd).ToString(), " | Message: ", Message(msg, wp, lp).ToString()));
+	//Console::WriteLine(String::Concat("Handle: ", Pointer(hwnd).ToString(), " | Message: ", Message(msg, wp, lp).ToString()));
 #endif
 
 	// 🔑 SPECIAL CASE BECAUSE WM_NCCREATE RETURNS 1 WHEN SUCCESS INSTEAD OF 0
@@ -122,7 +122,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 		// Dispatch imediato
 		backend->owner->Dispatch(ev);
-		if (ev.Handled)
+		if (ev.Has(EventFlags::Handled))
 		{
 			// bloqueia o resize
 			Size z = backend->owner->GetSize();
@@ -151,7 +151,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 			backend->queue->Push(new ShowEvent(owner));
 		else
 			backend->queue->Push(new HideEvent(owner));
-		return DefWindowProc(static_cast<HWND>(owner.Handle.Get()), msg, wp, lp);;
+		return 0;
 	}
 	case WM_DPICHANGED:
 		backend->queue->Push(new DPIChangedEvent(owner, HIWORD(wp)));
@@ -160,8 +160,31 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		// -------------------- Mouse --------------------
 
 	case WM_MOUSEMOVE:
+	{
+		if (!backend->trackingMouse)
+		{
+			TRACKMOUSEEVENT tme{};
+			tme.cbSize = sizeof(TRACKMOUSEEVENT);
+			tme.dwFlags = TME_LEAVE;
+			tme.hwndTrack = hwnd;
+			tme.dwHoverTime = 100;
+
+			TrackMouseEvent(&tme);
+			backend->trackingMouse = true;
+
+			backend->queue->Push(new MouseEnterEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
+			return 0;
+		}
+
 		backend->queue->Push(new MouseMoveEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
 		return 0;
+	}
+	case WM_MOUSELEAVE:
+	{
+		backend->trackingMouse = false;
+		backend->queue->Push(new MouseLeaveEvent(owner));
+		return 0;
+	}
 
 	case WM_LBUTTONDOWN:
 		backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Left));
@@ -342,7 +365,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_POWERBROADCAST:
 		switch (TranslatePowerEvent(wp))
 		{
-		case PowerEventType::BatteryLow: backend->queue->Push(new SystemBatterLowPowerEvent());
+		case PowerEventType::BatteryLow: backend->queue->Push(new SystemBatteryLowPowerEvent());
 			break;
 		case PowerEventType::Resume: backend->queue->Push(new SystemResumePowerEvent());
 			break;
@@ -353,11 +376,42 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		}
 
 		return 0;
+
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		BeginPaint(hwnd, &ps);
+
+		PaintEvent ev(owner);
+
+		window->Dispatch(ev);
+		if (ev.Has(EventFlags::Handled))
+		{
+			EndPaint(hwnd, &ps);
+			return 0;
+		}
+
+		EndPaint(hwnd, &ps);
+		return 0;
+	}
+	case WM_ERASEBKGND:
+	{
+		HDC hdc = (HDC)wp;
+
+		RECT rc;
+		GetClientRect(hwnd, &rc);
+
+		HBRUSH brush = CreateSolidBrush(ToCOLORREF(window->GetBackgroundColor()));
+
+		FillRect(hdc, &rc, brush);
+		DeleteObject(brush);
+
+		return 1;
+	}
 	}
 
 	return DefWindowProc(hwnd, msg, wp, lp);
 }
-
 LRESULT CALLBACK Win32LabelProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	auto* header = reinterpret_cast<Win32ObjectHeader*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
@@ -383,66 +437,118 @@ LRESULT CALLBACK Win32LabelProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		return false;
 
 	auto* backend = static_cast<ControlBackend*>(header);
-	Control* window = backend->owner;
+	Control* c = backend->owner;
 
 	// 🔑 HANDLE CORRETO
-	UIHandle owner = UIHandle::FromControl(window);
+	UIHandle owner = UIHandle::FromControl(c);
 
 	switch (msg)
 	{
+	// -------------------- Mouse --------------------
+	case WM_MOUSEMOVE:
+	{
+		if (!backend->trackingMouse)
+		{
+			TRACKMOUSEEVENT tme{};
+			tme.cbSize = sizeof(TRACKMOUSEEVENT);
+			tme.dwFlags = TME_LEAVE;
+			tme.hwndTrack = hwnd;	
+			tme.dwHoverTime = 100;
+
+			TrackMouseEvent(&tme);
+			backend->trackingMouse = true;
+
+			backend->queue->Push(new MouseEnterEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
+			return 0;
+		}
+
+		backend->queue->Push(new MouseMoveEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
+		return 0;
+	}
+	case WM_MOUSELEAVE:
+	{
+		backend->trackingMouse = false;
+		backend->queue->Push(new MouseLeaveEvent(owner));
+		return 0;
+	}
+	case WM_LBUTTONDOWN:
+		backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Left));
+		return 0;
+
+	case WM_LBUTTONUP:
+		backend->queue->Push(new MouseButtonUpEvent(owner, MouseButton::Left));
+		return 0;
+
+	case WM_RBUTTONDOWN:
+		backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Right));
+		return 0;
+
+	case WM_RBUTTONUP:
+		backend->queue->Push(new MouseButtonUpEvent(owner, MouseButton::Right));
+		return 0;
+
+	case WM_MOUSEWHEEL:
+		backend->queue->Push(new MouseScrollEvent(owner, 0.0f, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA));
+		return 0;
+
+	case WM_MOUSEHWHEEL:
+		backend->queue->Push(new MouseScrollEvent(owner, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA, 0.0f));
+
+		return 0;
 	case WM_PAINT:
 	{
+		FontManager* fm = backend->context->GetFontManager();
+
+		PaintEvent ev = PaintEvent(owner);
+
+		// Dispatch imediato
+		c->OnEvent(ev);
+		if (ev.Has(EventFlags::Handled))
+		{
+			return 0;
+		}
+
 		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(backend->hwnd, &ps);
+		HDC hdc = BeginPaint(hwnd, &ps);
 
-		RECT rc;
-		GetClientRect(backend->hwnd, &rc);
+		RECT rc{ 0, 0, c->GetWidth(), c->GetHeight() };
 
-		HDC memDC = CreateCompatibleDC(hdc);
-		HBITMAP bmp = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
+		HFONT oldFont = (HFONT)SelectObject(hdc, fm->GetNativeObject(c->GetFont()).Get());
 
-		HGDIOBJ oldBmp = SelectObject(memDC, bmp);
+		SetBkMode(hdc, TRANSPARENT);
+		SetTextColor(hdc, ToCOLORREF(c->GetForeColor()));
 
-		// Fundo
-		HBRUSH brush = CreateSolidBrush(ToCOLORREF(backend->owner->GetBackgroundColor()));
-		FillRect(memDC, &rc, brush);
-
-		DeleteObject(brush);
-
-		// Fonte
-		SelectObject(memDC, backend->context->GetFontManager()->GetNativeObject(backend->owner->GetFont()).Get());
-
-		SetBkMode(memDC, TRANSPARENT);
-		SetTextColor(memDC, ToCOLORREF(backend->owner->GetForeColor()));
-
-		UINT drawflags = Win32ConvertTextFlags(backend->owner->GetHorizontalAlignment(), backend->owner->GetVerticalAlignment(), backend->owner->GetTextFormat());
-
-		Array<wchar_t> buffer = backend->owner->GetText().ToWideCharArray();
+		Array<wchar_t> buffer = c->GetText().ToWideCharArray();
 
 		DrawTextExW(
-			memDC,
+			hdc,
 			buffer.GetData(),
 			buffer.GetLength(),
 			&rc,
-			drawflags,
-			nullptr);
+			Win32ConvertTextFlags(
+				c->GetHorizontalAlignment(),
+				c->GetVerticalAlignment(),
+				c->GetTextFormat()
+			),
+			nullptr
+		);
 
-		BitBlt(
-			hdc, 0, 0,
-			rc.right, rc.bottom,
-			memDC, 0, 0,
-			SRCCOPY);
-
-		SelectObject(memDC, oldBmp);
-		DeleteObject(bmp);
-		DeleteDC(memDC);
-
-		EndPaint(backend->hwnd, &ps);
+		SelectObject(hdc, oldFont);
+		EndPaint(hwnd, &ps);
 		return 0;
 	}
 
 	case WM_ERASEBKGND:
-		return 1; // evita flicker
+	{
+		HDC hdc = (HDC)wp;
+		RECT rc{ 0,0, c->GetWidth(), c->GetHeight() };
+
+		HBRUSH brush = CreateSolidBrush(ToCOLORREF(c->GetBackgroundColor()));
+		FillRect(hdc, &rc, brush);
+		DeleteObject(brush);
+
+		return 1; // fundo já foi pintado
+	}
 	case WM_DPICHANGED:
 		if (backend) backend->queue->Push(new DPIChangedEvent(owner, HIWORD(wp)));
 		return 0;

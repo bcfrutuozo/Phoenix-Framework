@@ -460,13 +460,17 @@ public:
 	template<typename T, enable_if_t<is_promotion_primitive<T>::value, bool> = true>
 	friend inline constexpr Boolean operator>=(T const& lhs, UInt32 const& rhs) noexcept requires(is_promotion_primitive<T>::value) { return lhs >= rhs._value; }
 
-	static inline constexpr UInt32 MaxValue() noexcept { return static_cast<value_type>(0xFFFFFFFF); }
-	static inline constexpr UInt32 MinValue() noexcept { return static_cast<value_type>(0x00000000); }
-	static inline constexpr UInt32 Zero() noexcept { return static_cast<value_type>(0x00000000); }
-	static inline constexpr UInt32 One() noexcept { return static_cast<value_type>(0x00000001); }
+	static const UInt32 MaxValue;
+	static const UInt32 MinValue;
+	static const UInt32 Zero;
+	static const UInt32 One;
 
 	Boolean Equals(const UInt32& other) const noexcept;
 	UInt32 GetHashCode() const noexcept;
 	String ToString() const noexcept;
 };
 
+inline const UInt32 UInt32::MaxValue = static_cast<UInt32::value_type>(0xFFFFFFFF);
+inline const UInt32 UInt32::MinValue = static_cast<UInt32::value_type>(0x00000000);
+inline const UInt32 UInt32::Zero = static_cast<UInt32::value_type>(0x00000000);
+inline const UInt32 UInt32::One = static_cast<UInt32::value_type>(0x00000001);

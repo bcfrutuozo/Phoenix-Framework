@@ -5,6 +5,56 @@
 #include "System/Input/MouseButton.hpp"
 #include "GUI/Core/UIHandle.hpp"
 
+class MouseEnterEvent final : public Event
+{
+public:
+
+    MouseEnterEvent(UIHandle target, Int32 x, Int32 y)
+        :
+        Target(target),
+        X(x),
+        Y(y)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Mouse;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(MouseEventType::Enter);
+    }
+
+    UIHandle Target;
+    Int32 X;
+    Int32 Y;
+};
+
+class MouseLeaveEvent final : public Event
+{
+public:
+
+    MouseLeaveEvent(UIHandle target)
+        :
+        Target(target)
+    {
+    }
+
+    EventCategory Category() const noexcept override
+    {
+        return EventCategory::Mouse;
+    }
+
+    UInt32 TypeId() const noexcept override
+    {
+        return static_cast<uint32_t>(MouseEventType::Leave);
+    }
+
+    UIHandle Target;
+};
+
 class MouseMoveEvent final : public Event
 {
 public:
