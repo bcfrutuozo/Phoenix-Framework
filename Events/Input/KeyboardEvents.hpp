@@ -22,9 +22,9 @@ public:
         return EventCategory::Keyboard;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(KeyEventType::Down);
+        return static_cast<uint8_t>(KeyEventType::Down);
     }
 
     UIHandle Target;
@@ -48,9 +48,9 @@ public:
         return EventCategory::Keyboard;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(KeyEventType::Up);
+        return static_cast<uint8_t>(KeyEventType::Up);
     }
 
     UIHandle Target;

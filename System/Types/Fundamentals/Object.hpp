@@ -68,7 +68,7 @@ struct IEquatable
 	// A classe T deve implementar:
 	//   bool Equals(const T&) const noexcept
 	//
-	bool Equals(const T& other) const noexcept {
+	auto Equals(const T& other) const noexcept {
 		return static_cast<const T*>(this)->Equals(other);
 	}
 };

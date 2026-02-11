@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/Types.hpp"
+#include "System/String.hpp"
 
 class Point final: public Object<Point>
 {
@@ -26,6 +27,8 @@ public:
 	constexpr Point(Point&&) = default;
 	constexpr Point& operator=(Point const&) = default;
 	constexpr Point& operator=(Point&&) = default;
+	inline friend Boolean operator==(const Point& a, const Point& b) noexcept { return a.Equals(b); }
+	inline friend Boolean operator!=(const Point& a, const Point& b) noexcept { return !(a == b); }
 
 	inline constexpr i32 GetX() const noexcept { return _x; }
 	inline constexpr void SetX(i32 x) noexcept { _x = x; }
@@ -50,6 +53,10 @@ public:
 	inline constexpr Point& operator-=(const Point& other) noexcept { *this = Subtract(other); return *this;}
 	inline constexpr Point& operator*=(const Point& other) noexcept { *this = Multiply(other); return *this;}
 	inline constexpr Point& operator/=(const Point& other) noexcept { *this = Divide(other); return *this;}
+
+	Boolean Equals(const Point& other) const noexcept;
+	u32 GetHashCode() const noexcept;
+	String ToString() const noexcept;
 
 private:
 

@@ -10,24 +10,13 @@ class Window;
 
 struct Win32ObjectHeader
 {
-    EventQueue* queue;
-    UIContext* context;
-    bool trackingMouse = false;
-    HWND hwnd;
+    EventQueue* EventQueue;
+    UIContext* Context;
+    bool TrackingMouse = false;
+    HWND Handle;
 };
 
-struct ControlBackend : Win32ObjectHeader
+struct NativeBackend : Win32ObjectHeader
 {
-    Control* owner;
-
-};
-
-struct LabelBackend : ControlBackend
-{
-
-};
-
-struct WindowBackend : Win32ObjectHeader
-{
-    Window* owner;
+    Control* Owner;
 };

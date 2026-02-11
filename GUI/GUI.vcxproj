@@ -102,13 +102,14 @@
     <ClCompile Include="Rendering\Vulkan\VulkanSurface.cpp" />
     <ClCompile Include="Label\Label.cpp" />
     <ClCompile Include="System\MessageBox.cpp" />
+    <ClCompile Include="TextBox\TextBox.cpp" />
     <ClCompile Include="Window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Context\UIContext.hpp" />
+    <ClInclude Include="Controls.hpp" />
     <ClInclude Include="Core\Control.hpp" />
-    <ClInclude Include="Core\ControlBackend.hpp" />
-    <ClInclude Include="Core\ControlDescriptor.hpp" />
+    <ClInclude Include="Core\NativeBackend.hpp" />
     <ClInclude Include="Core\HorizontalAlignment.hpp" />
     <ClInclude Include="Core\TextFormat.hpp" />
     <ClInclude Include="Core\VerticalAlignment.hpp" />
@@ -118,13 +119,10 @@
     <ClInclude Include="Rendering\Vulkan\VulkanInstance.hpp" />
     <ClInclude Include="Rendering\Vulkan\VulkanSurface.hpp" />
     <ClInclude Include="Label\Label.hpp" />
-    <ClInclude Include="Label\LabelBackend.hpp" />
     <ClInclude Include="System\MessageBox.hpp" />
-    <ClInclude Include="System\MessageBoxBackend.hpp" />
     <ClInclude Include="System\MessageBoxDescriptor.hpp" />
+    <ClInclude Include="TextBox\TextBox.hpp" />
     <ClInclude Include="Window\Window.hpp" />
-    <ClInclude Include="Window\WindowBackend.hpp" />
-    <ClInclude Include="Window\WindowDescriptor.hpp" />
     <ClInclude Include="Core\UIHandle.hpp" />
   </ItemGroup>
   <ItemGroup>

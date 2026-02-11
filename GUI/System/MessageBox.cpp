@@ -1,5 +1,5 @@
 #include "MessageBox.hpp"
-#include "MessageBoxBackend.hpp"
+#include "GUI/Core/NativeBackend.hpp"
 #include "GUI/Window/Window.hpp"
 
 MessageBox::~MessageBox()

@@ -42,15 +42,12 @@
     <ClCompile Include="Context\UIContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextBox\TextBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window\Window.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Window\WindowBackend.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Window\WindowDescriptor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\UIHandle.hpp">
@@ -68,19 +65,13 @@
     <ClInclude Include="Label\Label.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Label\LabelBackend.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Control.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\ControlBackend.hpp">
+    <ClInclude Include="Core\NativeBackend.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="System\MessageBox.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="System\MessageBoxBackend.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="System\MessageBoxDescriptor.hpp">
@@ -104,7 +95,10 @@
     <ClInclude Include="Context\UIContext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\ControlDescriptor.hpp">
+    <ClInclude Include="TextBox\TextBox.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Controls.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

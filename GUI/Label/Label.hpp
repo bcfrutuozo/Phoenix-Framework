@@ -10,11 +10,11 @@ public:
 
     Label(const String& text, i32 x, i32 y);
     ~Label() = default;
-
-    String ToString() const noexcept;
+    
+    Label(const Label&) = delete;
+    Label& operator=(const Label&) = delete;
 
     void Initialize(InitializationContext ctx) override;
 
-protected:
-
+    String ToString() const noexcept;
 };

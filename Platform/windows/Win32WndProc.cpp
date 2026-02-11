@@ -1,8 +1,7 @@
 #include "Win32WndProc.hpp"
 #include "Win32ObjectHeader.hpp"
 #include "Events/EventQueue.hpp"
-#include "GUI/Core/ControlBackend.hpp"
-#include "GUI/Window/WindowBackend.hpp"
+#include "GUI/Core/NativeBackend.hpp"
 #include "Events/Input/KeyboardEvents.hpp"
 #include "Events/GUI/UIEvents.hpp"
 #include "Events/Input/MouseEvents.hpp"
@@ -11,8 +10,7 @@
 #include "Win32KeyMap.hpp"
 #include "Win32PowerMap.hpp"
 #include "System/Console/Console.hpp"
-#include "GUI/Window/Window.hpp"
-#include "GUI/Core/Control.hpp"
+#include "GUI/Controls.hpp"
 #include "GUI/Drawing/Font.hpp"
 #include "GUI/Context/FontManager.hpp"
 #include "System/Exceptions.hpp"
@@ -36,6 +34,9 @@
 #include <imm.h>
 #pragma comment(lib, "imm32.lib")
 
+#include <commctrl.h>
+#pragma comment(lib, "Comctl32.lib")
+
 LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	auto* header = reinterpret_cast<Win32ObjectHeader*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
@@ -52,16 +53,16 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)h);
 
-		auto* backend = static_cast<WindowBackend*>(h);
-		backend->hwnd = hwnd;
+		auto* backend = static_cast<NativeBackend*>(h);
+		backend->Handle = hwnd;
 		return true;
 	}
 
 	if (!header)
 		return false;
 
-	auto* backend = static_cast<WindowBackend*>(header);
-	Window* window = backend->owner;
+	auto* backend = static_cast<NativeBackend*>(header);
+	Window* window = (Window*)backend->Owner;
 
 	// 🔑 HANDLE CORRETO
 	UIHandle owner = UIHandle::FromWindow(window);
@@ -76,9 +77,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		// -------------------- Window --------------------
 	case WM_NCDESTROY:
 	{
-		auto* backend = reinterpret_cast<WindowBackend*>(
-			GetWindowLongPtr(hwnd, GWLP_USERDATA)
-			);
+		auto* backend = reinterpret_cast<NativeBackend*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 		if (backend)
 		{
@@ -94,21 +93,21 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		uint32_t height = HIWORD(lp);
 
 		// Resize sempre acontece
-		backend->queue->Push(new ResizedEvent(owner, width, height));
+		backend->EventQueue->Push(new ResizedEvent(owner, width, height));
 
 		// Estados especiais
 		switch (wp)
 		{
 		case SIZE_MINIMIZED:
-			backend->queue->Push(new MinimizeEvent(owner));
+			backend->EventQueue->Push(new MinimizeEvent(owner));
 			break;
 
 		case SIZE_MAXIMIZED:
-			backend->queue->Push(new MaximizeEvent(owner));
+			backend->EventQueue->Push(new MaximizeEvent(owner));
 			break;
 
 		case SIZE_RESTORED:
-			backend->queue->Push(new RestoreEvent(owner));
+			backend->EventQueue->Push(new RestoreEvent(owner));
 			break;
 		}
 
@@ -121,11 +120,11 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		ResizingEvent ev = ResizingEvent(owner, (int32_t)r->right, (int32_t)r->bottom);
 
 		// Dispatch imediato
-		backend->owner->Dispatch(ev);
+		window->Dispatch(ev);
 		if (ev.Has(EventFlags::Handled))
 		{
 			// bloqueia o resize
-			Size z = backend->owner->GetSize();
+			Size z = backend->Owner->GetSize();
 			r->right = (int32_t)z.GetWidth();
 			r->bottom = (int32_t)z.GetHeight();
 			return 0;
@@ -134,34 +133,34 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		return 0;
 	}
 	case WM_MOVE:
-		backend->queue->Push(new MoveEvent(owner, (int)(short)LOWORD(lp), (int)(short)HIWORD(lp)));
+		backend->EventQueue->Push(new MoveEvent(owner, (int)(short)LOWORD(lp), (int)(short)HIWORD(lp)));
 		break;
 
 	case WM_SETFOCUS:
-		backend->queue->Push(new FocusGainedEvent(owner));
+		backend->EventQueue->Push(new FocusGainedEvent(owner));
 		break;
 
 	case WM_KILLFOCUS:
-		backend->queue->Push(new FocusLostEvent(owner));
+		backend->EventQueue->Push(new FocusLostEvent(owner));
 		break;
 
 	case WM_SHOWWINDOW:
 	{
 		if (wp)
-			backend->queue->Push(new ShowEvent(owner));
+			backend->EventQueue->Push(new ShowEvent(owner));
 		else
-			backend->queue->Push(new HideEvent(owner));
+			backend->EventQueue->Push(new HideEvent(owner));
 		return 0;
 	}
 	case WM_DPICHANGED:
-		backend->queue->Push(new DPIChangedEvent(owner, HIWORD(wp)));
+		backend->EventQueue->Push(new DPIChangedEvent(owner, HIWORD(wp)));
 		break;
 
 		// -------------------- Mouse --------------------
 
 	case WM_MOUSEMOVE:
 	{
-		if (!backend->trackingMouse)
+		if (!backend->TrackingMouse)
 		{
 			TRACKMOUSEEVENT tme{};
 			tme.cbSize = sizeof(TRACKMOUSEEVENT);
@@ -170,68 +169,67 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 			tme.dwHoverTime = 100;
 
 			TrackMouseEvent(&tme);
-			backend->trackingMouse = true;
+			backend->TrackingMouse = true;
 
-			backend->queue->Push(new MouseEnterEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
+			backend->EventQueue->Push(new MouseEnterEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
 			return 0;
 		}
 
-		backend->queue->Push(new MouseMoveEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
+		backend->EventQueue->Push(new MouseMoveEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
 		return 0;
 	}
 	case WM_MOUSELEAVE:
 	{
-		backend->trackingMouse = false;
-		backend->queue->Push(new MouseLeaveEvent(owner));
+		backend->TrackingMouse = false;
+		backend->EventQueue->Push(new MouseLeaveEvent(owner));
 		return 0;
 	}
 
 	case WM_LBUTTONDOWN:
-		backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Left));
+		backend->EventQueue->Push(new MouseButtonDownEvent(owner, MouseButton::Left));
 		return 0;
 
 	case WM_LBUTTONUP:
-		backend->queue->Push(new MouseButtonUpEvent(owner, MouseButton::Left));
+		backend->EventQueue->Push(new MouseButtonUpEvent(owner, MouseButton::Left));
 		return 0;
 
 	case WM_RBUTTONDOWN:
-		backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Right));
+		backend->EventQueue->Push(new MouseButtonDownEvent(owner, MouseButton::Right));
 		return 0;
 
 	case WM_RBUTTONUP:
-		backend->queue->Push(new MouseButtonUpEvent(owner, MouseButton::Right));
+		backend->EventQueue->Push(new MouseButtonUpEvent(owner, MouseButton::Right));
 		return 0;
 
 	case WM_MOUSEWHEEL:
-		backend->queue->Push(new MouseScrollEvent(owner, 0.0f, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA));
+		backend->EventQueue->Push(new MouseScrollEvent(owner, 0.0f, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA));
 		return 0;
 
 	case WM_MOUSEHWHEEL:
-		backend->queue->Push(new MouseScrollEvent(owner, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA, 0.0f));
+		backend->EventQueue->Push(new MouseScrollEvent(owner, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA, 0.0f));
 		return 0;
 
 		// -------------------- Keyboard --------------------
 
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
-		backend->queue->Push(new KeyDownEvent(owner, TranslateKey((uint32_t)wp, (uint32_t)lp), (lp & (1 << 30)) != 0));
+		backend->EventQueue->Push(new KeyDownEvent(owner, TranslateKey((uint32_t)wp, (uint32_t)lp), (lp & (1 << 30)) != 0));
 		return 0;
 
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
-		backend->queue->Push(new KeyUpEvent(owner, TranslateKey((uint32_t)wp, (uint32_t)lp)));
+		backend->EventQueue->Push(new KeyUpEvent(owner, TranslateKey((uint32_t)wp, (uint32_t)lp)));
 		return 0;
 
 		// -------------------- Text / IME --------------------
 
 	case WM_CHAR:
-		backend->queue->Push(new TextInputEvent(owner, static_cast<uint32_t>(wp)));
+		backend->EventQueue->Push(new TextInputEvent(owner, static_cast<uint32_t>(wp)));
 		return 0;
 
-		// IME reservado (implementar depois)
 	case WM_IME_STARTCOMPOSITION:
 	{
-		backend->queue->Push(new ImeCompositionEvent(
+		backend->EventQueue->Push(new ImeCompositionEvent(
 			owner,
 			ImeCompositionType::Start,
 			String::Empty(),
@@ -280,7 +278,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 					0
 				);
 
-				backend->queue->Push(new ImeCompositionEvent(
+				backend->EventQueue->Push(new ImeCompositionEvent(
 					owner,
 					ImeCompositionType::Update,
 					text,
@@ -317,7 +315,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 				String text(buffer.Data(), len);
 
-				backend->queue->Push(new ImeCompositionEvent(
+				backend->EventQueue->Push(new ImeCompositionEvent(
 					owner,
 					ImeCompositionType::Commit,
 					text,
@@ -331,7 +329,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	}
 	case WM_IME_ENDCOMPOSITION:
 	{
-		backend->queue->Push(new ImeCompositionEvent(
+		backend->EventQueue->Push(new ImeCompositionEvent(
 			owner,
 			ImeCompositionType::End,
 			String::Empty(),
@@ -342,15 +340,15 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	// -------------------- System --------------------
 
 	case WM_QUIT:
-		backend->queue->Push(new SystemQuitEvent());
+		backend->EventQueue->Push(new SystemQuitEvent());
 		break;
 
 	case WM_ENDSESSION:
-		backend->queue->Push(new SystemShutdownEvent());
+		backend->EventQueue->Push(new SystemShutdownEvent());
 		return 0;
 	case WM_CLOSE:
 	{
-		backend->queue->Push(new CloseEvent(owner));
+		backend->EventQueue->Push(new CloseEvent(owner));
 
 		// IMPORTANTE:
 		// NÃO chame DestroyWindow aqui automaticamente
@@ -359,24 +357,25 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	}
 	case WM_DESTROY:
 	{
-		backend->queue->Push(new DestroyEvent(owner));
+		backend->EventQueue->Push(new DestroyEvent(owner));
 		return 0;
 	}
 	case WM_POWERBROADCAST:
+	{
 		switch (TranslatePowerEvent(wp))
 		{
-		case PowerEventType::BatteryLow: backend->queue->Push(new SystemBatteryLowPowerEvent());
+		case PowerEventType::BatteryLow: backend->EventQueue->Push(new SystemBatteryLowPowerEvent());
 			break;
-		case PowerEventType::Resume: backend->queue->Push(new SystemResumePowerEvent());
+		case PowerEventType::Resume: backend->EventQueue->Push(new SystemResumePowerEvent());
 			break;
-		case PowerEventType::Suspend: backend->queue->Push(new SystemSuspendPowerEvent());
+		case PowerEventType::Suspend: backend->EventQueue->Push(new SystemSuspendPowerEvent());
 			break;
-		case PowerEventType::Unknown: backend->queue->Push(new SystemUnknownPowerEvent());
+		case PowerEventType::Unknown: backend->EventQueue->Push(new SystemUnknownPowerEvent());
 			break;
 		}
 
 		return 0;
-
+	}
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
@@ -412,92 +411,93 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	return DefWindowProc(hwnd, msg, wp, lp);
 }
+
 LRESULT CALLBACK Win32LabelProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	auto* header = reinterpret_cast<Win32ObjectHeader*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 #ifdef _DEBUG
-	Console::WriteLine(String::Concat("Handle: ", Pointer(hwnd).ToString(), " | Message: ", Message(msg, wp, lp).ToString()));
+	//Console::WriteLine(String::Concat("Handle: ", Pointer(hwnd).ToString(), " | Message: ", Message(msg, wp, lp).ToString()));
 #endif
 
 	// 🔑 SPECIAL CASE BECAUSE WM_NCCREATE RETURNS 1 WHEN SUCCESS INSTEAD OF 0
 	if (msg == WM_NCCREATE)
 	{
 		auto* cs = reinterpret_cast<CREATESTRUCT*>(lp);
-		auto* h = static_cast<ControlBackend*>(cs->lpCreateParams);
+		auto* h = static_cast<NativeBackend*>(cs->lpCreateParams);
 
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)h);
 
-		auto* backend = static_cast<ControlBackend*>(h);
-		backend->hwnd = hwnd;
+		auto* backend = static_cast<NativeBackend*>(h);
+		backend->Handle = hwnd;
 		return true;
 	}
 
 	if (!header)
 		return false;
 
-	auto* backend = static_cast<ControlBackend*>(header);
-	Control* c = backend->owner;
+	auto* backend = static_cast<NativeBackend*>(header);
+	Control* c = backend->Owner;
 
 	// 🔑 HANDLE CORRETO
 	UIHandle owner = UIHandle::FromControl(c);
 
 	switch (msg)
 	{
-	// -------------------- Mouse --------------------
+		// -------------------- Mouse --------------------
 	case WM_MOUSEMOVE:
 	{
-		if (!backend->trackingMouse)
+		if (!backend->TrackingMouse)
 		{
 			TRACKMOUSEEVENT tme{};
 			tme.cbSize = sizeof(TRACKMOUSEEVENT);
 			tme.dwFlags = TME_LEAVE;
-			tme.hwndTrack = hwnd;	
+			tme.hwndTrack = hwnd;
 			tme.dwHoverTime = 100;
 
 			TrackMouseEvent(&tme);
-			backend->trackingMouse = true;
+			backend->TrackingMouse = true;
 
-			backend->queue->Push(new MouseEnterEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
+			backend->EventQueue->Push(new MouseEnterEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
 			return 0;
 		}
 
-		backend->queue->Push(new MouseMoveEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
+		backend->EventQueue->Push(new MouseMoveEvent(owner, GET_X_LPARAM(lp), GET_Y_LPARAM(lp)));
 		return 0;
 	}
 	case WM_MOUSELEAVE:
 	{
-		backend->trackingMouse = false;
-		backend->queue->Push(new MouseLeaveEvent(owner));
+		backend->TrackingMouse = false;
+		backend->EventQueue->Push(new MouseLeaveEvent(owner));
 		return 0;
 	}
 	case WM_LBUTTONDOWN:
-		backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Left));
+		backend->EventQueue->Push(new MouseButtonDownEvent(owner, MouseButton::Left));
 		return 0;
 
 	case WM_LBUTTONUP:
-		backend->queue->Push(new MouseButtonUpEvent(owner, MouseButton::Left));
+		backend->EventQueue->Push(new MouseButtonUpEvent(owner, MouseButton::Left));
 		return 0;
 
 	case WM_RBUTTONDOWN:
-		backend->queue->Push(new MouseButtonDownEvent(owner, MouseButton::Right));
+		backend->EventQueue->Push(new MouseButtonDownEvent(owner, MouseButton::Right));
 		return 0;
 
 	case WM_RBUTTONUP:
-		backend->queue->Push(new MouseButtonUpEvent(owner, MouseButton::Right));
+		backend->EventQueue->Push(new MouseButtonUpEvent(owner, MouseButton::Right));
 		return 0;
 
 	case WM_MOUSEWHEEL:
-		backend->queue->Push(new MouseScrollEvent(owner, 0.0f, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA));
+		backend->EventQueue->Push(new MouseScrollEvent(owner, 0.0f, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA));
 		return 0;
 
 	case WM_MOUSEHWHEEL:
-		backend->queue->Push(new MouseScrollEvent(owner, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA, 0.0f));
+		backend->EventQueue->Push(new MouseScrollEvent(owner, (float)GET_WHEEL_DELTA_WPARAM(wp) / WHEEL_DELTA, 0.0f));
 
 		return 0;
 	case WM_PAINT:
 	{
-		FontManager* fm = backend->context->GetFontManager();
+		FontManager* fm = backend->Context->GetFontManager();
 
 		PaintEvent ev = PaintEvent(owner);
 
@@ -550,9 +550,109 @@ LRESULT CALLBACK Win32LabelProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		return 1; // fundo já foi pintado
 	}
 	case WM_DPICHANGED:
-		if (backend) backend->queue->Push(new DPIChangedEvent(owner, HIWORD(wp)));
+		if (backend) backend->EventQueue->Push(new DPIChangedEvent(owner, HIWORD(wp)));
 		return 0;
 	}
 
 	return DefWindowProcW(hwnd, msg, wp, lp);
+}
+
+LRESULT CALLBACK Win32TextBoxProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR, DWORD_PTR refData)
+{
+	NativeBackend* backend = reinterpret_cast<NativeBackend*>(refData);
+	TextBox* owner = (TextBox*)backend->Owner;
+
+	switch (msg)
+	{
+		// ------------------------------------
+			// TECLADO
+			// ------------------------------------
+	case WM_CHAR:
+	{
+		//if (!self->IsCharAllowed(wParam))
+		return 0; // bloqueia caractere
+
+		break; // deixa o EDIT processar
+	}
+
+	case WM_KEYDOWN:
+	{
+		if (wp == VK_RETURN)
+		{
+			// evita beep
+			return 0;
+		}
+
+		return 0;
+	}
+
+	// ------------------------------------
+	// CLIPBOARD
+	// ------------------------------------
+	case WM_PASTE:
+	{
+		//if (self->numericOnly)
+		//	return 0; // bloqueia paste
+		break;
+	}
+
+	// ------------------------------------
+	// TEXTO
+	// ------------------------------------
+	case WM_SETTEXT:
+	{
+		//self->internalChange = true;
+		LRESULT r = DefSubclassProc(hwnd, msg, wp, lp);
+		//self->internalChange = false;
+		return r;
+	}
+
+	case WM_COMMAND:
+	{
+		if (HIWORD(wp) == EN_CHANGE)
+			//self->OnTextChanged();
+			break;
+	}
+
+	// ------------------------------------
+	// FOCO
+	// ------------------------------------
+	case WM_SETFOCUS:
+	case WM_KILLFOCUS:
+	{
+		InvalidateRect(hwnd, nullptr, TRUE);
+		break;
+	}
+
+	// ------------------------------------
+	// VISUAL
+	// ------------------------------------
+	case WM_ERASEBKGND:
+	{
+		HDC hdc = (HDC)wp;
+		RECT rc;
+		GetClientRect(backend->Handle, &rc);
+		HBRUSH brush = CreateSolidBrush(ToCOLORREF(owner->GetBackgroundColor()));
+		FillRect(hdc, &rc, brush);
+		DeleteObject(brush);
+
+		return TRUE; // evita flicker
+	}
+
+	case WM_CTLCOLOREDIT:
+	{
+		HDC hdc = (HDC)wp;
+		SetTextColor(hdc, ToCOLORREF(owner->GetForeColor()));
+		//return (LRESULT)owner->bgBrush;
+		return 0;
+	}
+
+	case WM_SETCURSOR:
+	{
+		SetCursor(LoadCursor(nullptr, IDC_IBEAM));
+		return TRUE;
+	}
+	}
+
+	return DefSubclassProc(hwnd, msg, wp, lp);
 }

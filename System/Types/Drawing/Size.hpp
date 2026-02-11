@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/Types.hpp"
+#include "System/String.hpp"
 
 class Size final: public Object<Size>
 {
@@ -24,6 +25,8 @@ public:
 	constexpr Size(Size&&) = default;
 	constexpr Size& operator=(Size const&) = default;
 	constexpr Size& operator=(Size&&) = default;
+	inline friend Boolean operator==(const Size& a, const Size& b) noexcept { return a.Equals(b); }
+	inline friend Boolean operator!=(const Size& a, const Size& b) noexcept { return !(a == b); }
 
 	inline constexpr i32 GetWidth() const noexcept { return _width; }
 	inline constexpr void SetWidth(i32 width) noexcept { _width = width; }
@@ -48,6 +51,10 @@ public:
 	inline constexpr Size& operator-=(const Size& other) noexcept { *this = Subtract(other); return *this; }
 	inline constexpr Size& operator*=(const Size& other) noexcept { *this = Multiply(other); return *this; }
 	inline constexpr Size& operator/=(const Size& other) noexcept { *this = Divide(other); return *this; }
+
+	Boolean Equals(const Size& other) const noexcept;
+	u32 GetHashCode() const noexcept;
+	String ToString() const noexcept;
 
 private:
 

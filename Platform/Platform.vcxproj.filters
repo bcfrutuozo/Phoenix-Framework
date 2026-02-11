@@ -27,19 +27,10 @@
     <ClCompile Include="windows\Win32PowerMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\WindowBackend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows\LabelBackend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows\ControlBackend.cpp">
+    <ClCompile Include="windows\NativeBackend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\Win32WndProc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows\MessageBoxBackend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\FontManager.cpp">

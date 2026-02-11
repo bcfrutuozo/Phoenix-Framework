@@ -4,6 +4,8 @@
 #include "System/Types.hpp"
 #include "GUI/Core/UIHandle.hpp"
 
+class Font;
+
 class ResizedEvent final: public Event
 {
 public:
@@ -20,9 +22,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Resized);
+        return static_cast<uint8_t>(UIEventType::Resized);
     }
 
     UIHandle Handle;
@@ -47,9 +49,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Resizing);
+        return static_cast<uint8_t>(UIEventType::Resizing);
     }
 
     UIHandle Handle;
@@ -72,9 +74,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Minimize);
+        return static_cast<uint8_t>(UIEventType::Minimize);
     }
 
     UIHandle Handle;
@@ -95,9 +97,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Maximize);
+        return static_cast<uint8_t>(UIEventType::Maximize);
     }
 
     UIHandle Handle;
@@ -118,9 +120,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Restore);
+        return static_cast<uint8_t>(UIEventType::Restore);
     }
 
     UIHandle Handle;
@@ -140,9 +142,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Close);
+        return static_cast<uint8_t>(UIEventType::Close);
     }
 
     UIHandle Handle;
@@ -162,9 +164,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Destroy);
+        return static_cast<uint8_t>(UIEventType::Destroy);
     }
 
     UIHandle Handle;
@@ -187,9 +189,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Move);
+        return static_cast<uint8_t>(UIEventType::Move);
     }
 
     UIHandle Handle;
@@ -212,9 +214,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::FocusGained);
+        return static_cast<uint8_t>(UIEventType::FocusGained);
     }
 
     UIHandle Handle;
@@ -235,9 +237,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::FocusLost);
+        return static_cast<uint8_t>(UIEventType::FocusLost);
     }
 
     UIHandle Handle;
@@ -258,9 +260,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Show);
+        return static_cast<uint8_t>(UIEventType::Show);
     }
 
     UIHandle Handle;
@@ -281,9 +283,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Hide);
+        return static_cast<uint8_t>(UIEventType::Hide);
     }
 
     UIHandle Handle;
@@ -305,9 +307,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::DPIChanged);
+        return static_cast<uint8_t>(UIEventType::DPIChanged);
     }
 
     UIHandle Handle;
@@ -329,9 +331,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::Paint);
+        return static_cast<uint8_t>(UIEventType::Paint);
     }
 
     UIHandle Handle;
@@ -354,9 +356,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::DPIChanged);
+        return static_cast<uint8_t>(UIEventType::DPIChanged);
     }
 
     UIHandle Target;
@@ -381,9 +383,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::ControlAdded);
+        return static_cast<uint8_t>(UIEventType::ControlAdded);
     }
 
     UIHandle Target;
@@ -407,9 +409,9 @@ public:
         return EventCategory::UI;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(UIEventType::ControlRemoved);
+        return static_cast<uint8_t>(UIEventType::ControlRemoved);
     }
 
     UIHandle Target;

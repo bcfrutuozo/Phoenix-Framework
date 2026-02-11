@@ -11,7 +11,6 @@ enum class TextFormat : uint8_t
 	NoClip = 1 << 3,
 };
 
-
 inline TextFormat operator|(TextFormat a, TextFormat b)
 {
 	return static_cast<TextFormat>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));

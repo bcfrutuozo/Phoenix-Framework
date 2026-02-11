@@ -14,9 +14,9 @@ public:
         return EventCategory::System;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(SystemEventType::Quit);
+        return static_cast<uint8_t>(SystemEventType::Quit);
     }
 };
 
@@ -31,9 +31,9 @@ public:
         return EventCategory::System;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(SystemEventType::Shutdown);
+        return static_cast<uint8_t>(SystemEventType::Shutdown);
     }
 };
 
@@ -50,9 +50,9 @@ public:
         return EventCategory::System;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(PowerEventType::Resume);
+        return static_cast<uint8_t>(PowerEventType::Resume);
     }
 };
 
@@ -69,9 +69,9 @@ public:
         return EventCategory::System;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(PowerEventType::BatteryLow);
+        return static_cast<uint8_t>(PowerEventType::BatteryLow);
     }
 };
 
@@ -88,9 +88,9 @@ public:
         return EventCategory::System;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(PowerEventType::Unknown);
+        return static_cast<uint8_t>(PowerEventType::Unknown);
     }
 };
 
@@ -107,8 +107,8 @@ public:
         return EventCategory::System;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(PowerEventType::Suspend);
+        return static_cast<uint8_t>(PowerEventType::Suspend);
     }
 };

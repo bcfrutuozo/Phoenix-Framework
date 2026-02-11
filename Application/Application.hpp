@@ -37,6 +37,7 @@ public:
         _exitRequested = true;
     }
 
+
 protected:
 
     Application()

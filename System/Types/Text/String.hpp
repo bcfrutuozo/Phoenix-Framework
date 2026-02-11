@@ -437,7 +437,7 @@ public:
 
 private:
 
-	static constexpr uint32_t SSO_CAPACITY = 22;
+	static constexpr uint32_t SSO_CAPACITY = 23;
 	static constexpr uint32_t FLAG_SSO = 1 << 0;
 	static constexpr uint32_t FLAG_ASCII_KNOWN = 1 << 1;
 	static constexpr uint32_t FLAG_IS_ASCII = 1 << 2;

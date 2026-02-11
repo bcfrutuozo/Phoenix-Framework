@@ -160,6 +160,7 @@
     <ClInclude Include="Types.hpp" />
     <ClInclude Include="Types\Drawing\Color.hpp" />
     <ClInclude Include="Types\Drawing\KnownColors.hpp" />
+    <ClInclude Include="Types\Drawing\Padding.hpp" />
     <ClInclude Include="Types\Drawing\Point.hpp" />
     <ClInclude Include="Types\Drawing\Size.hpp" />
     <ClInclude Include="Types\Primitives\Boolean.hpp" />
@@ -203,6 +204,9 @@
     <ClCompile Include="Text\unicode\UnicodeCase_utils.cpp" />
     <ClCompile Include="Text\unicode\UnicodeNormalization_utils.cpp" />
     <ClCompile Include="Types\Drawing\Color.cpp" />
+    <ClCompile Include="Types\Drawing\Padding.cpp" />
+    <ClCompile Include="Types\Drawing\Point.cpp" />
+    <ClCompile Include="Types\Drawing\Size.cpp" />
     <ClCompile Include="Types\Primitives\Boolean.cpp" />
     <ClCompile Include="Types\Primitives\Byte.cpp" />
     <ClCompile Include="Types\Primitives\Char.cpp" />

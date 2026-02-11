@@ -22,9 +22,9 @@ public:
         return EventCategory::Mouse;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(MouseEventType::Enter);
+        return static_cast<uint8_t>(MouseEventType::Enter);
     }
 
     UIHandle Target;
@@ -47,9 +47,9 @@ public:
         return EventCategory::Mouse;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(MouseEventType::Leave);
+        return static_cast<uint8_t>(MouseEventType::Leave);
     }
 
     UIHandle Target;
@@ -72,9 +72,9 @@ public:
         return EventCategory::Mouse;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(MouseEventType::Move);
+        return static_cast<uint8_t>(MouseEventType::Move);
     }
 
     UIHandle Target;
@@ -98,9 +98,9 @@ public:
         return EventCategory::Mouse;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(MouseEventType::ButtonDown);
+        return static_cast<uint8_t>(MouseEventType::ButtonDown);
     }
 
     UIHandle Target;
@@ -123,9 +123,9 @@ public:
         return EventCategory::Mouse;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(MouseEventType::ButtonUp);
+        return static_cast<uint8_t>(MouseEventType::ButtonUp);
     }
 
     UIHandle Target;
@@ -149,9 +149,9 @@ public:
         return EventCategory::Mouse;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(MouseEventType::Scroll);
+        return static_cast<uint8_t>(MouseEventType::Scroll);
     }
 
     UIHandle Target;

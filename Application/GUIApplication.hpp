@@ -2,8 +2,8 @@
 
 #include "Application.hpp"
 
-#include "GUI/Window/Window.hpp"
-#include "GUI/Window/WindowBackend.hpp"
+#include "GUI/Controls.hpp"
+#include "GUI/Core/NativeBackend.hpp"
 #include "Events/GUI/UIEvents.hpp"
 #include "System/Collections/Dictionary.hpp"
 #include "GUI/Core/UIHandle.hpp"
@@ -65,7 +65,7 @@ protected:
     void Tick() override
     {
         // Poll GLOBAL do backend
-        PollWindowBackendEvents(nullptr);
+        PollBackendEvents();
 
         // 2️⃣ Render frame (somente janelas com Vulkan)
         for (auto i = 0; i < _count; ++i)

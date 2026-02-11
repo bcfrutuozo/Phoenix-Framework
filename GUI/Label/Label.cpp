@@ -1,6 +1,5 @@
 #include "Label.hpp"
-#include "LabelBackend.hpp"
-#include "GUI/Core/ControlBackend.hpp"
+#include "GUI/Core/NativeBackend.hpp"
 #include "GUI/Context/UIContext.hpp"
 #include "GUI/Window/Window.hpp"
 
@@ -8,25 +7,23 @@ class Window;
 
 Label::Label(const String& text, i32 x, i32 y)
 	:
-	Control(text, x, y)
+	Control(text, x, y, 100, 23)
 {
 
 }
 
 void Label::Initialize(InitializationContext ctx)
 {
-	_parentBackend = ctx.WindowBackend;
-	_desc->UIContext = ctx.UIContext;
-	if(!_desc->Font) _desc->Font = ctx.Font ? ctx.UIContext->GetDefaultFont() : ctx.Font;
-	_impl = CreateLabelBackend(this, _parentBackend);
-	if (_desc->AutoSize) 
-	{
-		_desc->Size = CalculateControlSizeByText(_impl);
-		ResizeControl(_impl);
-	}
+	_parent = ctx.Parent;
+	_uiContext = ctx.UIContext;
+	if (!_font) _font = ctx.Font ? ctx.UIContext->GetDefaultFont() : ctx.Font;
+	_impl = CreateLabelBackend(this, GetParentBackend(), ctx.Queue, ctx.UIContext);
+	
+	if(_autoSize)
+		RedrawWithSize(CalculateControlSizeByText(_impl));
 }
 
 String Label::ToString() const noexcept
 {
-	return _desc->Text;
+	return String::Concat("Label, Text: ", _text);
 }

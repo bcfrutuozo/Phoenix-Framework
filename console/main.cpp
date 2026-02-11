@@ -45,8 +45,11 @@ int main(int argc, char* argv[])
     VulkanContext* cx = new VulkanContext(w);
     w->AttachRenderContext(cx);
     Window* w2 = new Window( "Teste", 1000, 1000 );
-    Label* l = new Label("Teste  Label 1", 50, 50);
+    Label* l = new Label("Teste Label 1", 50, 50);
     Label* l2 = new Label("Teste Label 2", 100, 300);
+    TextBox* tb = new TextBox("Teste", 10, 10);
+    tb->SetBackgroundColor(Color::Black);
+    tb->SetForeColor(Color::White);
     Font f = Font("Elephant", 30, 200);
     l->DisableAutoSize();
     l->SetTextFormat(TextFormat::WordWrap);
@@ -58,6 +61,7 @@ int main(int argc, char* argv[])
     app->Attach(w2);
     w2->AddControl(l);
     w2->AddControl(l2);
+    w2->AddControl(tb);
     
     app->Attach(w);
     

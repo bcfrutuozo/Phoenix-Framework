@@ -21,9 +21,9 @@ public:
         return EventCategory::Text;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(TextEventType::Input);
+        return static_cast<uint8_t>(TextEventType::Input);
     }
 
     UIHandle Target;
@@ -64,9 +64,9 @@ public:
         return EventCategory::Text;
     }
 
-    UInt32 TypeId() const noexcept override
+    u8 TypeId() const noexcept override
     {
-        return static_cast<uint32_t>(TextEventType::ImeComposition);
+        return static_cast<uint8_t>(TextEventType::ImeComposition);
     }
 
 public:

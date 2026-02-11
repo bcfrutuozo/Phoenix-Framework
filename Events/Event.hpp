@@ -39,7 +39,7 @@ public:
 	virtual ~Event() = default;
 
 	virtual EventCategory Category() const noexcept = 0;
-	virtual u32 TypeId() const noexcept = 0;
+	virtual u8 TypeId() const noexcept = 0;
 
 	Boolean Is(EventCategory cat) const noexcept
 	{

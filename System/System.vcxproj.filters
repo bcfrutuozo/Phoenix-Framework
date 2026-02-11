@@ -279,6 +279,9 @@
     <ClInclude Include="Types\Drawing\KnownColors.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Types\Drawing\Padding.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Types\Primitives\Boolean.cpp">
@@ -387,6 +390,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Types\Drawing\Color.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Types\Drawing\Padding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Types\Drawing\Point.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Types\Drawing\Size.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
