@@ -53,12 +53,12 @@ protected:
         Window::InitializationContext ctx;
         ctx.Queue = &_events;
         ctx.UIContext = _uiContext;
+        ctx.EventSink = this;
 
         // Initialize all windows first
         for (auto i = 0; i < _count; ++i) 
         {
             _windows[i]->Initialize(ctx);
-            _windows[i]->Show();
         }
     }
 

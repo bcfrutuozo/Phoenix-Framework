@@ -300,6 +300,7 @@ public:
         Handle(handle),
         DPI(dpi)
     {
+        Flags = EventFlags::Propagable;
     }
 
     EventCategory Category() const noexcept override

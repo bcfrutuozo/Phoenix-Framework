@@ -17,9 +17,9 @@ void Label::Initialize(InitializationContext ctx)
 	_parent = ctx.Parent;
 	_uiContext = ctx.UIContext;
 	if (!_font) _font = ctx.Font ? ctx.UIContext->GetDefaultFont() : ctx.Font;
-	_impl = CreateLabelBackend(this, GetParentBackend(), ctx.Queue, ctx.UIContext);
-	
-	if(_autoSize)
+	_impl = CreateLabelBackend(this, GetParentBackend(), ctx.Queue, ctx.UIContext, ctx.EventSink);
+	SetState(Flags::Created, true);
+	if(GetState(Flags::AutoSize))
 		RedrawWithSize(CalculateControlSizeByText(_impl));
 }
 

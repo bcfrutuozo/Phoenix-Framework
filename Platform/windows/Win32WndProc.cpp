@@ -13,6 +13,7 @@
 #include "GUI/Controls.hpp"
 #include "GUI/Drawing/Font.hpp"
 #include "GUI/Context/FontManager.hpp"
+#include "Events\IEventSink.hpp"
 #include "System/Exceptions.hpp"
 #include "Win32Helpers.hpp"
 
@@ -120,7 +121,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		ResizingEvent ev = ResizingEvent(owner, (int32_t)r->right, (int32_t)r->bottom);
 
 		// Dispatch imediato
-		window->Dispatch(ev);
+		backend->EventSink->Dispatch(ev);
 		if (ev.Has(EventFlags::Handled))
 		{
 			// bloqueia o resize
@@ -383,7 +384,7 @@ LRESULT CALLBACK Win32WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 		PaintEvent ev(owner);
 
-		window->Dispatch(ev);
+		backend->EventSink->Dispatch(ev);
 		if (ev.Has(EventFlags::Handled))
 		{
 			EndPaint(hwnd, &ps);
@@ -502,7 +503,7 @@ LRESULT CALLBACK Win32LabelProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		PaintEvent ev = PaintEvent(owner);
 
 		// Dispatch imediato
-		c->OnEvent(ev);
+		backend->EventSink->Dispatch(ev);
 		if (ev.Has(EventFlags::Handled))
 		{
 			return 0;

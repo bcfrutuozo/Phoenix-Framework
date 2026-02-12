@@ -8,7 +8,6 @@
 #include "Win32WndProc.hpp"
 #include "GUI/System/MessageBoxDescriptor.hpp"
 
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -24,6 +23,21 @@ void DestroyControlBackend(NativeBackend* backend)
 void ShowControlBackend(NativeBackend* backend)
 {
 	ShowWindow(backend->Handle, SW_SHOW);
+}
+
+void HideControlBackend(NativeBackend* backend)
+{
+	ShowWindow(backend->Handle, SW_HIDE);
+}
+
+void NB_Enable(NativeBackend* backend)
+{
+	EnableWindow(backend->Handle, TRUE);
+}
+
+void NB_Disable(NativeBackend* backend)
+{
+	EnableWindow(backend->Handle, FALSE);
 }
 
 Size CalculateControlSizeByText(NativeBackend* backend)
@@ -110,36 +124,46 @@ SurfaceHandle GetWindowSurfaceHandle(NativeBackend* backend)
 // ===============================
 // Backend API (usada por Window.cpp)
 // ===============================
-NativeBackend* CreateWindowBackend(Window* newWindow, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext)
+NativeBackend* CreateWindowBackend(Window* window, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext, IEventSink* sink)
 {
 	RegisterWindowClass();
 
 	auto* backend = new NativeBackend{};
-	backend->Owner = (Control*)newWindow;
+	backend->Owner = (Control*)window;
 
 	DWORD style = WS_OVERLAPPEDWINDOW;
 	if (!backend->Owner->IsResizable())
 		style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX | WS_EX_APPWINDOW);
+
+	if (window->IsVisible())
+		style |= WS_VISIBLE;
+
+	if (!window->IsEnabled())
+		style |= WS_DISABLED;
 
 	HWND parentHwnd = parentBackend ? parentBackend->Handle : nullptr;
 
 	backend->Handle = CreateWindowExW(
 		0,
 		kWindowClassName,
-		backend->Owner->GetText().ToWideCharArray().GetData(),
+		window->GetText().ToWideCharArray().GetData(),
 		style,
-		backend->Owner->GetX(),
-		backend->Owner->GetY(),
-		backend->Owner->GetWidth(),
-		backend->Owner->GetHeight(),
+		window->GetX(),
+		window->GetY(),
+		window->GetWidth(),
+		window->GetHeight(),
 		parentHwnd,
 		nullptr,
 		GetModuleHandle(nullptr),
 		backend
 	);
 
+	if (!backend->Handle)
+		throw Win32Exception(GetLastError());
+
 	backend->Context = uiContext;
 	backend->EventQueue = queue;
+	backend->EventSink = sink;
 
 	return backend;
 }
@@ -203,8 +227,8 @@ void SetWindowSize(NativeBackend* backend)
 		nullptr,   // não altera z-order
 		0,
 		0,
-		backend->Owner->GetSize().GetWidth(),
-		backend->Owner->GetSize().GetHeight(),
+		backend->Owner->GetWidth(),
+		backend->Owner->GetHeight(),
 		SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
 	);
 
@@ -267,7 +291,7 @@ static void RegisterTextBoxClass()
 
 constexpr UINT_PTR TEXTBOX_SUBCLASS_ID = 1;
 
-NativeBackend* CreateTextBoxBackend(TextBox* textBox, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext)
+NativeBackend* CreateTextBoxBackend(TextBox* textBox, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext, IEventSink* sink)
 {
 	RegisterTextBoxClass();
 
@@ -276,30 +300,45 @@ NativeBackend* CreateTextBoxBackend(TextBox* textBox, NativeBackend* parentBacke
 
 	HWND parentHwnd = parentBackend ? parentBackend->Handle : nullptr;
 
+	DWORD style = WS_CHILD | WS_CLIPSIBLINGS;
+
+	if (textBox->IsVisible())
+		style |= WS_VISIBLE;
+
+	if (!textBox->IsEnabled())
+		style |= WS_DISABLED;
+
 	backend->Handle = CreateWindowExW(
 		0,
 		L"Edit",
 		nullptr, // Text is set OnPaint()
-		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
-		backend->Owner->GetLocation().GetX(),
-		backend->Owner->GetLocation().GetY(),
-		backend->Owner->GetSize().GetWidth(),
-		backend->Owner->GetSize().GetHeight(),
+		style,
+		textBox->GetX(),
+		textBox->GetY(),
+		textBox->GetWidth(),
+		textBox->GetHeight(),
 		parentHwnd,
 		nullptr,
 		GetModuleHandle(nullptr),
 		backend
 	);
 
-	SetWindowSubclass(
+	if (!backend->Handle)
+		throw Win32Exception(GetLastError());
+
+	int err = SetWindowSubclass(
 		backend->Handle,
 		Win32TextBoxProc,
 		TEXTBOX_SUBCLASS_ID,
 		reinterpret_cast<DWORD_PTR>(backend) // this = TextBox*
 	);
 
+	if (!err)
+		throw Win32Exception(GetLastError());
+
 	backend->EventQueue = queue;
 	backend->Context = uiContext;
+	backend->EventSink = sink;
 
 	return backend;
 }
@@ -332,7 +371,7 @@ static void RegisterLabelClass()
 	registered = true;
 }
 
-NativeBackend* CreateLabelBackend(Label* label, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext)
+NativeBackend* CreateLabelBackend(Label* label, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext, IEventSink* sink)
 {
 	RegisterLabelClass();
 
@@ -341,23 +380,35 @@ NativeBackend* CreateLabelBackend(Label* label, NativeBackend* parentBackend, Ev
 
 	HWND parentHwnd = parentBackend ? parentBackend->Handle : nullptr;
 
+	DWORD style = WS_CHILD | WS_CLIPSIBLINGS;
+
+	if (label->IsVisible())
+		style |= WS_VISIBLE;
+
+	if (!label->IsEnabled())
+		style |= WS_DISABLED;
+
 	backend->Handle = CreateWindowExW(
 		0,
 		kLabelClassName,
 		nullptr, // Text is set OnPaint()
-		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
-		backend->Owner->GetLocation().GetX(),
-		backend->Owner->GetLocation().GetY(),
-		backend->Owner->GetSize().GetWidth(),
-		backend->Owner->GetSize().GetHeight(),
+		style,
+		label->GetX(),
+		label->GetY(),
+		label->GetWidth(),
+		label->GetHeight(),
 		parentHwnd,
 		nullptr,
 		GetModuleHandle(nullptr),
 		backend
 	);
 
+	if (!backend->Handle)
+		throw Win32Exception(GetLastError());
+
 	backend->EventQueue = queue;
 	backend->Context = uiContext;
+	backend->EventSink = sink;
 
 	return backend;
 }

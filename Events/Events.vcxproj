@@ -96,6 +96,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="IEventSink.hpp" />
     <ClInclude Include="Input\KeyboardEvents.hpp" />
     <ClInclude Include="Input\MouseEvents.hpp" />
     <ClInclude Include="GUI\BehavioralEvents.hpp" />

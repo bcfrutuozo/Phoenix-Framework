@@ -23,8 +23,14 @@ public:
         if (_event.Has(EventFlags::Handled))
             return false;
 
-        EventConsumeGuard guard(_event); // Force consume event in case of throw
-        fn(static_cast<T&>(_event));
+        if (!_event.Has(EventFlags::Propagable)) {
+            EventConsumeGuard guard(_event); // Force consume event in case of throw
+            fn(static_cast<T&>(_event));
+        }
+        else {
+            fn(static_cast<T&>(_event));
+        }
+
         return true;
     }
     

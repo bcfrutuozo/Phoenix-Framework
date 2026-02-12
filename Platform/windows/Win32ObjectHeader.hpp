@@ -7,6 +7,7 @@ class Control;
 class EventQueue;
 class UIContext;
 class Window;
+class IEventSink;
 
 struct Win32ObjectHeader
 {
@@ -14,6 +15,7 @@ struct Win32ObjectHeader
     UIContext* Context;
     bool TrackingMouse = false;
     HWND Handle;
+    IEventSink* EventSink;
 };
 
 struct NativeBackend : Win32ObjectHeader

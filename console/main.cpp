@@ -15,6 +15,8 @@ static void TesteLabel(MouseButtonDownEvent* b)
 {
     Control* c = b->Target.AsControl();
 
+    b->Clear(EventFlags::Consumed);
+
     if (b->Button == MouseButton::Right)
     {
         c->SetWidth(c->GetWidth() - 10);

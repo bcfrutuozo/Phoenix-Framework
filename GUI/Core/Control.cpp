@@ -45,9 +45,10 @@ Control::Control(Control* parent, const String& text, i32 left, i32 top, i32 wid
 
 Control::~Control()
 {
-	if (_impl && !_backendDestroyed)
+	if (_impl && !GetState(Flags::BackendDestroyed))
 	{
 		DestroyWindowBackend(_impl);
+		SetState(Flags::BackendDestroyed, true);
 		for (auto c : _controls)
 		{
 			delete c;
@@ -64,7 +65,7 @@ Boolean Control::IsHandledCreated() const noexcept
 
 void Control::Close()
 {
-	if (!_impl || _backendDestroyed)
+	if (!_impl || GetState(Flags::BackendDestroyed))
 		return;
 
 	// Isso dispara WM_CLOSE → WM_DESTROY
@@ -83,17 +84,17 @@ Window* Control::FindWindow() noexcept
 
 void Control::EnableResize()
 {
-	if (IsResizable()) return;
+	if (GetState(Flags::Resizable)) return;
 
-	_resizable = true;
+	SetState(Flags::Resizable, true);
 	return SetWindowResize(_impl);
 }
 
 void Control::DisableResize()
 {
-	if (!IsResizable()) return;
+	if (!GetState(Flags::Resizable)) return;
 
-	_resizable = false;
+	SetState(Flags::Resizable, false);
 	return SetWindowResize(_impl);
 }
 
@@ -132,12 +133,44 @@ void Control::SetEnabled(Boolean enabled)
 
 void Control::Show()
 {
-	ShowControlBackend(_impl);
+	if (!GetState(Flags::Visible)) 
+	{
+		ShowControlBackend(_impl);
+		SetState(Flags::Visible, true);
+	}
 }
 
+void Control::Hide()
+{
+	if (GetState(Flags::Visible))
+	{
+		HideControlBackend(_impl);
+		SetState(Flags::Visible, false);
+	}
+}
 void Control::Update()
 {
 	UpdateControlBackend(_impl);
+}
+
+void Control::Enable() noexcept
+{
+	if (!GetState(Flags::Enabled))
+	{
+		NB_Enable(_impl);
+		SetState(Flags::Enabled, true);
+		//OnEnableChange call
+	}
+}
+
+void Control::Disable() noexcept
+{
+	if (GetState(Flags::Enabled))
+	{
+		NB_Disable(_impl);
+		SetState(Flags::Enabled, false);
+		//OnEnabledChange call
+	}
 }
 
 Boolean Control::OnEvent(Event& e)
@@ -418,7 +451,7 @@ void Control::SetSize(i32 x, i32 y) noexcept
 
 void Control::SetSize(Size s) noexcept
 {
-	if (_autoSize) return;
+	if (GetState(Flags::AutoSize)) return;
 
 	_width = s.GetWidth();
 	_height = s.GetHeight();
@@ -455,7 +488,7 @@ void Control::SetFont(Font* font) noexcept
 		if (_font == font) return;
 		_font = font;
 
-		if (_autoSize)
+		if (GetState(Flags::AutoSize))
 		{
 			SetSize(CalculateControlSizeByText(_impl));
 			ResizeControl(_impl);

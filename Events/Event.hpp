@@ -14,6 +14,9 @@ enum class EventFlags : uint8_t
 
 	// 👤 User suppress flag
 	Handled = 1 << 1,
+
+	// Is never consumed
+	Propagable = 1 << 2,
 };
 
 constexpr EventFlags operator|(EventFlags a, EventFlags b)

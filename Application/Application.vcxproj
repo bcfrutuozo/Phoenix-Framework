@@ -154,9 +154,6 @@
     <ProjectReference Include="..\GUI\GUI.vcxproj">
       <Project>{9e38c72a-3bff-4ca3-9a19-9200099a8fbf}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Platform\Platform.vcxproj">
-      <Project>{3b9f6753-3979-4ee1-8565-a84c3df21b9c}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\System\System.vcxproj">
       <Project>{9b07618e-b7f0-4ec3-a9ba-10054b18a750}</Project>
     </ProjectReference>

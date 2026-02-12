@@ -2,14 +2,15 @@
 
 #include "System/Framework.hpp"
 #include "Events/Event.hpp"
+#include "Events/IEventSink.hpp"
 #include "Events/EventQueue.hpp"
 #include "System/Types.hpp"
 #include "GUI/System/MessageBox.hpp"
 
-
-class Application
+class Application : public IEventSink
 {
 public:
+
     virtual ~Application() = default;
 
     void Run()
@@ -37,7 +38,11 @@ public:
         _exitRequested = true;
     }
 
-
+    void Dispatch(Event& e) override
+    {
+        OnEvent(e);
+    }
+    
 protected:
 
     Application()

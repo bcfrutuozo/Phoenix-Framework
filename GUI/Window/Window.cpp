@@ -25,7 +25,7 @@ Window::Window(const String& title, i32 x, i32 y, i32 width, i32 height, Boolean
 	:
 	Control(title, x, y, width, height)
 {
-	_resizable = isResizable;
+	SetState(Flags::Resizable, isResizable);
 }
 
 Window::~Window()
@@ -54,7 +54,8 @@ void Window::Initialize(InitializationContext ctx)
 	_uiContext = ctx.UIContext;
 	_parent = ctx.Parent;
 	if (!_font) _font = ctx.UIContext->GetDefaultFont();
-	_impl = CreateWindowBackend(this, GetParentBackend(), ctx.Queue, ctx.UIContext);
+	_impl = CreateWindowBackend(this, GetParentBackend(), ctx.Queue, ctx.UIContext, ctx.EventSink);
+	SetState(Flags::Created, true);
 	if (_vk) _vk->Initialize();
 	
 	for (auto c : _controls)
@@ -63,6 +64,7 @@ void Window::Initialize(InitializationContext ctx)
 		cCtx.Font = _font;
 		cCtx.UIContext = _uiContext;
 		cCtx.Parent = this;
+		cCtx.EventSink = ctx.EventSink;
 		c->Initialize(cCtx);
 	}
 }

@@ -9,6 +9,7 @@
 struct NativeBackend;
 class EventQueue;
 class UIContext;
+class IEventSink;
 
 class Window;
 class Label;
@@ -25,7 +26,10 @@ Size CalculateControlSizeByText(NativeBackend* backend);
 void ResizeControl(NativeBackend* backend);
 void DestroyWindowBackend(NativeBackend* backend);
 void ShowWindowBackend(NativeBackend* backend);
+void HideControlBackend(NativeBackend* backend);
 void UpdateWindowBackend(NativeBackend* backend);
+void NB_Enable(NativeBackend* backend);
+void NB_Disable(NativeBackend* backend);
 SurfaceHandle GetWindowSurfaceHandle(NativeBackend* backend);
 String GetWindowTitle(NativeBackend* backend);
 void SetWindowTitle(NativeBackend* backend);
@@ -34,9 +38,9 @@ void SetWindowLocation(NativeBackend* backend);
 void SetWindowResize(NativeBackend* backend);
 
 // Create
-NativeBackend* CreateWindowBackend(Window* window, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext);
-NativeBackend* CreateLabelBackend(Label* label, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext);
-NativeBackend* CreateTextBoxBackend(TextBox* textBox, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext);
+NativeBackend* CreateWindowBackend(Window* window, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext, IEventSink* sink);
+NativeBackend* CreateLabelBackend(Label* label, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext, IEventSink* sink);
+NativeBackend* CreateTextBoxBackend(TextBox* textBox, NativeBackend* parentBackend, EventQueue* queue, UIContext* uiContext, IEventSink* sink);
 
 // Destroy
 void DestroyControlBackend(NativeBackend* backend);
