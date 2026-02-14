@@ -9,25 +9,17 @@ class KeyDownEvent final : public Event
 {
 public:
 
-    KeyDownEvent(UIHandle target, KeyCode key, Boolean repeat)
+    KeyDownEvent(UIHandle handle, KeyCode key, Boolean repeat)
         :
-        Target(target),
+        Event(handle, Category, Type),
         Key(key),
         Repeat(repeat)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Keyboard;
-    }
+    static constexpr EventCategory Category = EventCategory::Keyboard;
+    static constexpr u8 Type = static_cast<uint8_t>(KeyEventType::Down);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(KeyEventType::Down);
-    }
-
-    UIHandle Target;
     KeyCode Key;
     Boolean Repeat;
 };
@@ -36,23 +28,15 @@ class KeyUpEvent final : public Event
 {
 public:
 
-    KeyUpEvent(UIHandle target, KeyCode key)
+    KeyUpEvent(UIHandle handle, KeyCode key)
         :
-        Target(target),
+        Event(handle, Category, Type),
         Key(key)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Keyboard;
-    }
+    static constexpr EventCategory Category = EventCategory::Keyboard;
+    static constexpr u8 Type = static_cast<uint8_t>(KeyEventType::Up);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(KeyEventType::Up);
-    }
-
-    UIHandle Target;
     KeyCode Key;
 };

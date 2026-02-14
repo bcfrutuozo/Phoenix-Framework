@@ -5,79 +5,21 @@
 #include "System/Input/MouseButton.hpp"
 #include "GUI/Core/UIHandle.hpp"
 
-class MouseEnterEvent final : public Event
-{
-public:
-
-    MouseEnterEvent(UIHandle target, Int32 x, Int32 y)
-        :
-        Target(target),
-        X(x),
-        Y(y)
-    {
-    }
-
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Mouse;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(MouseEventType::Enter);
-    }
-
-    UIHandle Target;
-    Int32 X;
-    Int32 Y;
-};
-
-class MouseLeaveEvent final : public Event
-{
-public:
-
-    MouseLeaveEvent(UIHandle target)
-        :
-        Target(target)
-    {
-    }
-
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Mouse;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(MouseEventType::Leave);
-    }
-
-    UIHandle Target;
-};
-
 class MouseMoveEvent final : public Event
 {
 public:
 
-    MouseMoveEvent(UIHandle target, Int32 x, Int32 y)
+    MouseMoveEvent(UIHandle handle, Int32 x, Int32 y)
         :
-        Target(target),
+        Event(handle, Category, Type),
         X(x),
         Y(y)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Mouse;
-    }
+    static constexpr EventCategory Category = EventCategory::Mouse;
+    static constexpr u8 Type = static_cast<uint8_t>(MouseEventType::Move);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(MouseEventType::Move);
-    }
-
-    UIHandle Target;
     Int32 X;
     Int32 Y;
 };
@@ -86,24 +28,16 @@ class MouseButtonDownEvent final : public Event
 {
 public:
 
-    MouseButtonDownEvent(UIHandle target, MouseButton button)
+    MouseButtonDownEvent(UIHandle handle, MouseButton button)
         :
-        Target(target),
+        Event(handle, Category, Type),
         Button(button)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Mouse;
-    }
+    static constexpr EventCategory Category = EventCategory::Mouse;
+    static constexpr u8 Type = static_cast<uint8_t>(MouseEventType::ButtonDown);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(MouseEventType::ButtonDown);
-    }
-
-    UIHandle Target;
     MouseButton Button;
 };
 
@@ -111,24 +45,16 @@ class MouseButtonUpEvent final : public Event
 {
 public:
 
-    MouseButtonUpEvent(UIHandle target, MouseButton button)
+    MouseButtonUpEvent(UIHandle handle, MouseButton button)
         :
-        Target(target),
+        Event(handle, Category, Type),
         Button(button)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Mouse;
-    }
+    static constexpr EventCategory Category = EventCategory::Mouse;
+    static constexpr u8 Type = static_cast<uint8_t>(MouseEventType::ButtonUp);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(MouseEventType::ButtonUp);
-    }
-
-    UIHandle Target;
     MouseButton Button;
 };
 
@@ -136,25 +62,50 @@ class MouseScrollEvent final : public Event
 {
 public:
 
-    MouseScrollEvent(UIHandle target, Single xoffset, Single yoffset)
+    MouseScrollEvent(UIHandle handle, Single xoffset, Single yoffset)
         :
-        Target(target),
+        Event(handle, Category, Type),
         XOffset(xoffset),
         YOffset(yoffset)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Mouse;
-    }
+    static constexpr EventCategory Category = EventCategory::Mouse;
+    static constexpr u8 Type = static_cast<uint8_t>(MouseEventType::Scroll);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(MouseEventType::Scroll);
-    }
-
-    UIHandle Target;
     Single XOffset;
     Single YOffset;
+};
+
+class MouseEnterEvent final : public Event
+{
+public:
+
+    MouseEnterEvent(UIHandle handle, Int32 x, Int32 y)
+        :
+        Event(handle, Category, Type),
+        X(x),
+        Y(y)
+    {
+    }
+
+    static constexpr EventCategory Category = EventCategory::Mouse;
+    static constexpr u8 Type = static_cast<uint8_t>(MouseEventType::Enter);
+
+    Int32 X;
+    Int32 Y;
+};
+
+class MouseLeaveEvent final : public Event
+{
+public:
+
+    MouseLeaveEvent(UIHandle handle)
+        :
+        Event(handle, Category, Type)
+    {
+    }
+
+    static constexpr EventCategory Category = EventCategory::Mouse;
+    static constexpr u8 Type = static_cast<uint8_t>(MouseEventType::Leave);
 };

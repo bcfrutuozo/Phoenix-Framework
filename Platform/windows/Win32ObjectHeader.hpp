@@ -3,7 +3,7 @@
 #include "System/Types.hpp"
 #include "Win32Types.hpp"
 
-class Control;
+class ControlBase;
 class EventQueue;
 class UIContext;
 class Window;
@@ -20,5 +20,5 @@ struct Win32ObjectHeader
 
 struct NativeBackend : Win32ObjectHeader
 {
-    Control* Owner;
+    ControlBase* Owner;
 };

@@ -1,9 +1,10 @@
 #include "Application/Phoenix.hpp"
+#include "GUI/Core/UIHandle.hpp"
 
-static void ChangeWindowSize(ResizingEvent* e)
+static void ChangeWindowSize(ResizingEvent& e)
 {
-    printf("Resize: %u x %u\n", e->Width, e->Height);
-    Console::WriteLine(e->Handle.AsWindow()->GetText());
+    printf("Resize: %u x %u\n", e.Width, e.Height);
+    Console::WriteLine(((ControlBase*)(e.Handle))->GetText());
 }
 
 static void WindowClosed()
@@ -11,26 +12,26 @@ static void WindowClosed()
     printf("Window closed\n");
 }
 
-static void TesteLabel(MouseButtonDownEvent* b)
+static void TesteLabel(MouseButtonDownEvent& b)
 {
-    Control* c = b->Target.AsControl();
+    ControlBase* c = b.Handle;
 
-    b->Clear(EventFlags::Consumed);
+    b.Clear(EventFlags::Consumed);
 
-    if (b->Button == MouseButton::Right)
+    if (b.Button == MouseButton::Right)
     {
         c->SetWidth(c->GetWidth() - 10);
     }
-    else if(b->Button == MouseButton::Left)
+    else if(b.Button == MouseButton::Left)
     {
         c->SetWidth(c->GetWidth() + 10);
     }
 }
 
-static void ChangeFont(FontChangedEvent* e)
+static void ChangeFont(FontChangedEvent& e)
 {
-    auto f1 = e->NewFont;
-    auto f2 = e->PreviousFont;
+    auto f1 = e.NewFont;
+    auto f2 = e.PreviousFont;
 
     bool c = f1 == f2;
 }

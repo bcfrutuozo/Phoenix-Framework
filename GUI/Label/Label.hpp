@@ -4,8 +4,10 @@
 #include "System/Types.hpp"
 #include "GUI/Core/Control.hpp"
 
-class Label final : public Control
+class Label final : public Control<Label>
 {
+    friend class Control<Label>;
+
 public:
 
     Label(const String& text, i32 x, i32 y);
@@ -14,7 +16,9 @@ public:
     Label(const Label&) = delete;
     Label& operator=(const Label&) = delete;
 
-    void Initialize(InitializationContext ctx) override;
-
     String ToString() const noexcept;
+
+private:
+
+    void InitializeImpl(InitializationContext& ctx);
 };

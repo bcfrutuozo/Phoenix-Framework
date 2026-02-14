@@ -7,118 +7,88 @@ class SystemQuitEvent final : public Event
 {
 public:
 
-	SystemQuitEvent()
+	SystemQuitEvent(UIHandle handle)
+		:
+		Event(handle, Category, Type)
 	{
 		Flags = EventFlags::Propagable;
 	}
 
-	EventCategory Category() const noexcept override
-	{
-		return EventCategory::System;
-	}
-
-	u8 TypeId() const noexcept override
-	{
-		return static_cast<uint8_t>(SystemEventType::Quit);
-	}
+	static constexpr EventCategory Category = EventCategory::System;
+	static constexpr u8 Type = static_cast<uint8_t>(SystemEventType::Quit);
 };
 
 class SystemShutdownEvent final : public Event
 {
 public:
 
-	SystemShutdownEvent()
+	SystemShutdownEvent(UIHandle handle)
+		:
+		Event(handle, Category, Type)
 	{
 		Flags = EventFlags::Propagable;
 	}
 
-	EventCategory Category() const noexcept override
-	{
-		return EventCategory::System;
-	}
-
-	u8 TypeId() const noexcept override
-	{
-		return static_cast<uint8_t>(SystemEventType::Shutdown);
-	}
+	static constexpr EventCategory Category = EventCategory::System;
+	static constexpr u8 Type = static_cast<uint8_t>(SystemEventType::Shutdown);
 };
 
 class SystemResumePowerEvent final : public Event
 {
 public:
 
-	SystemResumePowerEvent()
+	SystemResumePowerEvent(UIHandle handle)
+		:
+		Event(handle, Category, Type)
 	{
 		Flags = EventFlags::Propagable;
 	}
 
-	EventCategory Category() const noexcept override
-	{
-		return EventCategory::System;
-	}
-
-	u8 TypeId() const noexcept override
-	{
-		return static_cast<uint8_t>(PowerEventType::Resume);
-	}
+	static constexpr EventCategory Category = EventCategory::System;
+	static constexpr u8 Type = static_cast<uint8_t>(SystemEventType::PowerResume);
 };
 
 class SystemBatteryLowPowerEvent final : public Event
 {
 public:
 
-	SystemBatteryLowPowerEvent()
+	SystemBatteryLowPowerEvent(UIHandle handle)
+		:
+		Event(handle, Category, Type)
 	{
 		Flags = EventFlags::Propagable;
 	}
 
-	EventCategory Category() const noexcept override
-	{
-		return EventCategory::System;
-	}
-
-	u8 TypeId() const noexcept override
-	{
-		return static_cast<uint8_t>(PowerEventType::BatteryLow);
-	}
+	static constexpr EventCategory Category = EventCategory::System;
+	static constexpr u8 Type = static_cast<uint8_t>(SystemEventType::PowerBatteryLow);
 };
 
 class SystemUnknownPowerEvent final : public Event
 {
 public:
 
-	SystemUnknownPowerEvent()
+	SystemUnknownPowerEvent(UIHandle handle)
+		:
+		Event(handle, Category, Type)
 	{
 		Flags = EventFlags::Propagable;
 	}
 
-	EventCategory Category() const noexcept override
-	{
-		return EventCategory::System;
-	}
-
-	u8 TypeId() const noexcept override
-	{
-		return static_cast<uint8_t>(PowerEventType::Unknown);
-	}
+	static constexpr EventCategory Category = EventCategory::System;
+	static constexpr u8 Type = static_cast<uint8_t>(SystemEventType::PowerUnknown);
 };
 
 class SystemSuspendPowerEvent final : public Event
 {
 public:
 
-	SystemSuspendPowerEvent()
+	SystemSuspendPowerEvent(UIHandle handle)
+		:
+		Event(handle, Category, Type)
 	{
 		Flags = EventFlags::Propagable;
 	}
 
-	EventCategory Category() const noexcept override
-	{
-		return EventCategory::System;
-	}
-
-	u8 TypeId() const noexcept override
-	{
-		return static_cast<uint8_t>(PowerEventType::Suspend);
-	}
+	static constexpr EventCategory Category = EventCategory::System;
+	static constexpr u8 Type = static_cast<uint8_t>(SystemEventType::PowerSuspend);
 };

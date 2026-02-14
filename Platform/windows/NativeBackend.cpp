@@ -42,7 +42,7 @@ void NB_Disable(NativeBackend* backend)
 
 Size CalculateControlSizeByText(NativeBackend* backend)
 {
-	Control* c = backend->Owner;
+	ControlBase* c = backend->Owner;
 	FontManager* fm = backend->Context->GetFontManager();
 
 	RECT rc{ 0,0, c->GetWidth(), c->GetHeight()};
@@ -82,7 +82,7 @@ void SetEnabledControlBackend(NativeBackend* backend, Boolean enabled)
 
 void ResizeControl(NativeBackend* backend)
 {
-	Control* c = backend->Owner;
+	ControlBase* c = backend->Owner;
 	SetWindowPos(backend->Handle, 
 		nullptr, 
 		0, 
@@ -129,7 +129,7 @@ NativeBackend* CreateWindowBackend(Window* window, NativeBackend* parentBackend,
 	RegisterWindowClass();
 
 	auto* backend = new NativeBackend{};
-	backend->Owner = (Control*)window;
+	backend->Owner = (ControlBase*)window;
 
 	DWORD style = WS_OVERLAPPEDWINDOW;
 	if (!backend->Owner->IsResizable())

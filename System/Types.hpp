@@ -14,6 +14,7 @@
 #include "System/Meta/Promotion.hpp"
 #include "System/Meta/HierarchyTraits.hpp"
 #include "System/Meta/TypeTraits.hpp"
+#include "System/Meta/Language.hpp"
 
 // Object base
 #include "System/Types/Fundamentals/Object.hpp"

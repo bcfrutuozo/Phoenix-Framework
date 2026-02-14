@@ -2,17 +2,16 @@
 
 #include <cstdint>
 
-enum class EventCategory : uint16_t
+enum class EventCategory : uint8_t
 {
-    None = 0,
-    UI = 1 << 0,
-    Keyboard = 1 << 1,
-    Mouse = 1 << 2,
-    Touch = 1 << 3,
-    Gamepad = 1 << 4,
-    Text = 1 << 5,
-    Clipboard = 1 << 6,
-    System = 1 << 7,
+    UI,
+    Keyboard,
+    Mouse,
+    Touch,
+    Gamepad,
+    Text,
+    Clipboard,
+    System,
 };
 
 enum class UIEventType : uint8_t
@@ -52,44 +51,45 @@ enum class MouseEventType : uint8_t
     Leave
 };
 
+enum class TouchEventType : uint8_t
+{
+    Move,
+    Down,
+    Up
+};
+
+enum class GamepadEventType : uint8_t
+{
+    Connected,
+    Disconnected,
+    ButtonDown,
+    ButtonUp,
+    AxisMove
+};
+
 enum class TextEventType : uint8_t
 {
     Input,
-    ImeComposition
+    ImeCompositionStart,
+    ImeCompositionUpdate,
+    ImeCompositionEnd,
+    ImeCompositionCommit,
+};
+
+enum class ClipboardEventType : uint8_t
+{
+    Copy,
+    Paste,
+    Cut,
+    Changed
 };
 
 enum class SystemEventType : uint8_t
 {
     Quit,
-    Shutdown
+    Shutdown,
+    PowerSuspend,
+    PowerResume,
+    PowerBatteryLow,
+    PowerUnknown
 };
-
-enum class PowerEventType : uint8_t
-{
-    Suspend,
-    Resume,
-    BatteryLow,
-    Unknown
-};
-
-
-constexpr EventCategory operator|(EventCategory a, EventCategory b) noexcept
-{
-    return static_cast<EventCategory>(
-        static_cast<uint16_t>(a) | static_cast<uint16_t>(b)
-        );
-}
-
-constexpr EventCategory operator&(EventCategory a, EventCategory b) noexcept
-{
-    return static_cast<EventCategory>(
-        static_cast<uint16_t>(a) & static_cast<uint16_t>(b)
-        );
-}
-
-constexpr EventCategory operator~(EventCategory a) noexcept
-{
-    return static_cast<EventCategory>(
-        ~static_cast<uint16_t>(a)
-        );
-}

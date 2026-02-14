@@ -48,12 +48,9 @@ VulkanContext* Window::GetRenderContext() const
 	return _vk;
 }
 
-void Window::Initialize(InitializationContext ctx)
+void Window::InitializeImpl(InitializationContext& ctx)
 {
 	// Set font if none was specified
-	_uiContext = ctx.UIContext;
-	_parent = ctx.Parent;
-	if (!_font) _font = ctx.UIContext->GetDefaultFont();
 	_impl = CreateWindowBackend(this, GetParentBackend(), ctx.Queue, ctx.UIContext, ctx.EventSink);
 	SetState(Flags::Created, true);
 	if (_vk) _vk->Initialize();
@@ -63,30 +60,8 @@ void Window::Initialize(InitializationContext ctx)
 		InitializationContext cCtx;
 		cCtx.Font = _font;
 		cCtx.UIContext = _uiContext;
-		cCtx.Parent = this;
+		cCtx.Parent = (Control*)this;
 		cCtx.EventSink = ctx.EventSink;
 		c->Initialize(cCtx);
 	}
-}
-
-Boolean Window::Dispatch(Event& e)
-{
-	if (dispatch_to_controls(e))
-		return true;
-
-	EventDispatcher d(e);
-
-	// After dispatching for all children controls first, tries to handle event on Window
-	return OnEvent(e);
-}
-
-bool Window::dispatch_to_controls(Event& e)
-{
-	for (auto& c : _controls)
-	{
-		if(c->OnEvent(e));
-			return true;
-	}
-
-	return false;
 }

@@ -4,6 +4,7 @@
 #include "EventCategory.hpp"
 #include "System/Types.hpp"
 #include "System/time/TimePoint.hpp"
+#include "GUI/Core/UIHandle.hpp"
 
 enum class EventFlags : uint8_t
 {
@@ -39,46 +40,46 @@ class Event
 {
 public:
 
+	inline constexpr Event(UIHandle handle, EventCategory category, u8 type) noexcept
+		:
+		Handle(handle),
+		_category(category),
+		_type(type)
+	{
+	}
+
 	virtual ~Event() = default;
 
-	virtual EventCategory Category() const noexcept = 0;
-	virtual u8 TypeId() const noexcept = 0;
-
-	Boolean Is(EventCategory cat) const noexcept
-	{
-		return (Category() & cat) != EventCategory::None;
-	}
-
-	template<typename TEnum>
-		requires(is_enum_v<TEnum>)
-	constexpr TEnum Type() const noexcept
-	{
-		using U = underlying_type_t<TEnum>;
-		static_assert(sizeof(typename decltype(TypeId())::value_type) >= sizeof(U), "TypeId wrapper too small for this enum");
-		return static_cast<TEnum>(static_cast<U>(TypeId()));
-	}
+	inline constexpr EventCategory GetCategory() const noexcept { return _category; }
+	inline constexpr u8 GetType() const noexcept { return _type; }
 
 	template<typename T>
-	const T& As() const noexcept
+	inline const T& As() const noexcept
 	{
 		return static_cast<const T&>(*this);
 	}
 
-	Boolean Has(EventFlags f) const noexcept
+	inline constexpr Boolean Has(EventFlags f) const noexcept
 	{
 		return (Flags & f) != EventFlags::None;
 	}
 
-	void Set(EventFlags f) noexcept
+	inline constexpr void Set(EventFlags f) noexcept
 	{
 		Flags |= f;
 	}
 
-	void Clear(EventFlags f) noexcept
+	inline constexpr void Clear(EventFlags f) noexcept
 	{
 		Flags = static_cast<EventFlags>(static_cast<uint8_t>(Flags) & ~static_cast<uint8_t>(f));
 	}
 
 	TimePoint Timestamp;
 	EventFlags Flags = EventFlags::None;
+	UIHandle Handle;
+
+private:
+
+	EventCategory _category;
+	u8 _type;
 };

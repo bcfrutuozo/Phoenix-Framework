@@ -1,5 +1,6 @@
 #pragma once
 
+#include "System/Types.hpp"
 #include "Event.hpp"
 #include "EventCategory.hpp"
 
@@ -11,13 +12,13 @@ public:
         : _event(e)
     { }
 
-    template<typename T, typename Enum, typename Fn>
-    Boolean Dispatch(EventCategory category, Enum type, Fn&& fn) const noexcept
+    template<typename T, typename u8, typename Fn>
+    Boolean Dispatch(EventCategory category, u8 type, Fn&& fn) const noexcept
     {
-        if (_event.Category() != category)
+        if (_event.GetCategory() != category)
             return false;
 
-        if (_event.TypeId() != FromEnum<u32>(type))
+        if (_event.GetType() != type)
             return false;
 
         if (_event.Has(EventFlags::Handled))

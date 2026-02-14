@@ -9,70 +9,99 @@ class TextInputEvent final : public Event
 {
 public:
 
-    TextInputEvent(UIHandle target, CodePoint cp)
-        :
-        Target(target),
-        Codepoint(cp)
-    {
-    }
+	TextInputEvent(UIHandle handle, CodePoint cp)
+		:
+		Event(handle, Category, Type),
+		Codepoint(cp)
+	{
+	}
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Text;
-    }
+	static constexpr EventCategory Category = EventCategory::Text;
+	static constexpr u8 Type = static_cast<uint8_t>(TextEventType::Input);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(TextEventType::Input);
-    }
-
-    UIHandle Target;
-    CodePoint Codepoint;
+	CodePoint Codepoint;
 };
 
-enum class ImeCompositionType : uint8_t
+class ImeCompositionStartEvent final : public Event
 {
-    Start,
-    Update,
-    End,
-    Commit
+public:
+
+	ImeCompositionStartEvent(UIHandle handle, const String& text, UInt32 cursor)
+		: 
+		Event(handle, Category, Type),
+		Text(text),
+		Cursor(cursor)
+	{
+	}
+
+	static constexpr EventCategory Category = EventCategory::Text;
+	static constexpr u8 Type = static_cast<uint8_t>(TextEventType::ImeCompositionStart);
+
+public:
+
+	String Text;   // UTF-8 nativo da engine
+	u32 Cursor; // posição do caret (em codepoints ou bytes, você decide)
 };
 
-class ImeCompositionEvent final : public Event
+class ImeCompositionUpdateEvent final : public Event
 {
 public:
-    ImeCompositionEvent(
-        UIHandle target,
-        ImeCompositionType type,
-        const String& text,
-        UInt32 cursor
-    )
-        : Target(target)
-        , Type(type)
-        , Text(text)
-        , Cursor(cursor)
-    {
-    }
 
-    static constexpr UInt32 StaticTypeId() noexcept
-    {
-        return static_cast<UInt32>(0x1001);
-    }
+	ImeCompositionUpdateEvent(UIHandle handle, const String& text, UInt32 cursor)
+		:
+		Event(handle, Category, Type),
+		Text(text),
+		Cursor(cursor)
+	{
+	}
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::Text;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(TextEventType::ImeComposition);
-    }
+	static constexpr EventCategory Category = EventCategory::Text;
+	static constexpr u8 Type = static_cast<uint8_t>(TextEventType::ImeCompositionUpdate);
 
 public:
-    UIHandle Target;
-    ImeCompositionType Type;
 
-    String Text;   // UTF-8 nativo da engine
-    UInt32 Cursor; // posição do caret (em codepoints ou bytes, você decide)
+	String Text;   // UTF-8 nativo da engine
+	UInt32 Cursor; // posição do caret (em codepoints ou bytes, você decide)
+};
+
+class ImeCompositionEndEvent final : public Event
+{
+public:
+
+	ImeCompositionEndEvent(UIHandle handle, const String& text, UInt32 cursor)
+		:
+		Event(handle, Category, Type),
+		Text(text),
+		Cursor(cursor)
+	{
+	}
+
+	static constexpr EventCategory Category = EventCategory::Text;
+	static constexpr u8 Type = static_cast<uint8_t>(TextEventType::ImeCompositionEnd);
+
+public:
+
+	String Text;   // UTF-8 nativo da engine
+	UInt32 Cursor; // posição do caret (em codepoints ou bytes, você decide)
+};
+
+class ImeCompositionCommitEvent final : public Event
+{
+public:
+
+	ImeCompositionCommitEvent(UIHandle handle, const String& text, UInt32 cursor)
+		:
+		Event(handle, Category, Type),
+		Text(text),
+		Cursor(cursor)
+	{
+	}
+
+	static constexpr EventCategory Category = EventCategory::Text;
+	static constexpr u8 Type = static_cast<uint8_t>(TextEventType::ImeCompositionCommit);
+
+public:
+
+	String Text;   // UTF-8 nativo da engine
+	UInt32 Cursor; // posição do caret (em codepoints ou bytes, você decide)
 };

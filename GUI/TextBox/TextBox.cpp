@@ -14,11 +14,11 @@ TextBox::~TextBox()
 
 }
 
-void TextBox::Initialize(InitializationContext ctx)
+void TextBox::InitializeImpl(InitializationContext& ctx)
 {
-	_parent = ctx.Parent;
-	_uiContext = ctx.UIContext;
-	if (!_font) _font = ctx.Font ? ctx.UIContext->GetDefaultFont() : ctx.Font;
+	//_parent = ctx.Parent;
+	//_uiContext = ctx.UIContext;
+	//if (!_font) _font = ctx.Font ? ctx.UIContext->GetDefaultFont() : ctx.Font;
 	_impl = CreateTextBoxBackend(this, GetParentBackend(), ctx.Queue, ctx.UIContext, ctx.EventSink);
 	SetState(Flags::Created, true);
 	if (GetState(Flags::AutoSize))

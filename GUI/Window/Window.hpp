@@ -11,11 +11,14 @@
 #include "GUI/Core/VerticalAlignment.hpp"
 #include "GUI/Core/TextFormat.hpp"
 #include "GUI/Context/UIContext.hpp"
+#include "GUI/Core/InitializationContext.hpp"
 
 class VulkanContext;
 
-class Window : public Control
+class Window final : public Control<Window>
 {
+    friend class Control<Window>;
+
 public:
 
     friend class MessageBox;
@@ -28,17 +31,14 @@ public:
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
 
-    Boolean Dispatch(Event& e);
-
     SurfaceHandle GetSurfaceHandle() const noexcept;
 
     void AttachRenderContext(VulkanContext* ctx);
     VulkanContext* GetRenderContext() const;
 
-    void Initialize(InitializationContext ctx) override;
-
 private:
 
-    bool dispatch_to_controls(Event& e); 
+    void InitializeImpl(InitializationContext& ctx);
+
     VulkanContext* _vk = nullptr;
 };

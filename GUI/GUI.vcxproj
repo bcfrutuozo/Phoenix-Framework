@@ -96,6 +96,7 @@
   <ItemGroup>
     <ClCompile Include="Context\UIContext.cpp" />
     <ClCompile Include="Core\Control.cpp" />
+    <ClCompile Include="Core\UIHandle.cpp" />
     <ClCompile Include="Drawing\Font.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="Rendering\Vulkan\VulkanInstance.cpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="Context\UIContext.hpp" />
     <ClInclude Include="Controls.hpp" />
     <ClInclude Include="Core\Control.hpp" />
+    <ClInclude Include="Core\InitializationContext.hpp" />
     <ClInclude Include="Core\NativeBackend.hpp" />
     <ClInclude Include="Core\HorizontalAlignment.hpp" />
     <ClInclude Include="Core\TextFormat.hpp" />

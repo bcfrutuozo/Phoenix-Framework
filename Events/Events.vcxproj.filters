@@ -45,6 +45,18 @@
     <ClInclude Include="IEventSink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Input\TouchEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\GamepadEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OS\ClipboardEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Events.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EventQueue.cpp">

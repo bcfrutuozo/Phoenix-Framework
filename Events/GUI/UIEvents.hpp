@@ -6,28 +6,34 @@
 
 class Font;
 
+class CloseEvent final : public Event
+{
+public:
+
+    CloseEvent(UIHandle handle)
+        :
+        Event(handle, Category, Type)
+    {
+    }
+
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Close);
+};
+
 class ResizedEvent final: public Event
 {
 public:
 
     ResizedEvent(UIHandle handle, Int32 w, Int32 h)
         :
-        Handle(handle),
+        Event(handle, Category, Type),
         Width(w),
         Height(h)
     { }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Resized);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Resized);
-    }
-
-    UIHandle Handle;
     Int32 Width;
     Int32 Height;
 };
@@ -38,23 +44,15 @@ public:
 
     ResizingEvent(UIHandle handle, Int32 w, Int32 h)
         :
-        Handle(handle),
+        Event(handle, Category, Type),
         Width(w),
         Height(h)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Resizing);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Resizing);
-    }
-
-    UIHandle Handle;
     Int32 Width;
     Int32 Height;
 };
@@ -65,21 +63,12 @@ public:
 
     MinimizeEvent(UIHandle handle)
         :
-        Handle(handle)
+        Event(handle, Category, Type)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Minimize);
-    }
-
-    UIHandle Handle;
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Minimize);
 };
 
 class MaximizeEvent final : public Event
@@ -88,21 +77,12 @@ public:
 
     MaximizeEvent(UIHandle handle)
         :
-        Handle(handle)
+        Event(handle, Category, Type)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Maximize);
-    }
-
-    UIHandle Handle;
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Maximize);
 };
 
 class RestoreEvent final : public Event
@@ -111,43 +91,12 @@ public:
 
     RestoreEvent(UIHandle handle)
         :
-        Handle(handle)
+        Event(handle, Category, Type)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Restore);
-    }
-
-    UIHandle Handle;
-};
-
-class CloseEvent final : public Event
-{
-public:
-
-    CloseEvent(UIHandle handle)
-        :
-        Handle(handle)
-    {}
-
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Close);
-    }
-
-    UIHandle Handle;
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Restore);
 };
 
 class DestroyEvent final : public Event
@@ -156,20 +105,11 @@ public:
 
     DestroyEvent(UIHandle handle)
         :
-        Handle(handle)
+        Event(handle, Category, Type)
     { }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Destroy);
-    }
-
-    UIHandle Handle;
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Destroy);
 };
 
 class MoveEvent final : public Event
@@ -178,23 +118,15 @@ public:
 
     MoveEvent(UIHandle handle, Int32 x, Int32 y)
         :
-        Handle(handle),
+        Event(handle, Category, Type),
         X(x),
         Y(y)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Move);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Move);
-    }
-
-    UIHandle Handle;
     Int32 X;
     Int32 Y;
 };
@@ -205,21 +137,12 @@ public:
 
     FocusGainedEvent(UIHandle handle)
         :
-        Handle(handle)
+        Event(handle, Category, Type)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::FocusGained);
-    }
-
-    UIHandle Handle;
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::FocusGained);
 };
 
 class FocusLostEvent final : public Event
@@ -228,21 +151,12 @@ public:
 
     FocusLostEvent(UIHandle handle)
         :
-        Handle(handle)
+        Event(handle, Category, Type)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::FocusLost);
-    }
-
-    UIHandle Handle;
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::FocusLost);
 };
 
 class ShowEvent final : public Event
@@ -251,21 +165,12 @@ public:
 
     ShowEvent(UIHandle handle)
         :
-        Handle(handle)
+        Event(handle, Category, Type)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Show);
-    }
-
-    UIHandle Handle;
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Show);
 };
 
 class HideEvent final : public Event
@@ -274,21 +179,12 @@ public:
 
     HideEvent(UIHandle handle)
         :
-        Handle(handle)
+        Event(handle, Category, Type)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Hide);
-    }
-
-    UIHandle Handle;
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Hide);
 };
 
 class DPIChangedEvent final : public Event
@@ -297,23 +193,15 @@ public:
 
     DPIChangedEvent(UIHandle handle, UInt32 dpi)
         :
-        Handle(handle),
+        Event(handle, Category, Type),
         DPI(dpi)
     {
         Flags = EventFlags::Propagable;
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::DPIChanged);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::DPIChanged);
-    }
-
-    UIHandle Handle;
     UInt32 DPI;
 };
 
@@ -323,21 +211,12 @@ public:
 
     PaintEvent(UIHandle handle)
         :
-        Handle(handle)
+        Event(handle, Category, Type)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
-
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::Paint);
-    }
-
-    UIHandle Handle;
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::Paint);
 };
 
 class FontChangedEvent final : public Event
@@ -346,23 +225,15 @@ public:
 
     FontChangedEvent(UIHandle handle, Font* newFont, Font* previousFont)
         :
-        Target(handle),
+        Event(handle, Category, Type),
         NewFont(newFont),
         PreviousFont(previousFont)
     {
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::FontChanged);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::DPIChanged);
-    }
-
-    UIHandle Target;
     Font* NewFont;
     Font* PreviousFont;
 };
@@ -373,24 +244,16 @@ public:
 
     ControlAddedEvent(UIHandle handle, UIHandle addedControl)
         :
-        Target(handle),
-        Child(addedControl)
+        Event(handle, Category, Type),
+        Added(addedControl)
     {
 
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::ControlAdded);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::ControlAdded);
-    }
-
-    UIHandle Target;
-    UIHandle Child;
+    UIHandle Added;
 };
 
 class ControlRemovedEvent final : public Event
@@ -399,22 +262,14 @@ public:
 
     ControlRemovedEvent(UIHandle handle, UIHandle removedControl)
         :
-        Target(handle),
-        Child(removedControl)
+        Event(handle, Category, Type),
+        Removed(removedControl)
     {
 
     }
 
-    EventCategory Category() const noexcept override
-    {
-        return EventCategory::UI;
-    }
+    static constexpr EventCategory Category = EventCategory::UI;
+    static constexpr u8 Type = static_cast<uint8_t>(UIEventType::ControlRemoved);
 
-    u8 TypeId() const noexcept override
-    {
-        return static_cast<uint8_t>(UIEventType::ControlRemoved);
-    }
-
-    UIHandle Target;
-    UIHandle Child;
+    UIHandle Removed;
 };

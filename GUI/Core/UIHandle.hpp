@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System/Types.hpp"
+#include "System/String.hpp"
 
 struct WindowNativeHandle
 {
@@ -12,94 +13,46 @@ struct DisplayNativeHandle
     Pointer value = nullptr;
 };
 
-class Window;
-class Control;
+class ControlBase;
 
 struct UIHandle : public Object<UIHandle>
 {
-    enum class Type : uint8_t
-    {
-        None,
-        Window,
-        Control
-    };
-
-    Type Type = Type::None;
     Pointer Handle;
 
-    // -------------------------
-    // Fábricas
-    // -------------------------
-    static UIHandle None()
-    {
-        return {};
-    }
-
-    static UIHandle FromWindow(const Window* w)
-    {
-        UIHandle h;
-        h.Type = Type::Window;
-        h.Handle = Pointer(w);
-        return h;
-    }
-
-    static UIHandle FromControl(const Control* c)
-    {
-        UIHandle h;
-        h.Type = Type::Control;
-        h.Handle = Pointer(c);
-        return h;
-    }
+    inline constexpr UIHandle(const ControlBase* c)
+        :
+        Handle(c)
+    { }
 
     // -------------------------
     // Queries
     // -------------------------
-    bool IsValid() const
+    inline constexpr Boolean IsValid() const
     {
         return Handle != nullptr;
     }
 
-    bool IsWindow() const
+    inline operator ControlBase* () const noexcept
     {
-        return Type == Type::Window;
-    }
-
-    bool IsControl() const
-    {
-        return Type == Type::Control;
-    }
-
-    // -------------------------
-    // Cast helpers
-    // -------------------------
-    Window* AsWindow() const
-    {
-        return (Type == Type::Window)
-            ? static_cast<Window*>(Handle.Get())
-            : nullptr;
-    }
-
-    Control* AsControl() const
-    {
-        return (Type == Type::Control)
-            ? static_cast<Control*>(Handle.Get())
-            : nullptr;
+        return static_cast<ControlBase*>(Handle.Get());
     }
 
     // -------------------------
     // Comparação
     // -------------------------
-    Boolean operator==(const UIHandle& other) const
+    inline constexpr Boolean operator==(const UIHandle& other) const
     {
-        return Type == other.Type && Handle == other.Handle;
+        return Handle == other.Handle;
     }
 
-    Boolean operator!=(const UIHandle& other) const
+    inline constexpr Boolean operator!=(const UIHandle& other) const
     {
         return !(*this == other);
     }
 
-    u32 GetHashCode() const noexcept { return Handle.GetHashCode(); }
+    Boolean Equals(const UIHandle& other) const noexcept;
+    u32 GetHashCode() const noexcept;
+    String ToString() const noexcept;
 };
 
 struct SurfaceHandle

@@ -1,4 +1,5 @@
 #include "Label.hpp"
+#include "GUI/Core/InitializationContext.hpp"
 #include "GUI/Core/NativeBackend.hpp"
 #include "GUI/Context/UIContext.hpp"
 #include "GUI/Window/Window.hpp"
@@ -12,11 +13,11 @@ Label::Label(const String& text, i32 x, i32 y)
 
 }
 
-void Label::Initialize(InitializationContext ctx)
+void Label::InitializeImpl(InitializationContext& ctx)
 {
-	_parent = ctx.Parent;
-	_uiContext = ctx.UIContext;
-	if (!_font) _font = ctx.Font ? ctx.UIContext->GetDefaultFont() : ctx.Font;
+	//_parent = ctx.Parent;
+	//_uiContext = ctx.UIContext;
+	//if (!_font) _font = ctx.Font ? ctx.UIContext->GetDefaultFont() : ctx.Font;
 	_impl = CreateLabelBackend(this, GetParentBackend(), ctx.Queue, ctx.UIContext, ctx.EventSink);
 	SetState(Flags::Created, true);
 	if(GetState(Flags::AutoSize))

@@ -3,4 +3,4 @@
 #include "Events/EventCategory.hpp"
 #include "System/Types.hpp"
 
-PowerEventType TranslatePowerEvent(u64 wp) noexcept;
+SystemEventType TranslatePowerEvent(u64 wp) noexcept;

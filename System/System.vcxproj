@@ -103,6 +103,8 @@
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="Globalization\Locale.hpp" />
     <ClInclude Include="Globals.hpp" />
+    <ClInclude Include="Input\GamepadAxis.hpp" />
+    <ClInclude Include="Input\GamepadButton.hpp" />
     <ClInclude Include="Input\KeyCode.hpp" />
     <ClInclude Include="Input\MouseButton.hpp" />
     <ClInclude Include="Console\Console.hpp" />

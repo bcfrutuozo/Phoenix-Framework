@@ -4,12 +4,11 @@
 
 #include "GUI/Controls.hpp"
 #include "GUI/Core/NativeBackend.hpp"
-#include "Events/GUI/UIEvents.hpp"
+#include "Events/Events.hpp"
 #include "System/Collections/Dictionary.hpp"
 #include "GUI/Core/UIHandle.hpp"
 #include "GUI/Drawing/Font.hpp"
 #include "Events/EventDispatcher.hpp"
-#include "System/Types.hpp"
 #include "GUI/Context/UIContext.hpp"
 
 #include "GUI/Rendering/Vulkan/VulkanContext.hpp"
@@ -50,7 +49,7 @@ protected:
 
     void OnInit() override
     {
-        Window::InitializationContext ctx;
+        InitializationContext ctx;
         ctx.Queue = &_events;
         ctx.UIContext = _uiContext;
         ctx.EventSink = this;
@@ -90,16 +89,16 @@ protected:
 
         for (auto i = 0; i < _count; ++i)
         {
-            if (_windows[i]->Dispatch(e))
+            if (_windows[i]->OnEvent(e))
                 break;
         }
 
         // Política global de fechamento
         EventDispatcher d(e);
-
+        
         d.Dispatch<CloseEvent>(
             EventCategory::UI,
-            UIEventType::Close,
+            (uint8_t)UIEventType::Close,
             [&](const CloseEvent& ev)
             {
                 if (Window* w = FindWindow(ev.Handle))
@@ -108,10 +107,10 @@ protected:
                 }
             }
         );
-
+        
         d.Dispatch<DestroyEvent>(
             EventCategory::UI,
-            UIEventType::Destroy,
+            (uint8_t)UIEventType::Destroy,
             [&](const DestroyEvent& ev)
             {
                 Detach(ev.Handle);
@@ -119,16 +118,16 @@ protected:
                     Exit(); // agora sim
             }
         );
-
     }
 
     Window* FindWindow(const UIHandle& h)
     {
         for (uint32_t i = 0; i < _count; ++i)
         {
-            if (UIHandle::FromWindow(_windows[i]) == h)
+            if (UIHandle(_windows[i]) == h)
                 return _windows[i];
         }
+
         return nullptr;
     }
 
@@ -138,7 +137,7 @@ private:
     {
         for (auto i = 0; i < _count; ++i)
         {
-            if (UIHandle::FromWindow(_windows[i]) == handle)
+            if (UIHandle(_windows[i]) == handle)
             {
                 // Move o último para a posição removida
                 _windows[i] = _windows[_count - 1];
@@ -151,9 +150,9 @@ private:
 
     void HandleWindowEvent(const Event& e)
     {
-        switch (e.Type<UIEventType>())
+        switch (e.GetType())
         {
-        case UIEventType::Resized:
+        case (uint8_t)UIEventType::Resized:
         {
             auto& ev = e.As<ResizedEvent>();
             if (Window* w = FindWindow(ev.Handle))
@@ -163,7 +162,7 @@ private:
             }
             break;
         }
-        case UIEventType::Destroy:
+        case (uint8_t)UIEventType::Destroy:
         {
             auto& ev = e.As<DestroyEvent>();
             if (Window* w = FindWindow(ev.Handle))
